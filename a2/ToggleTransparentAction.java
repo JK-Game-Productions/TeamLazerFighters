@@ -5,12 +5,12 @@ import tage.GameObject;
 import tage.input.action.AbstractInputAction;
 
 public class ToggleTransparentAction extends AbstractInputAction {
-    private MyGame game;
+    //private MyGame game;
     private GameObject Xaxis, Yaxis, Zaxis;
     private boolean transparent = false;
 
     public ToggleTransparentAction(MyGame g, GameObject x, GameObject y, GameObject z) {
-        game = g;
+        //game = g;
         Xaxis = x;
         Yaxis = y;
         Zaxis = z;

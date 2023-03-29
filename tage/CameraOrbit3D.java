@@ -1,10 +1,10 @@
 package tage;
 
 import net.java.games.input.Component;
-import net.java.games.input.Controller;
+//import net.java.games.input.Controller;
 import net.java.games.input.Event;
 import org.joml.Vector3f;
-import tage.input.IInputManager;
+//import tage.input.IInputManager;
 import tage.input.InputManager;
 import tage.input.action.AbstractInputAction;
 
@@ -14,7 +14,7 @@ import tage.input.action.AbstractInputAction;
  * @author John Wishek
  */
 public class CameraOrbit3D {
-    private Engine engine;
+    //private Engine engine;
     private Camera camera;
     private GameObject player;
     private float cameraAzimuth;
@@ -25,7 +25,7 @@ public class CameraOrbit3D {
      * the InputManager to set up inputs and then updates camera position to the default settings */
     public CameraOrbit3D(Camera cam, GameObject pl, InputManager im, Engine e)
     {
-        engine = e;
+        //engine = e;
         camera = cam;
         player = pl;
         cameraAzimuth = 0.0f;

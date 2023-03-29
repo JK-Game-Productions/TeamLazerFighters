@@ -90,7 +90,7 @@ public class GameObject
 	private PhysicsObject physicsObject;
 	private boolean isTerrain = false;
 	private boolean collected = false;
-	private float movSpeed, movFactor;
+	private float movFactor;
 
 	//------------------ CONSTRUCTORS -----------------
 
@@ -203,7 +203,7 @@ public class GameObject
 
 	protected void addChild(GameObject g) { children.add(g); }
 	protected void removeChild(GameObject g) { children.remove(g); }
-	protected Iterator getChildrenIterator() { return children.iterator(); }
+	protected Iterator<GameObject> getChildrenIterator() { return children.iterator(); }
 
 	// ------------------ Look At methods ------------------------------
 

@@ -1,7 +1,7 @@
 package a2;
 
 import org.joml.*;
-import tage.Camera;
+//import tage.Camera;
 import tage.GameObject;
 import tage.input.action.AbstractInputAction;
 import net.java.games.input.Event;
@@ -9,11 +9,11 @@ import net.java.games.input.Event;
 public class MoveAction extends AbstractInputAction {
     private MyGame game;
     private GameObject dol;
-    private Camera c;
-    private Vector3f oldPos, newPos, up, oldCamLoc;
+    //private Camera c;
+    private Vector3f oldPos, newPos;//, up, oldCamLoc;
     private Vector4f mov;
     private float frameDiff;
-    private boolean movement; //true=fwd false=rev
+    //private boolean movement; //true=fwd false=rev
 
 
     public MoveAction(MyGame g) {
@@ -24,7 +24,7 @@ public class MoveAction extends AbstractInputAction {
         //test for controller input +deadzonecode
         dol = game.getDolphin();
         frameDiff = game.getFrameDiff();
-        c = game.getSmallCamera();
+        //c = MyGame.getSmallCamera();
         float keyValue = e.getValue();
         String componentValue = e.getComponent().toString();
         //System.out.println(componentValue + ": " + keyValue);

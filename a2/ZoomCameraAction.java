@@ -15,7 +15,7 @@ public class ZoomCameraAction extends AbstractInputAction {
 
     @Override
     public void performAction(float time, Event evt) {
-        cam = game.getSmallCamera();
+        cam = MyGame.getSmallCamera();
         String direction = evt.getComponent().toString();
         float keyValue = evt.getValue();
         //System.out.println(direction);

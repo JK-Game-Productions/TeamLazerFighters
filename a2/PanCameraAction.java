@@ -16,7 +16,7 @@ public class PanCameraAction extends AbstractInputAction {
     public void performAction(float time, Event evt) {
         String direction = evt.getComponent().toString();
         //System.out.println(direction);
-        cam = game.getSmallCamera();
+        cam = MyGame.getSmallCamera();
         float diff = game.getFrameDiff();
         if(direction.equals("L") || direction.equals("Button 1"))
             cam.panRight(diff);

@@ -21,13 +21,13 @@ public class MyGame extends VariableFrameRateGame
 	private CameraOrbit3D orbitCam;
 
 	private boolean paused = false;
-	private boolean riding = false;
+	//private boolean riding = false;
 	private boolean newTarget = true;
 	private boolean endGame = false;
-	private boolean cooldown = false;
-	private boolean firstAttack = false;
+	//private boolean cooldown = false;
+	//private boolean firstAttack = false;
 	private double lastFrameTime, currFrameTime, elapsTime,frameDiff;
-	private float distToBlob, distToP1,distToP2,distToP3, distToP4;
+	private float distToP1,distToP2,distToP3, distToP4;
 	private int score = 0;
 	private float trailLength = -2.0f;
 
@@ -37,9 +37,9 @@ public class MyGame extends VariableFrameRateGame
 	private ObjShape dolS, blobS, prize1S, prize2S, prize3S, prize4S,groundS, linxS,linyS,linzS;
 	private TextureImage doltx, blobtx, johntx, p1tx, p2tx,p4tx, groundtx;
 	private Light light1;
-	private Vector3f loc, fwd, up,right, lastCamLocation;
-	private int height,width;
-	private NodeController rc, rc1, rc2, rc3, rc4, rc5, fc;
+	private Vector3f  lastCamLocation;
+	private int width;
+	private NodeController rc1, rc2, rc3, rc4, fc;
 
 
 	public MyGame() {
@@ -292,7 +292,7 @@ public class MyGame extends VariableFrameRateGame
 		lastFrameTime = currFrameTime;
 		currFrameTime = System.currentTimeMillis();
 		frameDiff = (currFrameTime - lastFrameTime) / 1000.0;
-		height = (engine.getRenderSystem()).getHeight();
+		//height = (engine.getRenderSystem()).getHeight();
 		width = (engine.getRenderSystem()).getWidth();
 
 		if(paused) im.update((float)elapsTime);
@@ -311,7 +311,7 @@ public class MyGame extends VariableFrameRateGame
 			distToP2 = distanceToDolphin(prize2);
 			distToP3 = distanceToDolphin(prize3);
 			distToP4 = distanceToDolphin(prize4);
-			distToBlob = distanceToDolphin(blob);
+			//distToBlob = distanceToDolphin(blob);
 
 			//enemy blob
 			if(blobMovement()) //blob moves every other second
