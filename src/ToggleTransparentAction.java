@@ -1,4 +1,4 @@
-package a2;
+package src;
 
 import net.java.games.input.Event;
 import tage.GameObject;

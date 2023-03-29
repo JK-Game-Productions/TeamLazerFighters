@@ -1,1 +1,1 @@
-javac -Xlint:unchecked a2/*.java
+javac -Xlint:unchecked src/*.java

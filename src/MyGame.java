@@ -1,4 +1,4 @@
-package a2;
+package src;
 
 import net.java.games.input.Component;
 import org.joml.Matrix4f;
