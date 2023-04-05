@@ -51,8 +51,8 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject avatar, dol, blob, prize1, prize2, prize3, prize4, ground, x, y, z, lastTarget, nextTarget,
 			lastestTarget;
 	private Vector<GameObject> objects;
-	private ObjShape ghostS, dolS, blobS, prize1S, prize2S, prize3S, prize4S, groundS, linxS, linyS, linzS;
-	private TextureImage ghostT, doltx, blobtx, johntx, p1tx, p2tx, p4tx, groundtx;
+	private ObjShape ghostS, dolS, blobS, prize1S, prize2S, prize3S, prize4S, groundS, linxS, linyS, linzS, terrS;
+	private TextureImage ghostT, doltx, blobtx, johntx, p1tx, p2tx, p4tx, groundtx, river;
 	private Light light1;
 	private Vector3f lastCamLocation;
 	private NodeController rc1, rc2, rc3, rc4, fc;
@@ -98,6 +98,7 @@ public class MyGame extends VariableFrameRateGame {
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(50f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 50f, 0f));
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 50f));
+		terrS = new TerrainPlane(1000);
 	}
 
 	@Override
@@ -109,6 +110,7 @@ public class MyGame extends VariableFrameRateGame {
 		p4tx = new TextureImage("rooffrance.jpg");
 		johntx = new TextureImage("galt_cow.jpg");
 		groundtx = new TextureImage("grass2.png");
+		river = new TextureImage("river.jpg");
 	}
 
 	@Override
@@ -165,11 +167,12 @@ public class MyGame extends VariableFrameRateGame {
 		blob.setLocalScale(initialScale);
 
 		// build the ground
-		ground = new GameObject(GameObject.root(), groundS, groundtx);
+		ground = new GameObject(GameObject.root(), terrS, groundtx);
 		initialTranslation = (new Matrix4f().translation(0f, 0, 0f));
-		initialScale = (new Matrix4f()).scaling(50f);
+		initialScale = (new Matrix4f()).scaling(50.0f, 2.0f, 50.0f);
 		ground.setLocalTranslation(initialTranslation);
 		ground.setLocalScale(initialScale);
+		ground.setHeightMap(river);
 
 		// add objects to vector
 		objects.add(dol);
@@ -347,6 +350,11 @@ public class MyGame extends VariableFrameRateGame {
 			distToP2 = distanceToDolphin(prize2);
 			distToP3 = distanceToDolphin(prize3);
 			distToP4 = distanceToDolphin(prize4);
+
+			// player elevation
+			Vector3f loc = dol.getWorldLocation();
+			float height = ground.getHeight(loc.x(), loc.z());
+			dol.setLocalLocation(new Vector3f(loc.x(), height, loc.z()));
 
 			// enemy blob logic
 			if (blobMovement()) {
