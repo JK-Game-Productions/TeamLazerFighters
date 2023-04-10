@@ -1,4 +1,4 @@
-package src;
+package client;
 
 import java.awt.Color;
 import java.io.IOException;

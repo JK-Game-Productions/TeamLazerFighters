@@ -1,4 +1,4 @@
-package src;
+package client;
 
 import net.java.games.input.Component;
 import java.util.Random;

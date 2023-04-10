@@ -1,16 +1,16 @@
-package src;
+package client;
 
 import net.java.games.input.Event;
 import tage.GameObject;
 import tage.input.action.AbstractInputAction;
 
 public class ToggleTransparentAction extends AbstractInputAction {
-    //private MyGame game;
+    // private MyGame game;
     private GameObject Xaxis, Yaxis, Zaxis;
     private boolean transparent = false;
 
     public ToggleTransparentAction(MyGame g, GameObject x, GameObject y, GameObject z) {
-        //game = g;
+        // game = g;
         Xaxis = x;
         Yaxis = y;
         Zaxis = z;
@@ -18,7 +18,7 @@ public class ToggleTransparentAction extends AbstractInputAction {
 
     @Override
     public void performAction(float time, Event evt) {
-        if(transparent){
+        if (transparent) {
             transparent = false;
             Xaxis.getRenderStates().enableRendering();
             Yaxis.getRenderStates().enableRendering();
