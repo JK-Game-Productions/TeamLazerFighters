@@ -1,5 +1,3 @@
-package server;
-
 import java.io.IOException;
 import tage.networking.IGameConnection.ProtocolType;
 
@@ -22,6 +20,7 @@ public class NetworkingServer {
 	public static void main(String[] args) {
 		if (args.length > 1) {
 			NetworkingServer app = new NetworkingServer(Integer.parseInt(args[0]), args[1]);
+			System.out.println("\n*** Server running on port " + args[0] + " ***");
 		}
 	}
 

@@ -79,7 +79,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public static void main(String[] args) {// if these args are not hard coded, it doesn't work
-		MyGame game = new MyGame("10.117.49.13", 3000, "UPD");
+		MyGame game = new MyGame(args[0], Integer.parseInt(args[1]), args[2]);
 		engine = new Engine(game);
 		game.initializeSystem();
 		game.game_loop();
