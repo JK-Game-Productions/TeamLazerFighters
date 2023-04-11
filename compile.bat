@@ -1,1 +1,1 @@
-javac -Xlint:unchecked src/*.java
+javac -Xlint:unchecked client/*.java
