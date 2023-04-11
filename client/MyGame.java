@@ -48,11 +48,13 @@ public class MyGame extends VariableFrameRateGame {
 	// Tage Class Variables
 	private CameraOrbit3D orbitCam;
 	private InputManager im;
-	private GameObject avatar, dol, blob, prize1, prize2, prize3, prize4, ground, x, y, z, lastTarget, nextTarget,
+	private GameObject avatar, dol, lazergun, prize1, prize2, prize3, prize4, ground, x, y, z, lastTarget,
+			nextTarget,
 			lastestTarget;
 	private Vector<GameObject> objects;
-	private ObjShape ghostS, dolS, blobS, prize1S, prize2S, prize3S, prize4S, groundS, linxS, linyS, linzS, terrS;
-	private TextureImage ghostT, doltx, blobtx, johntx, p1tx, p2tx, p4tx, groundtx, river;
+	private ObjShape ghostS, dolS, lazergunS, prize1S, prize2S, prize3S, prize4S, groundS, linxS, linyS, linzS,
+			terrS;
+	private TextureImage ghostT, doltx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river;
 	private Light light1;
 	private Vector3f lastCamLocation;
 	private NodeController rc1, rc2, rc3, rc4, fc;
@@ -89,7 +91,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadShapes() {
 		dolS = new ImportedModel("dolphinHighPoly.obj");
-		blobS = new Cube();
+		lazergunS = new ImportedModel("lazergun.obj");
 		prize1S = new Torus();
 		prize2S = new Cube();
 		prize3S = new Sphere();
@@ -104,7 +106,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadTextures() {
 		doltx = new TextureImage("Dolphin_HighPolyUV.png");
-		blobtx = new TextureImage("pattern___glowing_coal_by_n4pgamer-d4jqm5c_edit.jpg");
+		lazerguntx = new TextureImage("lazergun.png");
 		p2tx = new TextureImage("gold_energy.jpg");
 		p1tx = new TextureImage("tex_Water.jpg");
 		p4tx = new TextureImage("rooffrance.jpg");
@@ -118,13 +120,19 @@ public class MyGame extends VariableFrameRateGame {
 		Matrix4f initialTranslation, initialScale, initialRotation;
 
 		// build dolphin in the center of the window
-		dol = new GameObject(GameObject.root(), dolS, doltx);
-		initialTranslation = (new Matrix4f()).translation(0f, 2f, 0f);
-		initialScale = (new Matrix4f()).scaling(4.0f);
+		dol = new GameObject(GameObject.root(), lazergunS, lazerguntx);
+		initialTranslation = (new Matrix4f()).translation(0f, 4f, 0f);
+		initialScale = (new Matrix4f()).scaling(0.30f);
 		dol.setLocalTranslation(initialTranslation);
-		initialRotation = (new Matrix4f()).rotationY((float) Math.toRadians(135.0f));
-		dol.setLocalRotation(initialRotation);
 		dol.setLocalScale(initialScale);
+
+		// GUN
+		// lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
+		// initialTranslation = (new Matrix4f()).translation(0f, 4f, 0f);
+		// initialScale = (new Matrix4f()).scaling(0.30f);
+		// lazergun.setLocalTranslation(initialTranslation);
+		// lazergun.setLocalScale(initialScale);
+
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
 		initialTranslation = (new Matrix4f()).translation((rand.nextInt(100) + (-50)), 2f, (rand.nextInt(100) + (-50)));
@@ -157,14 +165,6 @@ public class MyGame extends VariableFrameRateGame {
 		(x.getRenderStates()).setColor(new Vector3f(1f, 0f, 0f));
 		(y.getRenderStates()).setColor(new Vector3f(0f, 1f, 0f));
 		(z.getRenderStates()).setColor(new Vector3f(0f, 0f, 1f));
-
-		// build the blob
-		blob = new GameObject(GameObject.root(), blobS, blobtx);
-		blob.setMoveFact(1.75f);
-		initialTranslation = (new Matrix4f()).translation((rand.nextInt(100) + (-50)), 2f, (rand.nextInt(100) + (-50)));
-		initialScale = (new Matrix4f()).scaling((blob.getMoveFact()));
-		blob.setLocalTranslation(initialTranslation);
-		blob.setLocalScale(initialScale);
 
 		// build the ground
 		ground = new GameObject(GameObject.root(), terrS, groundtx);
@@ -228,7 +228,7 @@ public class MyGame extends VariableFrameRateGame {
 		lastFrameTime = System.currentTimeMillis();
 		currFrameTime = System.currentTimeMillis();
 		elapsTime = 0.0;
-		(engine.getRenderSystem()).setWindowDimensions(3800, 2000);
+		(engine.getRenderSystem()).setWindowDimensions(1920, 1050);
 
 		// ------------- camera init -------------
 		im = engine.getInputManager();
@@ -345,44 +345,18 @@ public class MyGame extends VariableFrameRateGame {
 		if (!paused && !endGame) {
 			elapsTime += frameDiff;
 			im.update((float) elapsTime);
+
 			orbitCam.updateCameraPosition();
+
 			distToP1 = distanceToDolphin(prize1);
 			distToP2 = distanceToDolphin(prize2);
 			distToP3 = distanceToDolphin(prize3);
 			distToP4 = distanceToDolphin(prize4);
 
 			// player elevation
-			Vector3f loc = dol.getWorldLocation();
-			float height = ground.getHeight(loc.x(), loc.z());
-			dol.setLocalLocation(new Vector3f(loc.x(), height, loc.z()));
-
-			// enemy blob logic
-			if (blobMovement()) {
-				if (newTarget) {
-					newTarget();
-					newTarget = false;
-
-				}
-				blob.lookAt(nextTarget);
-				blob.move((float) frameDiff);
-				for (int i = 0; i < objects.size(); i++) {
-					if (blobContact(objects.elementAt(i)) && objects.elementAt(i) == nextTarget) {
-						if (objects.elementAt(i) == dol) {
-							blob.setMoveFact(blob.getMoveFact() + 0.25f);
-							blob.changeScale(blob.getMoveFact());
-							fc.enable();
-						} else {
-							blob.setMoveFact(blob.getMoveFact() + 0.50f);
-							blob.changeScale(blob.getMoveFact());
-						}
-						score--;
-						newTarget = true;
-						lastestTarget = lastTarget;
-						lastTarget = nextTarget;
-					}
-				}
-
-			}
+			// Vector3f loc = dol.getWorldLocation();
+			// float height = ground.getHeight(loc.x(), loc.z());
+			// dol.setLocalLocation(new Vector3f(loc.x(), height, loc.z()));
 
 			// Player logic
 			if (distToP1 <= prize1.getScale() && !prize1.isCollected()) {
@@ -395,8 +369,6 @@ public class MyGame extends VariableFrameRateGame {
 				prize1.applyParentRotationToPosition(true);
 				prize1.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
 				trailLength += -1.5f;
-				blob.setMoveFact(blob.getMoveFact() - 0.50f);
-				blob.changeScale(blob.getMoveFact());
 			}
 			if (distToP2 <= prize2.getScale() && !prize2.isCollected()) {
 				score++;
@@ -408,8 +380,6 @@ public class MyGame extends VariableFrameRateGame {
 				prize2.applyParentRotationToPosition(true);
 				prize2.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
 				trailLength += -1.5f;
-				blob.setMoveFact(blob.getMoveFact() - 0.50f);
-				blob.changeScale(blob.getMoveFact());
 			}
 			if (distToP3 <= prize3.getScale() && !prize3.isCollected()) {
 				score++;
@@ -421,8 +391,6 @@ public class MyGame extends VariableFrameRateGame {
 				prize3.applyParentRotationToPosition(true);
 				prize3.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
 				trailLength += -1.5f;
-				blob.setMoveFact(blob.getMoveFact() - 0.50f);
-				blob.changeScale(blob.getMoveFact());
 			}
 			if (distToP4 <= prize4.getScale() && !prize4.isCollected()) {
 				score++;
@@ -434,8 +402,6 @@ public class MyGame extends VariableFrameRateGame {
 				prize4.applyParentRotationToPosition(true);
 				prize4.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
 				trailLength += -1.5f;
-				blob.setMoveFact(blob.getMoveFact() - 0.50f);
-				blob.changeScale(blob.getMoveFact());
 			}
 
 		} // pause scope and end game cutoff
@@ -462,12 +428,8 @@ public class MyGame extends VariableFrameRateGame {
 		Vector3f winColor = new Vector3f(0, 1, 0);
 		String loseStr = "The Blob Has Beaten You";
 		Vector3f loseColor = new Vector3f(1, 0, 0);
-		if (prize1.isCollected() && prize2.isCollected() && prize3.isCollected() && prize4.isCollected()
-				|| blob.getScale() < 0.25f) {
+		if (prize1.isCollected() && prize2.isCollected() && prize3.isCollected() && prize4.isCollected()) {
 			(engine.getHUDmanager()).setHUD1(winStr, winColor, (int) (width * 0.75f), 15);
-			endGame = true;
-		} else if (blob.getScale() > 20.0f) {
-			(engine.getHUDmanager()).setHUD1(loseStr, loseColor, (int) (width * 0.75f), 15);
 			endGame = true;
 		} else
 			(engine.getHUDmanager()).setHUD1(dolLocStr, dolLocColor, (int) (width * 0.75f), 15);
@@ -542,71 +504,33 @@ public class MyGame extends VariableFrameRateGame {
 		return true;
 	}
 
-	public GameObject newTarget() {
-		if (nextTarget == null)
-			nextTarget = objects.elementAt(0);
-		else {
-			if (lastestTarget != dol && nextTarget != dol)
-				nextTarget = objects.elementAt(0);
-			else if (lastestTarget != prize1 && nextTarget != prize1)
-				nextTarget = objects.elementAt(1);
-			else if (lastestTarget != prize2 && nextTarget != prize2)
-				nextTarget = objects.elementAt(2);
-			else if (lastestTarget != prize3 && nextTarget != prize3)
-				nextTarget = objects.elementAt(3);
-			else if (lastestTarget != prize4 && nextTarget != prize4)
-				nextTarget = objects.elementAt(4);
-		}
-		for (int i = 0; i < objects.size(); i++) {
-			if (objects.elementAt(i) != lastTarget && objects.elementAt(i) != lastestTarget) {
-				if (distanceTo(nextTarget, blob) >= distanceTo(objects.elementAt(i), blob)) {
-					nextTarget = objects.elementAt(i);
-				}
-			}
-		}
-		return nextTarget;
-	}
-
-	public boolean blobContact(GameObject contact) {
-		if (distanceTo(blob, contact) <= contact.getScale())
-			return true;
-		return false;
-	}
-
-	private boolean blobMovement() {
-		int moveBlob = (int) elapsTime % 2;
-		if (moveBlob == 0)
-			return true;
-		return false;
-	}
-
-	// temporary keypressed function
-	@Override
-	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
-			case KeyEvent.VK_W: {
-				Vector3f oldPosition = avatar.getWorldLocation();
-				Vector4f fwdDirection = new Vector4f(0f, 0f, 1f, 1f);
-				fwdDirection.mul(avatar.getWorldRotation());
-				fwdDirection.mul(0.05f);
-				Vector3f newPosition = oldPosition.add(fwdDirection.x(), fwdDirection.y(), fwdDirection.z());
-				avatar.setLocalLocation(newPosition);
-				protClient.sendMoveMessage(avatar.getWorldLocation());
-				break;
-			}
-			case KeyEvent.VK_D: {
-				Matrix4f oldRotation = new Matrix4f(avatar.getWorldRotation());
-				Vector4f oldUp = new Vector4f(0f, 1f, 0f, 1f).mul(oldRotation);
-				Matrix4f rotAroundAvatarUp = new Matrix4f().rotation(-.01f,
-						new Vector3f(oldUp.x(), oldUp.y(), oldUp.z()));
-				Matrix4f newRotation = oldRotation;
-				newRotation.mul(rotAroundAvatarUp);
-				avatar.setLocalRotation(newRotation);
-				break;
-			}
-		}
-		super.keyPressed(e);
-	}
+	/*
+	 * public GameObject newTarget() {
+	 * if (nextTarget == null)
+	 * nextTarget = objects.elementAt(0);
+	 * else {
+	 * if (lastestTarget != dol && nextTarget != dol)
+	 * nextTarget = objects.elementAt(0);
+	 * else if (lastestTarget != prize1 && nextTarget != prize1)
+	 * nextTarget = objects.elementAt(1);
+	 * else if (lastestTarget != prize2 && nextTarget != prize2)
+	 * nextTarget = objects.elementAt(2);
+	 * else if (lastestTarget != prize3 && nextTarget != prize3)
+	 * nextTarget = objects.elementAt(3);
+	 * else if (lastestTarget != prize4 && nextTarget != prize4)
+	 * nextTarget = objects.elementAt(4);
+	 * }
+	 * for (int i = 0; i < objects.size(); i++) {
+	 * if (objects.elementAt(i) != lastTarget && objects.elementAt(i) !=
+	 * lastestTarget) {
+	 * if (distanceTo(nextTarget, blob) >= distanceTo(objects.elementAt(i), blob)) {
+	 * nextTarget = objects.elementAt(i);
+	 * }
+	 * }
+	 * }
+	 * return nextTarget;
+	 * }
+	 */
 
 	// ---------- NETWORKING SECTION ----------------
 
