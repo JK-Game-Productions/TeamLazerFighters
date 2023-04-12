@@ -117,7 +117,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void buildObjects() {
-		Matrix4f initialTranslation, initialScale, initialRotation;
+		Matrix4f initialTranslation, initialScale;
 
 		// build dolphin in the center of the window
 		dol = new GameObject(GameObject.root(), lazergunS, lazerguntx);
