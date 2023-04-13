@@ -22,6 +22,7 @@ public class ProtocolClient extends GameConnectionClient {
 		this.game = game;
 		this.id = UUID.randomUUID();
 		ghostManager = game.getGhostManager();
+		System.out.println("Server address: " + remoteAddr + " | Port: " + remotePort + " | Protocol: " + protocolType);
 	}
 
 	public UUID getID() {
@@ -36,6 +37,7 @@ public class ProtocolClient extends GameConnectionClient {
 
 		// Game specific protocol to handle the message
 		if (messageTokens.length > 0) {
+			System.out.println("message token: " + messageTokens[0]);
 			// Handle JOIN message
 			// Format: (join,success) or (join,failure)
 			if (messageTokens[0].compareTo("join") == 0) {
@@ -131,7 +133,7 @@ public class ProtocolClient extends GameConnectionClient {
 		}
 	}
 
-	// Informs the server of the client�s Avatar�s position. The server
+	// Informs the server of the client's Avatar's position. The server
 	// takes this message and forwards it to all other clients registered
 	// with the server.
 	// Message Format: (create,localId,x,y,z) where x, y, and z represent the

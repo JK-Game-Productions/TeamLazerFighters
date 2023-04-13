@@ -442,9 +442,6 @@ public class MyGame extends VariableFrameRateGame {
 
 		// process the networking functions
 		processNetworking((float) elapsTime);
-		// update ghosts???
-
-		// gm.updateGhostAvatar(getProtoClient().getID(), getPlayerPosition());
 	}
 
 	private void positionCameraBehindAvatar() {
