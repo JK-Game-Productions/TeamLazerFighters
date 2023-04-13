@@ -443,6 +443,8 @@ public class MyGame extends VariableFrameRateGame {
 		// process the networking functions
 		processNetworking((float) elapsTime);
 		// update ghosts???
+
+		// gm.updateGhostAvatar(getProtoClient().getID(), getPlayerPosition());
 	}
 
 	private void positionCameraBehindAvatar() {
@@ -557,6 +559,7 @@ public class MyGame extends VariableFrameRateGame {
 			System.out.println("sending join message to protocol host");
 			protClient.sendJoinMessage();
 		}
+
 	}
 
 	protected void processNetworking(float elapsTime) { // Process packets received by the client from the server
@@ -570,6 +573,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void setIsConnected(boolean value) {
 		this.isClientConnected = value;
+	}
+
+	public ProtocolClient getProtoClient() {
+		return protClient;
 	}
 
 	private class SendCloseConnectionPacketAction extends AbstractInputAction {

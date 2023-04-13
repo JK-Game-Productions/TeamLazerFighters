@@ -63,13 +63,8 @@ public class ProtocolClient extends GameConnectionClient {
 			// AND
 			// Handle DETAILS_FOR message
 			// Format: (dsfr,remoteId,x,y,z)
-			if (messageTokens[0].compareTo("create") == 0 || (messageTokens[0].compareTo("dsfr") == 0)) { // create a
-																											// new ghost
-																											// avatar
-																											// Parse out
-																											// the id
-																											// into a
-																											// UUID
+			if (messageTokens[0].compareTo("create") == 0 || (messageTokens[0].compareTo("dsfr") == 0)) {
+				// create a new ghost avatar Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
 
 				// Parse out the position into a Vector3f
