@@ -153,46 +153,48 @@ public class MyGame extends VariableFrameRateGame {
 		initialScale = (new Matrix4f()).scaling(0.30f);
 		lazergun.setLocalTranslation(initialTranslation);
 		lazergun.setLocalScale(initialScale);
-		
 
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
 		jsEngine.put("object", prize1);
 		this.runScript(scriptFile1);
-		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
+		// initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) +
+		// (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(3.0f);
-		//prize1.setLocalTranslation(initialTranslation);
+		// prize1.setLocalTranslation(initialTranslation);
 		prize1.setLocalScale(initialScale);
 		prize1.getRenderStates().setTiling(1);
-		
-		
+
 		// build prize 2
 		prize2 = new GameObject(GameObject.root(), prize2S, p2tx);
 		jsEngine.put("object", prize2);
 		this.runScript(scriptFile1);
-		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
+		// initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) +
+		// (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(2.0f);
-		//prize2.setLocalTranslation(initialTranslation);
+		// prize2.setLocalTranslation(initialTranslation);
 		prize2.setLocalScale(initialScale);
-		
+
 		// build prize 3
 		prize3 = new GameObject(GameObject.root(), prize3S, johntx);
 		jsEngine.put("object", prize3);
 		this.runScript(scriptFile1);
-		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
+		// initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) +
+		// (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(3.5f, 2.0f, 3.5f);
-		//prize3.setLocalTranslation(initialTranslation);
+		// prize3.setLocalTranslation(initialTranslation);
 		prize3.setLocalScale(initialScale);
-		
+
 		// build prize 4
 		prize4 = new GameObject(GameObject.root(), prize4S, p4tx);
 		jsEngine.put("object", prize4);
 		this.runScript(scriptFile1);
-		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
+		// initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) +
+		// (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(4.0f, 2.0f, 4.0f);
-		//prize4.setLocalTranslation(initialTranslation);
+		// prize4.setLocalTranslation(initialTranslation);
 		prize4.setLocalScale(initialScale);
-		
+
 		// build world axes
 		x = new GameObject(GameObject.root(), linxS);
 		y = new GameObject(GameObject.root(), linyS);
@@ -254,9 +256,9 @@ public class MyGame extends VariableFrameRateGame {
 	public void initializeGame() {
 		lastFrameTime = System.currentTimeMillis();
 		currFrameTime = System.currentTimeMillis();
-		
+
 		elapsTime = 0.0;
-		//elapsTime = ((Double)(jsEngine.get("time")));
+		// elapsTime = ((Double)(jsEngine.get("time")));
 		(engine.getRenderSystem()).setWindowDimensions(1920, 1080);
 
 		// ------------- camera init -------------
@@ -265,8 +267,8 @@ public class MyGame extends VariableFrameRateGame {
 		camSma = (engine.getRenderSystem().getViewport("RIGHT").getCamera());
 		camSma.setCameraDist(5.0f);
 		camSma.setUpViewport();
-		orbitCam = new CameraOrbit3D(camMain, avatar, im, engine);
-		
+		String gpName = im.getFirstGamepadName();
+		orbitCam = new CameraOrbit3D(camMain, avatar, gpName, engine);
 
 		// ----------------- initialize camera ----------------
 		// positionCameraBehindAvatar();
@@ -440,7 +442,7 @@ public class MyGame extends VariableFrameRateGame {
 		mapHeight(prize2);
 		mapHeight(prize3);
 		mapHeight(prize4);
-			// build and set HUD
+		// build and set HUD
 		/*
 		 * time
 		 * int elapsTimeSec = Math.round((float)elapsTime);
@@ -620,15 +622,20 @@ public class MyGame extends VariableFrameRateGame {
 			FileReader fileReader = new FileReader(scriptFile);
 			jsEngine.eval(fileReader);
 			fileReader.close();
+		} catch (FileNotFoundException e1) {
+			System.out.println(scriptFile + " not found " + e1);
+		} catch (IOException e2) {
+			System.out.println("IO problem with " + scriptFile + e2);
+		} catch (ScriptException e3) {
+			System.out.println("ScriptException in " + scriptFile + e3);
+		} catch (NullPointerException e4) {
+			System.out.println("Null ptr exception reading " + scriptFile + e4);
 		}
-		catch (FileNotFoundException e1) { System.out.println(scriptFile + " not found " + e1); }
-		catch (IOException e2) { System.out.println("IO problem with " + scriptFile + e2); }
-		catch (ScriptException e3) { System.out.println("ScriptException in " + scriptFile + e3); }
-		catch (NullPointerException e4) { System.out.println ("Null ptr exception reading " + scriptFile + e4);}
 	}
-	private void mapHeight(GameObject object){
+
+	private void mapHeight(GameObject object) {
 		Vector3f loc = object.getWorldLocation();
 		float height = ground.getHeight(loc.x(), loc.z());
-		object.setLocalLocation(new Vector3f(loc.x(), (height +2.0f), loc.z()));
+		object.setLocalLocation(new Vector3f(loc.x(), (height + 2.0f), loc.z()));
 	}
 }
