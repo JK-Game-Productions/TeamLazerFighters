@@ -101,8 +101,9 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadShapes() {
 		avatarS = new ImportedModel("man4.obj");
+		ghostS = avatarS;
+
 		lazergunS = new ImportedModel("lazergun.obj");
-		ghostS = lazergunS;
 		prize1S = new Torus();
 		prize2S = new Cube();
 		prize3S = new Sphere();
@@ -117,8 +118,9 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadTextures() {
 		avatartx = new TextureImage("man4.png");
+		ghostT = avatartx;
+
 		lazerguntx = new TextureImage("lazergun.png");
-		ghostT = lazerguntx;
 		p2tx = new TextureImage("gold_energy.jpg");
 		p1tx = new TextureImage("tex_Water.jpg");
 		p4tx = new TextureImage("rooffrance.jpg");

@@ -51,7 +51,7 @@ public class CameraOrbit3D {
     private void setupInputs(String gp) {
         OrbitAzimuthAction azmAction = new OrbitAzimuthAction();
         OrbitElevationAction elevAction = new OrbitElevationAction();
-        OrbitRadiusAction radiAction = new OrbitRadiusAction();
+        OrbitRadiusAction zoomAction = new OrbitRadiusAction();
         im = engine.getInputManager();
 
         // if controller can be identified, use these inputs
@@ -62,13 +62,13 @@ public class CameraOrbit3D {
             // move camera up or down
             im.associateAction(gp, net.java.games.input.Component.Identifier.Axis.RZ, elevAction,
                     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-            im.associateAction(gp, net.java.games.input.Component.Identifier.Button._4, radiAction,
+            im.associateAction(gp, net.java.games.input.Component.Identifier.Button._4, zoomAction,
                     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-            im.associateAction(gp, net.java.games.input.Component.Identifier.Button._5, radiAction,
+            im.associateAction(gp, net.java.games.input.Component.Identifier.Button._5, zoomAction,
                     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
         } else {
             System.out.print("** Notice: controller cannot be detected or may not be connected **\n");
-            System.out.print("      - using keyboard controls instead");
+            System.out.print("      - using keyboard controls instead\n");
             im.associateActionWithAllKeyboards(Component.Identifier.Key.RIGHT, azmAction,
                     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
             im.associateActionWithAllKeyboards(Component.Identifier.Key.LEFT, azmAction,
@@ -77,9 +77,9 @@ public class CameraOrbit3D {
                     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
             im.associateActionWithAllKeyboards(Component.Identifier.Key.DOWN, elevAction,
                     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-            im.associateActionWithAllKeyboards(Component.Identifier.Key.Z, radiAction,
+            im.associateActionWithAllKeyboards(Component.Identifier.Key.Z, zoomAction,
                     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-            im.associateActionWithAllKeyboards(Component.Identifier.Key.X, radiAction,
+            im.associateActionWithAllKeyboards(Component.Identifier.Key.X, zoomAction,
                     InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
         }
     }
@@ -105,20 +105,21 @@ public class CameraOrbit3D {
 
     /**
      * This class is used as an action input manager that determines the change in
-     * the cameras Azimuth angle
+     * the cameras Azimuth angle (left/right)
      */
     private class OrbitAzimuthAction extends AbstractInputAction {
         public void performAction(float time, Event event) {
             float rotAmount;
+            String direction = event.getComponent().toString();
             float keyValue = event.getValue();
 
             if (keyValue > -.2 && keyValue < .2)
                 return; // deadzone
 
-            if (event.getValue() < -0.5) {
+            if (event.getValue() < -0.5 || direction.equals("Left")) {
                 rotAmount = 0.2f;
             } else {
-                if (event.getValue() > 0.5) {
+                if (event.getValue() > 0.5 || direction.equals("Right")) {
                     rotAmount = -0.2f;
                 } else {
                     rotAmount = 0.0f;
@@ -132,20 +133,21 @@ public class CameraOrbit3D {
 
     /**
      * This class is used as an action input manager that determines the change in
-     * the cameras Elevation angle
+     * the cameras Elevation angle (up/down)
      */
     private class OrbitElevationAction extends AbstractInputAction {
         public void performAction(float time, Event event) {
             float elevateAmount;
+            String direction = event.getComponent().toString();
             float keyValue = event.getValue();
 
             if (keyValue > -.2 && keyValue < .2)
                 return; // deadzone
 
-            if (event.getValue() < -0.2) {
+            if (event.getValue() < -0.2 || direction.equals("Up")) {
                 elevateAmount = -0.2f;
             } else {
-                if (event.getValue() > 0.2) {
+                if (event.getValue() > 0.2 || direction.equals("Down")) {
                     elevateAmount = 0.2f;
                 } else {
                     elevateAmount = 0.0f;
@@ -168,16 +170,17 @@ public class CameraOrbit3D {
 
     /**
      * This class is used as an action input manager that determines the change in
-     * the cameras radius distance
+     * the cameras radius distance (zoom in/out)
      */
     private class OrbitRadiusAction extends AbstractInputAction {
         public void performAction(float time, Event event) {
             float zoomAmount;
+            String button = event.getComponent().toString();
 
-            if (event.getComponent().toString().equals("Button 7")) {
-                zoomAmount = 0.2f;
+            if (button.equals("Button 7") || button.equals("X")) {
+                zoomAmount = 0.1f;
             } else {
-                zoomAmount = -0.2f;
+                zoomAmount = -0.1f;
             }
 
             // stop camera from zooming too far out or in
