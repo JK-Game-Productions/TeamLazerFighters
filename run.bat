@@ -1,1 +1,1 @@
-java -Dsun.java2d.d3d=false -Dsun.java2d.uiScale=1 client.MyGame NetworkingServer 6010 UDP
+java -Dsun.java2d.d3d=false -Dsun.java2d.uiScale=1 client.MyGame 10.117.49.13 6010 UDP

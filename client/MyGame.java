@@ -92,6 +92,7 @@ public class MyGame extends VariableFrameRateGame {
 	public void loadShapes() {
 		dolS = new ImportedModel("dolphinHighPoly.obj");
 		lazergunS = new ImportedModel("lazergun.obj");
+		ghostS = lazergunS;
 		prize1S = new Torus();
 		prize2S = new Cube();
 		prize3S = new Sphere();
@@ -107,6 +108,7 @@ public class MyGame extends VariableFrameRateGame {
 	public void loadTextures() {
 		doltx = new TextureImage("Dolphin_HighPolyUV.png");
 		lazerguntx = new TextureImage("lazergun.png");
+		ghostT = lazerguntx;
 		p2tx = new TextureImage("gold_energy.jpg");
 		p1tx = new TextureImage("tex_Water.jpg");
 		p4tx = new TextureImage("rooffrance.jpg");
@@ -238,6 +240,9 @@ public class MyGame extends VariableFrameRateGame {
 		camSma.setUpViewport();
 		orbitCam = new CameraOrbit3D(camMain, dol, im, engine);
 
+		// ----------------- initialize camera ----------------
+		// positionCameraBehindAvatar();
+
 		// ---------------- game logic --------------------//
 		score = 0;
 		nextTarget = null;
@@ -330,7 +335,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public GameObject getAvatar() {
-		return avatar;
+		return dol;
 	}
 
 	@Override
@@ -437,6 +442,25 @@ public class MyGame extends VariableFrameRateGame {
 
 		// process the networking functions
 		processNetworking((float) elapsTime);
+		// update ghosts???
+	}
+
+	private void positionCameraBehindAvatar() {
+		Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
+		Vector4f v = new Vector4f(0f, 1f, 0f, 1f);
+		Vector4f n = new Vector4f(0f, 0f, 1f, 1f);
+		u.mul(avatar.getWorldRotation());
+		v.mul(avatar.getWorldRotation());
+		n.mul(avatar.getWorldRotation());
+		Matrix4f w = avatar.getWorldTranslation();
+		Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
+		position.add(-n.x() * 2f, -n.y() * 2f, -n.z() * 2f);
+		position.add(v.x() * .75f, v.y() * .75f, v.z() * .75f);
+		Camera c = (engine.getRenderSystem()).getViewport("LEFT").getCamera();
+		c.setLocation(position);
+		c.setU(new Vector3f(u.x(), u.y(), u.z()));
+		c.setV(new Vector3f(v.x(), v.y(), v.z()));
+		c.setN(new Vector3f(n.x(), n.y(), n.z()));
 	}
 
 	// getters
@@ -504,34 +528,6 @@ public class MyGame extends VariableFrameRateGame {
 		return true;
 	}
 
-	/*
-	 * public GameObject newTarget() {
-	 * if (nextTarget == null)
-	 * nextTarget = objects.elementAt(0);
-	 * else {
-	 * if (lastestTarget != dol && nextTarget != dol)
-	 * nextTarget = objects.elementAt(0);
-	 * else if (lastestTarget != prize1 && nextTarget != prize1)
-	 * nextTarget = objects.elementAt(1);
-	 * else if (lastestTarget != prize2 && nextTarget != prize2)
-	 * nextTarget = objects.elementAt(2);
-	 * else if (lastestTarget != prize3 && nextTarget != prize3)
-	 * nextTarget = objects.elementAt(3);
-	 * else if (lastestTarget != prize4 && nextTarget != prize4)
-	 * nextTarget = objects.elementAt(4);
-	 * }
-	 * for (int i = 0; i < objects.size(); i++) {
-	 * if (objects.elementAt(i) != lastTarget && objects.elementAt(i) !=
-	 * lastestTarget) {
-	 * if (distanceTo(nextTarget, blob) >= distanceTo(objects.elementAt(i), blob)) {
-	 * nextTarget = objects.elementAt(i);
-	 * }
-	 * }
-	 * }
-	 * return nextTarget;
-	 * }
-	 */
-
 	// ---------- NETWORKING SECTION ----------------
 
 	public ObjShape getGhostShape() {
@@ -569,7 +565,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public Vector3f getPlayerPosition() {
-		return avatar.getWorldLocation();
+		return dol.getWorldLocation();
 	}
 
 	public void setIsConnected(boolean value) {

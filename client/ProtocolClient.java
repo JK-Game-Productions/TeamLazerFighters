@@ -31,7 +31,7 @@ public class ProtocolClient extends GameConnectionClient {
 	@Override
 	protected void processPacket(Object message) {
 		String strMessage = (String) message;
-		System.out.println("message received -->" + strMessage);
+		System.out.println("message received --> " + strMessage);
 		String[] messageTokens = strMessage.split(",");
 
 		// Game specific protocol to handle the message
