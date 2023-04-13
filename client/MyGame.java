@@ -5,6 +5,7 @@ import java.util.Random;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import tage.*;
 import tage.shapes.*;
@@ -51,13 +52,13 @@ public class MyGame extends VariableFrameRateGame {
 	// Tage Class Variables
 	private CameraOrbit3D orbitCam;
 	private InputManager im;
-	private GameObject avatar, dol, lazergun, prize1, prize2, prize3, prize4, ground, x, y, z, lastTarget,
+	private GameObject avatar, lazergun, prize1, prize2, prize3, prize4, ground, x, y, z, lastTarget,
 			nextTarget,
 			lastestTarget;
 	private Vector<GameObject> objects;
-	private ObjShape ghostS, dolS, lazergunS, prize1S, prize2S, prize3S, prize4S, groundS, linxS, linyS, linzS,
+	private ObjShape ghostS, avatarS, lazergunS, prize1S, prize2S, prize3S, prize4S, groundS, linxS, linyS, linzS,
 			terrS;
-	private TextureImage ghostT, doltx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river;
+	private TextureImage ghostT, avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river;
 	private Light light1;
 	private Vector3f lastCamLocation;
 	private NodeController rc1, rc2, rc3, rc4, fc;
@@ -69,6 +70,7 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false;
 	private ScriptEngine jsEngine;
+	private File scriptFile1;
 
 	public MyGame(String serverAddress, int serverPort, String protocol) {
 		super();
@@ -83,7 +85,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		objects = new Vector<>();
 
-		//Script Engine initializer
+		// Script Engine initializer
 		ScriptEngineManager factory = new ScriptEngineManager();
 		jsEngine = factory.getEngineByName("js");
 	}
@@ -98,7 +100,7 @@ public class MyGame extends VariableFrameRateGame {
 	// VariableFrameRate Game Overrides
 	@Override
 	public void loadShapes() {
-		dolS = new ImportedModel("dolphinHighPoly.obj");
+		avatarS = new ImportedModel("man4.obj");
 		lazergunS = new ImportedModel("lazergun.obj");
 		ghostS = lazergunS;
 		prize1S = new Torus();
@@ -114,7 +116,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void loadTextures() {
-		doltx = new TextureImage("Dolphin_HighPolyUV.png");
+		avatartx = new TextureImage("man4.png");
 		lazerguntx = new TextureImage("lazergun.png");
 		ghostT = lazerguntx;
 		p2tx = new TextureImage("gold_energy.jpg");
@@ -128,46 +130,69 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void buildObjects() {
 		Matrix4f initialTranslation, initialScale;
+		jsEngine.put("rand", rand);
+		scriptFile1 = new File("assets/scripts/RandomTranslation.js");
+		// build the ground
+		ground = new GameObject(GameObject.root(), terrS, groundtx);
+		initialTranslation = (new Matrix4f().translation(0f, 0, 0f));
+		initialScale = (new Matrix4f()).scaling(100.0f, 5.0f, 100.0f);
+		ground.setLocalTranslation(initialTranslation);
+		ground.setLocalScale(initialScale);
+		ground.setHeightMap(river);
 
-		// build dolphin in the center of the window
-		dol = new GameObject(GameObject.root(), lazergunS, lazerguntx);
+		// build avatar in the center of the window
+		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
 		initialTranslation = (new Matrix4f()).translation(0f, 4f, 0f);
-		initialScale = (new Matrix4f()).scaling(0.30f);
-		dol.setLocalTranslation(initialTranslation);
-		dol.setLocalScale(initialScale);
+		initialScale = (new Matrix4f()).scaling(0.33f);
+		avatar.setLocalTranslation(initialTranslation);
+		avatar.setLocalScale(initialScale);
 
 		// GUN
-		// lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
-		// initialTranslation = (new Matrix4f()).translation(0f, 4f, 0f);
-		// initialScale = (new Matrix4f()).scaling(0.30f);
-		// lazergun.setLocalTranslation(initialTranslation);
-		// lazergun.setLocalScale(initialScale);
+		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
+		initialTranslation = (new Matrix4f()).translation(4f, 4f, 4f);
+		initialScale = (new Matrix4f()).scaling(0.30f);
+		lazergun.setLocalTranslation(initialTranslation);
+		lazergun.setLocalScale(initialScale);
+		
 
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
-		initialTranslation = (new Matrix4f()).translation((rand.nextInt(100) + (-50)), 2f, (rand.nextInt(100) + (-50)));
+		jsEngine.put("object", prize1);
+		this.runScript(scriptFile1);
+		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(3.0f);
-		prize1.setLocalTranslation(initialTranslation);
+		//prize1.setLocalTranslation(initialTranslation);
 		prize1.setLocalScale(initialScale);
 		prize1.getRenderStates().setTiling(1);
+		
+		
 		// build prize 2
 		prize2 = new GameObject(GameObject.root(), prize2S, p2tx);
-		initialTranslation = (new Matrix4f()).translation((rand.nextInt(100) + (-50)), 2f, (rand.nextInt(100) + (-50)));
+		jsEngine.put("object", prize2);
+		this.runScript(scriptFile1);
+		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(2.0f);
-		prize2.setLocalTranslation(initialTranslation);
+		//prize2.setLocalTranslation(initialTranslation);
 		prize2.setLocalScale(initialScale);
+		
 		// build prize 3
 		prize3 = new GameObject(GameObject.root(), prize3S, johntx);
-		initialTranslation = (new Matrix4f()).translation((rand.nextInt(100) + (-50)), 2f, (rand.nextInt(100) + (-50)));
+		jsEngine.put("object", prize3);
+		this.runScript(scriptFile1);
+		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(3.5f, 2.0f, 3.5f);
-		prize3.setLocalTranslation(initialTranslation);
+		//prize3.setLocalTranslation(initialTranslation);
 		prize3.setLocalScale(initialScale);
+		
 		// build prize 4
 		prize4 = new GameObject(GameObject.root(), prize4S, p4tx);
-		initialTranslation = (new Matrix4f()).translation((rand.nextInt(100) + (-50)), 2f, (rand.nextInt(100) + (-50)));
+		jsEngine.put("object", prize4);
+		this.runScript(scriptFile1);
+		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(4.0f, 2.0f, 4.0f);
-		prize4.setLocalTranslation(initialTranslation);
+		//prize4.setLocalTranslation(initialTranslation);
 		prize4.setLocalScale(initialScale);
+		
 		// build world axes
 		x = new GameObject(GameObject.root(), linxS);
 		y = new GameObject(GameObject.root(), linyS);
@@ -176,16 +201,8 @@ public class MyGame extends VariableFrameRateGame {
 		(y.getRenderStates()).setColor(new Vector3f(0f, 1f, 0f));
 		(z.getRenderStates()).setColor(new Vector3f(0f, 0f, 1f));
 
-		// build the ground
-		ground = new GameObject(GameObject.root(), terrS, groundtx);
-		initialTranslation = (new Matrix4f().translation(0f, 0, 0f));
-		initialScale = (new Matrix4f()).scaling(50.0f, 2.0f, 50.0f);
-		ground.setLocalTranslation(initialTranslation);
-		ground.setLocalScale(initialScale);
-		ground.setHeightMap(river);
-
 		// add objects to vector
-		objects.add(dol);
+		objects.add(avatar);
 		objects.add(prize1);
 		objects.add(prize2);
 		objects.add(prize3);
@@ -237,8 +254,10 @@ public class MyGame extends VariableFrameRateGame {
 	public void initializeGame() {
 		lastFrameTime = System.currentTimeMillis();
 		currFrameTime = System.currentTimeMillis();
+		
 		elapsTime = 0.0;
-		(engine.getRenderSystem()).setWindowDimensions(1920, 1050);
+		//elapsTime = ((Double)(jsEngine.get("time")));
+		(engine.getRenderSystem()).setWindowDimensions(1920, 1080);
 
 		// ------------- camera init -------------
 		im = engine.getInputManager();
@@ -246,7 +265,8 @@ public class MyGame extends VariableFrameRateGame {
 		camSma = (engine.getRenderSystem().getViewport("RIGHT").getCamera());
 		camSma.setCameraDist(5.0f);
 		camSma.setUpViewport();
-		orbitCam = new CameraOrbit3D(camMain, dol, im, engine);
+		orbitCam = new CameraOrbit3D(camMain, avatar, im, engine);
+		
 
 		// ----------------- initialize camera ----------------
 		// positionCameraBehindAvatar();
@@ -274,8 +294,8 @@ public class MyGame extends VariableFrameRateGame {
 		(engine.getSceneGraph()).addNodeController(rc4);
 
 		// Flatten Controller
-		fc = new FlattenController(dol.getLocalScale().m11());
-		fc.addTarget(dol);
+		fc = new FlattenController(avatar.getLocalScale().m11());
+		fc.addTarget(avatar);
 		(engine.getSceneGraph()).addNodeController(fc);
 
 		// --------------Input Zone-----------------//
@@ -343,7 +363,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public GameObject getAvatar() {
-		return dol;
+		return avatar;
 	}
 
 	@Override
@@ -366,17 +386,12 @@ public class MyGame extends VariableFrameRateGame {
 			distToP3 = distanceToDolphin(prize3);
 			distToP4 = distanceToDolphin(prize4);
 
-			// player elevation
-			// Vector3f loc = dol.getWorldLocation();
-			// float height = ground.getHeight(loc.x(), loc.z());
-			// dol.setLocalLocation(new Vector3f(loc.x(), height, loc.z()));
-
 			// Player logic
 			if (distToP1 <= prize1.getScale() && !prize1.isCollected()) {
 				score++;
 				prize1.collect();
 				rc1.toggle();
-				prize1.setParent(dol);
+				prize1.setParent(avatar);
 				prize1.propagateRotation(false);
 				prize1.setLocalScale(new Matrix4f().scaling(0.25f));
 				prize1.applyParentRotationToPosition(true);
@@ -387,7 +402,7 @@ public class MyGame extends VariableFrameRateGame {
 				score++;
 				prize2.collect();
 				rc2.toggle();
-				prize2.setParent(dol);
+				prize2.setParent(avatar);
 				prize2.propagateRotation(false);
 				prize2.setLocalScale(new Matrix4f().scaling(0.25f));
 				prize2.applyParentRotationToPosition(true);
@@ -398,7 +413,7 @@ public class MyGame extends VariableFrameRateGame {
 				score++;
 				prize3.collect();
 				rc3.toggle();
-				prize3.setParent(dol);
+				prize3.setParent(avatar);
 				prize3.propagateRotation(false);
 				prize3.setLocalScale(new Matrix4f().scaling(0.25f));
 				prize3.applyParentRotationToPosition(true);
@@ -409,7 +424,7 @@ public class MyGame extends VariableFrameRateGame {
 				score++;
 				prize4.collect();
 				rc4.toggle();
-				prize4.setParent(dol);
+				prize4.setParent(avatar);
 				prize4.propagateRotation(false);
 				prize4.setLocalScale(new Matrix4f().scaling(0.25f));
 				prize4.applyParentRotationToPosition(true);
@@ -418,6 +433,13 @@ public class MyGame extends VariableFrameRateGame {
 			}
 
 		} // pause scope and end game cutoff
+
+		mapHeight(avatar);
+		mapHeight(lazergun);
+		mapHeight(prize1);
+		mapHeight(prize2);
+		mapHeight(prize3);
+		mapHeight(prize4);
 			// build and set HUD
 		/*
 		 * time
@@ -434,7 +456,7 @@ public class MyGame extends VariableFrameRateGame {
 		 */
 
 		String scoreStr = "Score: " + Integer.toString(score);
-		String dolLocStr = "X: " + dol.getWorldLocation().x() + "  Z: " + dol.getWorldLocation().z();
+		String dolLocStr = "X: " + avatar.getWorldLocation().x() + "  Z: " + avatar.getWorldLocation().z();
 		Vector3f dolLocColor = new Vector3f(1, 1, 1);
 		Vector3f scoreColor = new Vector3f(0, 1, 0);
 		String winStr = "You Have Beaten The Blob";
@@ -472,7 +494,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	// getters
 	public GameObject getDolphin() {
-		return dol;
+		return avatar;
 	}
 
 	public Engine getEngine() {
@@ -510,7 +532,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	/** Returns distance of a GameObject to the dolphin player */
 	public float distanceToDolphin(GameObject obj) {
-		return dol.getWorldLocation().distance(obj.getWorldLocation());
+		return avatar.getWorldLocation().distance(obj.getWorldLocation());
 	}
 
 	/** returns distance from a vector3f point to a GameObject */
@@ -573,7 +595,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public Vector3f getPlayerPosition() {
-		return dol.getWorldLocation();
+		return avatar.getWorldLocation();
 	}
 
 	public void setIsConnected(boolean value) {
@@ -591,5 +613,22 @@ public class MyGame extends VariableFrameRateGame {
 				protClient.sendByeMessage();
 			}
 		}
+	}
+
+	private void runScript(File scriptFile) {
+		try {
+			FileReader fileReader = new FileReader(scriptFile);
+			jsEngine.eval(fileReader);
+			fileReader.close();
+		}
+		catch (FileNotFoundException e1) { System.out.println(scriptFile + " not found " + e1); }
+		catch (IOException e2) { System.out.println("IO problem with " + scriptFile + e2); }
+		catch (ScriptException e3) { System.out.println("ScriptException in " + scriptFile + e3); }
+		catch (NullPointerException e4) { System.out.println ("Null ptr exception reading " + scriptFile + e4);}
+	}
+	private void mapHeight(GameObject object){
+		Vector3f loc = object.getWorldLocation();
+		float height = ground.getHeight(loc.x(), loc.z());
+		object.setLocalLocation(new Vector3f(loc.x(), (height +2.0f), loc.z()));
 	}
 }
