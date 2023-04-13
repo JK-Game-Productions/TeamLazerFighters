@@ -3,6 +3,9 @@ package client;
 import net.java.games.input.Component;
 import java.util.Random;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+
 import tage.*;
 import tage.shapes.*;
 import tage.input.*;
@@ -65,6 +68,7 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolType serverProtocol;
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false;
+	private ScriptEngine jsEngine;
 
 	public MyGame(String serverAddress, int serverPort, String protocol) {
 		super();
@@ -78,6 +82,10 @@ public class MyGame extends VariableFrameRateGame {
 			this.serverProtocol = ProtocolType.UDP;
 
 		objects = new Vector<>();
+
+		//Script Engine initializer
+		ScriptEngineManager factory = new ScriptEngineManager();
+		jsEngine = factory.getEngineByName("js");
 	}
 
 	public static void main(String[] args) {// if these args are not hard coded, it doesn't work
@@ -442,7 +450,6 @@ public class MyGame extends VariableFrameRateGame {
 
 		// process the networking functions
 		processNetworking((float) elapsTime);
-		// update ghosts???
 	}
 
 	private void positionCameraBehindAvatar() {
@@ -557,6 +564,7 @@ public class MyGame extends VariableFrameRateGame {
 			System.out.println("sending join message to protocol host");
 			protClient.sendJoinMessage();
 		}
+
 	}
 
 	protected void processNetworking(float elapsTime) { // Process packets received by the client from the server
@@ -570,6 +578,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void setIsConnected(boolean value) {
 		this.isClientConnected = value;
+	}
+
+	public ProtocolClient getProtoClient() {
+		return protClient;
 	}
 
 	private class SendCloseConnectionPacketAction extends AbstractInputAction {
