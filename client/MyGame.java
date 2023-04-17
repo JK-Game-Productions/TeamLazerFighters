@@ -1,6 +1,7 @@
 package client;
 
 import org.joml.*;
+import org.w3c.dom.events.MouseEvent;
 
 import tage.*;
 import tage.input.*;
@@ -51,12 +52,15 @@ public class MyGame extends VariableFrameRateGame {
 	private int score = 0;
 	private int serverPort;
 	private int lakeIslands;
+	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX,centerY;
 	private boolean paused = false;
 	private boolean endGame = false;
+	private boolean isRecentering;
 	private boolean isClientConnected = false;
 	private float trailLength = -2.0f;
 	private float distToP1, distToP2, distToP3, distToP4;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
+	private Robot robot;
 	// private int fluffyClouds;
 
 	// object variables
@@ -621,5 +625,49 @@ public class MyGame extends VariableFrameRateGame {
 		} catch (NullPointerException e4) {
 			System.out.println("Null ptr exception reading " + scriptFile + e4);
 		}
+	}
+	// --------------------- MOUSE MANAGMENT -------------------- //
+	private void initMouseMode() {
+		RenderSystem rs = engine.getRenderSystem();
+		Viewport vw = rs.getViewport("LEFT");
+		float left = vw.getActualLeft();
+		float bottom = vw.getActualBottom();
+		float width = vw.getActualWidth();
+		float height = vw.getActualHeight();
+
+		centerX = (int)(left + width/2);
+		centerY = (int)(bottom - height/2);
+
+		isRecentering = false;
+
+		try {
+			robot = new Robot();
+		} catch (AWTException ex) {
+			throw new RuntimeException("Couldnt create robot");
+		}
+
+		recenterMouse();
+		prevMouseX = centerX;
+		prevMouseY = centerY;
+
+		/* To be a cross hair
+		 Image ch = new ImageIcon("./assets/textures/...").getImage();
+		 Cursor crossHair = Toolkit.getDefaultToolkit().createCustomeCursor(ch, new Point(0,0), "CrossHair");
+		 canvas = rs.getCanvas();
+		 canvas.setCursor(crossHair);
+		 */
+	}
+	private void recenterMouse() {
+		RenderSystem rs = engine.getRenderSystem();
+		Viewport vw = rs.getViewport("LEFT");
+		float left = vw.getActualLeft();
+		float bottom = vw.getActualBottom();
+		float width = vw.getActualWidth();
+		float height = vw.getActualHeight();
+		int centerX = (int)(left+width/2.0f);
+		int centerY = (int)(bottom - height/2.0f);
+
+		isRecentering = true;
+		robot.mouseMove((int)centerX,(int)centerY);
 	}
 }
