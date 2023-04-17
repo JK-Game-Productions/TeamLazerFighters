@@ -10,8 +10,10 @@ import tage.input.action.*;
 
 import java.io.*;
 import java.util.*;
+import java.awt.Robot;
 import java.util.Random;
 import java.net.InetAddress;
+import java.awt.AWTException;
 import java.net.UnknownHostException;
 
 import javax.script.ScriptEngine;
@@ -35,6 +37,7 @@ public class MyGame extends VariableFrameRateGame {
 	private InputManager im;
 	private GhostManager gm;
 
+	private Robot robot;
 	private File scriptFile1;
 	private String serverAddress;
 	private CameraOrbit3D orbitCam;
@@ -52,7 +55,7 @@ public class MyGame extends VariableFrameRateGame {
 	private int score = 0;
 	private int serverPort;
 	private int lakeIslands;
-	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX,centerY;
+	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
 	private boolean paused = false;
 	private boolean endGame = false;
 	private boolean isRecentering;
@@ -60,7 +63,6 @@ public class MyGame extends VariableFrameRateGame {
 	private float trailLength = -2.0f;
 	private float distToP1, distToP2, distToP3, distToP4;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
-	private Robot robot;
 	// private int fluffyClouds;
 
 	// object variables
@@ -626,6 +628,7 @@ public class MyGame extends VariableFrameRateGame {
 			System.out.println("Null ptr exception reading " + scriptFile + e4);
 		}
 	}
+
 	// --------------------- MOUSE MANAGMENT -------------------- //
 	private void initMouseMode() {
 		RenderSystem rs = engine.getRenderSystem();
@@ -635,8 +638,8 @@ public class MyGame extends VariableFrameRateGame {
 		float width = vw.getActualWidth();
 		float height = vw.getActualHeight();
 
-		centerX = (int)(left + width/2);
-		centerY = (int)(bottom - height/2);
+		centerX = (int) (left + width / 2);
+		centerY = (int) (bottom - height / 2);
 
 		isRecentering = false;
 
@@ -650,13 +653,16 @@ public class MyGame extends VariableFrameRateGame {
 		prevMouseX = centerX;
 		prevMouseY = centerY;
 
-		/* To be a cross hair
-		 Image ch = new ImageIcon("./assets/textures/...").getImage();
-		 Cursor crossHair = Toolkit.getDefaultToolkit().createCustomeCursor(ch, new Point(0,0), "CrossHair");
-		 canvas = rs.getCanvas();
-		 canvas.setCursor(crossHair);
+		/*
+		 * To be a cross hair
+		 * Image ch = new ImageIcon("./assets/textures/...").getImage();
+		 * Cursor crossHair = Toolkit.getDefaultToolkit().createCustomeCursor(ch, new
+		 * Point(0,0), "CrossHair");
+		 * canvas = rs.getCanvas();
+		 * canvas.setCursor(crossHair);
 		 */
 	}
+
 	private void recenterMouse() {
 		RenderSystem rs = engine.getRenderSystem();
 		Viewport vw = rs.getViewport("LEFT");
@@ -664,10 +670,10 @@ public class MyGame extends VariableFrameRateGame {
 		float bottom = vw.getActualBottom();
 		float width = vw.getActualWidth();
 		float height = vw.getActualHeight();
-		int centerX = (int)(left+width/2.0f);
-		int centerY = (int)(bottom - height/2.0f);
+		int centerX = (int) (left + width / 2.0f);
+		int centerY = (int) (bottom - height / 2.0f);
 
 		isRecentering = true;
-		robot.mouseMove((int)centerX,(int)centerY);
+		robot.mouseMove((int) centerX, (int) centerY);
 	}
 }
