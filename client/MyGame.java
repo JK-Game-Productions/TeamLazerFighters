@@ -10,6 +10,7 @@ import tage.input.action.*;
 
 import java.io.*;
 import java.util.*;
+import java.awt.*;
 import java.awt.Robot;
 import java.util.Random;
 import java.net.InetAddress;
@@ -19,6 +20,7 @@ import java.net.UnknownHostException;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.ScriptEngineManager;
+import javax.swing.*;
 
 import net.java.games.input.Component;
 import tage.nodeControllers.FlattenController;
@@ -69,6 +71,7 @@ public class MyGame extends VariableFrameRateGame {
 	private GameObject avatar, lazergun, prize1, prize2, prize3, prize4, ground, x, y, z;
 	private ObjShape ghostS, avatarS, lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS;
 	private TextureImage ghostT, avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river;
+	private boolean cameraSetUp = false;
 
 	// ----------------------------------------------------------------------------
 
@@ -303,6 +306,8 @@ public class MyGame extends VariableFrameRateGame {
 
 		// ------------------- Input Setup ------------------- //
 
+		initMouseMode();
+
 		TurnAction turnAction = new TurnAction(this);
 		MoveAction moveAction = new MoveAction(this);
 		PauseAction pauseAction = new PauseAction(this);
@@ -311,10 +316,8 @@ public class MyGame extends VariableFrameRateGame {
 		ToggleTransparentAction transAction = new ToggleTransparentAction(this, x, y, z);
 
 		// Keyboard Actions ---------------------------------------------------
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.A, turnAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.D, turnAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		//im.associateActionWithAllKeyboards(Component.Identifier.Key.A, turnAction,InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		//im.associateActionWithAllKeyboards(Component.Identifier.Key.D, turnAction,InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.W, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.S, moveAction,
@@ -553,6 +556,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void positionCameraBehindAvatar() {
+		if(!cameraSetUp) {
 		Matrix4f w = avatar.getWorldTranslation();
 		Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
 		Vector4f v = new Vector4f(0f, 1f, 0f, 1f);
@@ -571,8 +575,11 @@ public class MyGame extends VariableFrameRateGame {
 		cam.setU(new Vector3f(u.x(), u.y(), u.z()));
 		cam.setV(new Vector3f(v.x(), v.y(), v.z()));
 		cam.setN(new Vector3f(n.x(), n.y(), n.z()));
-
-	}// END Custom Functions
+		cameraSetUp = true;
+		}
+		camMain.setLocation(avatar.getWorldLocation());
+	}
+	// END Custom Functions
 
 	// -------------------------- GETTERS & SETTERS --------------------------
 	public GameObject getDolphin() {
@@ -653,14 +660,13 @@ public class MyGame extends VariableFrameRateGame {
 		prevMouseX = centerX;
 		prevMouseY = centerY;
 
-		/*
-		 * To be a cross hair
-		 * Image ch = new ImageIcon("./assets/textures/...").getImage();
-		 * Cursor crossHair = Toolkit.getDefaultToolkit().createCustomeCursor(ch, new
-		 * Point(0,0), "CrossHair");
-		 * canvas = rs.getCanvas();
-		 * canvas.setCursor(crossHair);
-		 */
+		
+		 //To be a cross hair
+		 Image ch = new ImageIcon("./assets/textures/Blue-Crosshair-1.png").getImage();
+		Cursor crossHair = Toolkit.getDefaultToolkit().createCustomCursor(ch, new Point(0,0), "CrossHair");
+		Canvas canvas = rs.getGLCanvas();
+		canvas.setCursor(crossHair);
+		 
 	}
 
 	private void recenterMouse() {
@@ -675,5 +681,68 @@ public class MyGame extends VariableFrameRateGame {
 
 		isRecentering = true;
 		robot.mouseMove((int) centerX, (int) centerY);
+	}
+
+	@Override
+	public void mouseMoved(java.awt.event.MouseEvent e) {
+		if (isRecentering && centerX == e.getXOnScreen() && centerY == e.getYOnScreen()) {
+			isRecentering = false;
+		} else {
+			curMouseX = e.getXOnScreen();
+			curMouseY = e.getYOnScreen();
+			float mouseDeltaX = prevMouseX - curMouseX;
+			float mouseDeltaY = prevMouseY - curMouseY;
+			avatar.yaw(mouseDeltaX);
+			yaw(mouseDeltaX);
+			pitch(mouseDeltaY);
+			prevMouseX = curMouseX;
+			prevMouseY = curMouseY;
+
+			recenterMouse();
+			prevMouseX = centerX;
+			prevMouseY = centerY;
+		}
+	}
+
+	private void pitch(float mouseDeltaY) {
+		float tilt;
+		Camera c = engine.getRenderSystem().getViewport("LEFT").getCamera();
+		Vector3f rightVector = c.getU();
+		Vector3f upVector = c.getV();
+		Vector3f fwdVector = c.getN();
+
+		if (mouseDeltaY < 0.0)
+			tilt = -1.0f;
+		else if (mouseDeltaY > 0.0)
+			tilt = 1.0f;
+		else
+			tilt = 0.0f;
+
+		upVector.rotateAxis(0.01f * tilt, rightVector.x(), rightVector.y(), rightVector.z());
+		fwdVector.rotateAxis(0.01f * tilt, rightVector.x(), rightVector.y(), rightVector.z());
+
+		c.setV(upVector);
+		c.setN(fwdVector);
+	}
+
+	private void yaw(float mouseDeltaX) {
+		float tilt;
+		Camera c = engine.getRenderSystem().getViewport("LEFT").getCamera();
+		Vector3f rightVector = c.getU();
+		Vector3f upVector = c.getV();
+		Vector3f fwdVector = c.getN();
+
+		if (mouseDeltaX < 0.0)
+			tilt = -1.0f;
+		else if (mouseDeltaX > 0.0)
+			tilt = 1.0f;
+		else
+			tilt = 0.0f;
+
+		rightVector.rotateAxis(0.01f * tilt, upVector.x(), upVector.y(), upVector.z());
+		fwdVector.rotateAxis(0.01f * tilt, upVector.x(), upVector.y(), upVector.z());
+
+		c.setU(rightVector);
+		c.setN(fwdVector);
 	}
 }
