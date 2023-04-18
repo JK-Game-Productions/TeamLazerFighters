@@ -1,12 +1,13 @@
 {
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "c:\\javagaming\\jbullet\\jbullet.jar",
-        "c:\\javagaming\\jinput\\jinput.jar",
-        "c:\\javagaming\\jogl\\gluegen-rt.jar",
-        "c:\\javagaming\\jogl\\joal.jar",
-        "c:\\javagaming\\jogl\\jogl-all.jar",
-        "c:\\javagaming\\joml\\joml-1.10.0.jar",
-        "c:\\javagaming\\vecmath\\vecmath.jar"
-    ]
+  "java.project.referencedLibraries": [
+    "lib/**/*.jar",
+    "c:\\javagaming\\jbullet\\jbullet.jar",
+    "c:\\javagaming\\jinput\\jinput.jar",
+    "c:\\javagaming\\jogl\\gluegen-rt.jar",
+    "c:\\javagaming\\jogl\\joal.jar",
+    "c:\\javagaming\\jogl\\jogl-all.jar",
+    "c:\\javagaming\\joml\\joml-1.10.0.jar",
+    "c:\\javagaming\\vecmath\\vecmath.jar"
+  ],
+  "cSpell.words": ["curr", "elaps", "Gamepad", "Tage"]
 }

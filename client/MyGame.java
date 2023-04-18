@@ -1,79 +1,84 @@
 package client;
 
-import net.java.games.input.Component;
-import java.util.Random;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import org.joml.*;
+import org.w3c.dom.events.MouseEvent;
 
 import tage.*;
-import tage.shapes.*;
 import tage.input.*;
+import tage.shapes.*;
 import tage.input.action.*;
-
-import java.lang.Math;
-import java.awt.*;
-
-import java.awt.event.*;
 
 import java.io.*;
 import java.util.*;
+import java.awt.Robot;
+import java.util.Random;
 import java.net.InetAddress;
-
+import java.awt.AWTException;
 import java.net.UnknownHostException;
 
-import org.joml.*;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
+import javax.script.ScriptEngineManager;
 
-import net.java.games.input.*;
-import net.java.games.input.Component.Identifier.*;
-import tage.networking.IGameConnection.ProtocolType;
+import net.java.games.input.Component;
 import tage.nodeControllers.FlattenController;
 import tage.nodeControllers.RotationController;
+import tage.networking.IGameConnection.ProtocolType;
 
 public class MyGame extends VariableFrameRateGame {
+
 	// Static Variables
 	private static Engine engine;
-	private static Camera camMain, camSma;
+	private static Camera camMain;
 	private static Random rand = new Random();
 
-	// Basic Variables
-	private boolean paused = false;
-	private boolean newTarget = true;
-	private boolean endGame = false;
-	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
-	private float distToP1, distToP2, distToP3, distToP4;
-	private float trailLength = -2.0f;
-	private int score = 0;
-	private int width;
-	// private int fluffyClouds;
-	private int lakeIslands;
-
 	// Tage Class Variables
-	private CameraOrbit3D orbitCam;
-	private InputManager im;
-	private GameObject avatar, lazergun, prize1, prize2, prize3, prize4, ground, x, y, z, lastTarget,
-			nextTarget,
-			lastestTarget;
-	private Vector<GameObject> objects;
-	private ObjShape ghostS, avatarS, lazergunS, prize1S, prize2S, prize3S, prize4S, groundS, linxS, linyS, linzS,
-			terrS;
-	private TextureImage ghostT, avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river;
 	private Light light1;
+	private InputManager im;
+	private GhostManager gm;
+
+	private Robot robot;
+	private File scriptFile1;
+	private String serverAddress;
+	private CameraOrbit3D orbitCam;
 	private Vector3f lastCamLocation;
+	private ProtocolClient protClient;
+	private Vector<GameObject> objects;
 	private NodeController rc1, rc2, rc3, rc4, fc;
 
-	private GhostManager gm;
-	private String serverAddress;
-	private int serverPort;
-	private ProtocolType serverProtocol;
-	private ProtocolClient protClient;
-	private boolean isClientConnected = false;
+	// network & script variables
 	private ScriptEngine jsEngine;
-	private File scriptFile1;
+	private ProtocolType serverProtocol;
+
+	// Basic Variables
+	private int width;
+	private int score = 0;
+	private int serverPort;
+	private int lakeIslands;
+	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
+	private boolean paused = false;
+	private boolean endGame = false;
+	private boolean isRecentering;
+	private boolean isClientConnected = false;
+	private float trailLength = -2.0f;
+	private float distToP1, distToP2, distToP3, distToP4;
+	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
+	// private int fluffyClouds;
+
+	// object variables
+	private GameObject avatar, lazergun, prize1, prize2, prize3, prize4, ground, x, y, z;
+	private ObjShape ghostS, avatarS, lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS;
+	private TextureImage ghostT, avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river;
+
+	// ----------------------------------------------------------------------------
 
 	public MyGame(String serverAddress, int serverPort, String protocol) {
 		super();
+
+		// Script Engine initializer
+		ScriptEngineManager factory = new ScriptEngineManager();
+		jsEngine = factory.getEngineByName("js");
+
 		// ghost manager and server initialization
 		gm = new GhostManager(this);
 		this.serverAddress = serverAddress;
@@ -82,32 +87,30 @@ public class MyGame extends VariableFrameRateGame {
 			this.serverProtocol = ProtocolType.TCP;
 		else
 			this.serverProtocol = ProtocolType.UDP;
-
-		objects = new Vector<>();
-
-		// Script Engine initializer
-		ScriptEngineManager factory = new ScriptEngineManager();
-		jsEngine = factory.getEngineByName("js");
 	}
 
-	public static void main(String[] args) {// if these args are not hard coded, it doesn't work
+	// ----------------------------------------------------------------------------
+
+	public static void main(String[] args) {
 		MyGame game = new MyGame(args[0], Integer.parseInt(args[1]), args[2]);
 		engine = new Engine(game);
 		game.initializeSystem();
 		game.game_loop();
 	}
 
+	// ----------------------------------------------------------------------------
+
 	// VariableFrameRate Game Overrides
 	@Override
 	public void loadShapes() {
 		avatarS = new ImportedModel("man4.obj");
+		ghostS = avatarS;
+
 		lazergunS = new ImportedModel("lazergun.obj");
-		ghostS = lazergunS;
 		prize1S = new Torus();
 		prize2S = new Cube();
 		prize3S = new Sphere();
 		prize4S = new HexBlock();
-		groundS = new Plane();
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(50f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 50f, 0f));
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 50f));
@@ -117,8 +120,9 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadTextures() {
 		avatartx = new TextureImage("man4.png");
+		ghostT = avatartx;
+
 		lazerguntx = new TextureImage("lazergun.png");
-		ghostT = lazerguntx;
 		p2tx = new TextureImage("gold_energy.jpg");
 		p1tx = new TextureImage("tex_Water.jpg");
 		p4tx = new TextureImage("rooffrance.jpg");
@@ -132,6 +136,7 @@ public class MyGame extends VariableFrameRateGame {
 		Matrix4f initialTranslation, initialScale;
 		jsEngine.put("rand", rand);
 		scriptFile1 = new File("assets/scripts/RandomTranslation.js");
+
 		// build the ground
 		ground = new GameObject(GameObject.root(), terrS, groundtx);
 		initialTranslation = (new Matrix4f().translation(0f, 0, 0f));
@@ -153,46 +158,48 @@ public class MyGame extends VariableFrameRateGame {
 		initialScale = (new Matrix4f()).scaling(0.30f);
 		lazergun.setLocalTranslation(initialTranslation);
 		lazergun.setLocalScale(initialScale);
-		
 
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
 		jsEngine.put("object", prize1);
 		this.runScript(scriptFile1);
-		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
+		// initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) +
+		// (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(3.0f);
-		//prize1.setLocalTranslation(initialTranslation);
+		// prize1.setLocalTranslation(initialTranslation);
 		prize1.setLocalScale(initialScale);
 		prize1.getRenderStates().setTiling(1);
-		
-		
+
 		// build prize 2
 		prize2 = new GameObject(GameObject.root(), prize2S, p2tx);
 		jsEngine.put("object", prize2);
 		this.runScript(scriptFile1);
-		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
+		// initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) +
+		// (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(2.0f);
-		//prize2.setLocalTranslation(initialTranslation);
+		// prize2.setLocalTranslation(initialTranslation);
 		prize2.setLocalScale(initialScale);
-		
+
 		// build prize 3
 		prize3 = new GameObject(GameObject.root(), prize3S, johntx);
 		jsEngine.put("object", prize3);
 		this.runScript(scriptFile1);
-		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
+		// initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) +
+		// (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(3.5f, 2.0f, 3.5f);
-		//prize3.setLocalTranslation(initialTranslation);
+		// prize3.setLocalTranslation(initialTranslation);
 		prize3.setLocalScale(initialScale);
-		
+
 		// build prize 4
 		prize4 = new GameObject(GameObject.root(), prize4S, p4tx);
 		jsEngine.put("object", prize4);
 		this.runScript(scriptFile1);
-		//initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) + (-100)), 2f, (rand.nextInt(200) + (-100)));
+		// initialTranslation = (new Matrix4f()).translation((rand.nextInt(200) +
+		// (-100)), 2f, (rand.nextInt(200) + (-100)));
 		initialScale = (new Matrix4f()).scaling(4.0f, 2.0f, 4.0f);
-		//prize4.setLocalTranslation(initialTranslation);
+		// prize4.setLocalTranslation(initialTranslation);
 		prize4.setLocalScale(initialScale);
-		
+
 		// build world axes
 		x = new GameObject(GameObject.root(), linxS);
 		y = new GameObject(GameObject.root(), linyS);
@@ -202,6 +209,7 @@ public class MyGame extends VariableFrameRateGame {
 		(z.getRenderStates()).setColor(new Vector3f(0f, 0f, 1f));
 
 		// add objects to vector
+		objects = new Vector<>();
 		objects.add(avatar);
 		objects.add(prize1);
 		objects.add(prize2);
@@ -228,56 +236,51 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void createViewports() {
 		(engine.getRenderSystem()).addViewport("LEFT", 0, 0, 1f, 1f);
-		(engine.getRenderSystem()).addViewport("RIGHT", .75f, 0, .25f, .25f);
 
 		Viewport leftVp = (engine.getRenderSystem()).getViewport("LEFT");
-		Viewport rightVp = (engine.getRenderSystem()).getViewport("RIGHT");
 		Camera leftCamera = leftVp.getCamera();
-		Camera rightCamera = rightVp.getCamera();
-
-		rightVp.setHasBorder(true);
-		rightVp.setBorderWidth(4);
-		rightVp.setBorderColor(0.0f, 1.0f, 0.0f);
 
 		leftCamera.setLocation(new Vector3f(-2, 0, 2));
 		leftCamera.setU(new Vector3f(1, 0, 0));
 		leftCamera.setV(new Vector3f(0, 1, 0));
 		leftCamera.setN(new Vector3f(0, 0, -1));
-
-		rightCamera.setLocation(new Vector3f(0, 3, 0));
-		rightCamera.setU(new Vector3f(1, 0, 0));
-		rightCamera.setV(new Vector3f(0, 0, -1));
-		rightCamera.setN(new Vector3f(0, -1, 0));
 	}
 
 	@Override
 	public void initializeGame() {
-		lastFrameTime = System.currentTimeMillis();
-		currFrameTime = System.currentTimeMillis();
-		
-		elapsTime = 0.0;
-		//elapsTime = ((Double)(jsEngine.get("time")));
+
+		// elapsTime = ((Double)(jsEngine.get("time")));
+
+		// ----------------- set window size ----------------- //
 		(engine.getRenderSystem()).setWindowDimensions(1920, 1080);
 
-		// ------------- camera init -------------
-		im = engine.getInputManager();
-		camMain = (engine.getRenderSystem().getViewport("LEFT").getCamera());
-		camSma = (engine.getRenderSystem().getViewport("RIGHT").getCamera());
-		camSma.setCameraDist(5.0f);
-		camSma.setUpViewport();
-		orbitCam = new CameraOrbit3D(camMain, avatar, im, engine);
-		
-
-		// ----------------- initialize camera ----------------
-		// positionCameraBehindAvatar();
-
-		// ---------------- game logic --------------------//
+		// -------------------- variables -------------------- //
 		score = 0;
-		nextTarget = null;
+		elapsTime = 0.0;
+		im = engine.getInputManager();
+		lastFrameTime = System.currentTimeMillis();
+		currFrameTime = System.currentTimeMillis();
+
+		// add a toggle function that can toggle between using
+		// a regular camera and an orbit camera
+
+		// ---------------- initialize camera ---------------- //
+		camMain = (engine.getRenderSystem().getViewport("LEFT").getCamera());
+		positionCameraBehindAvatar();
+
+		// ------------------- orbit camera ------------------ //
+		// String gpName = im.getFirstGamepadName();
+		// orbitCam = new CameraOrbit3D(camMain, avatar, gpName, engine);
+
+		// --------------- initialize network ---------------- //
+		setupNetworking();
+
+		// -------------------- game logic ------------------- //
 		distToP1 = distanceToObject(prize1);
 		distToP2 = distanceToObject(prize2);
 		distToP3 = distanceToObject(prize3);
 		distToP4 = distanceToObject(prize4);
+
 		// Rotational Controllers
 		rc1 = new RotationController(engine, new Vector3f(0, 1, 0), 0.001f);
 		rc1.addTarget(prize1);
@@ -298,17 +301,16 @@ public class MyGame extends VariableFrameRateGame {
 		fc.addTarget(avatar);
 		(engine.getSceneGraph()).addNodeController(fc);
 
-		// --------------Input Zone-----------------//
+		// ------------------- Input Setup ------------------- //
 
 		TurnAction turnAction = new TurnAction(this);
 		MoveAction moveAction = new MoveAction(this);
 		PauseAction pauseAction = new PauseAction(this);
 		// StrafeAction strafeAction = new StrafeAction(this);
-		PanCameraAction panAction = new PanCameraAction(this);
 		ZoomCameraAction zoomAction = new ZoomCameraAction(this);
 		ToggleTransparentAction transAction = new ToggleTransparentAction(this, x, y, z);
 
-		// Keyboard Actions
+		// Keyboard Actions ---------------------------------------------------
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.A, turnAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.D, turnAction,
@@ -317,53 +319,28 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.S, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.J, panAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.L, panAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.I, panAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.K, panAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.COMMA, zoomAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.PERIOD, zoomAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.T, transAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
-
-		// Extra keyboard actions
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.P, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		// add strafe
 
-		// Gamepad Actions
+		// Gamepad Actions ----------------------------------------------------
 		im.associateActionWithAllGamepads(Component.Identifier.Axis.X, turnAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Axis.Y, moveAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllGamepads(Component.Identifier.Button._0, panAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllGamepads(Component.Identifier.Button._1, panAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllGamepads(Component.Identifier.Button._2, panAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllGamepads(Component.Identifier.Button._3, panAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Axis.Z, zoomAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Button._6, transAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
-		// Extra Gamepad Actions
 		im.associateActionWithAllGamepads(Component.Identifier.Button._7, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		// add strafe
-
-		setupNetworking();
-	}
-
-	public GameObject getAvatar() {
-		return avatar;
 	}
 
 	@Override
@@ -373,13 +350,23 @@ public class MyGame extends VariableFrameRateGame {
 		frameDiff = (currFrameTime - lastFrameTime) / 1000.0;
 		width = (engine.getRenderSystem()).getWidth();
 
+		// will need to find a way to make the map height
+		// translate to the ghost avatars
+		mapHeight(avatar);
+		mapHeight(lazergun);
+		mapHeight(prize1);
+		mapHeight(prize2);
+		mapHeight(prize3);
+		mapHeight(prize4);
+
 		if (paused)
 			im.update((float) elapsTime);
 		if (!paused && !endGame) {
 			elapsTime += frameDiff;
 			im.update((float) elapsTime);
 
-			orbitCam.updateCameraPosition();
+			// orbitCam.updateCameraPosition();
+			positionCameraBehindAvatar();
 
 			distToP1 = distanceToDolphin(prize1);
 			distToP2 = distanceToDolphin(prize2);
@@ -434,13 +421,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		} // pause scope and end game cutoff
 
-		mapHeight(avatar);
-		mapHeight(lazergun);
-		mapHeight(prize1);
-		mapHeight(prize2);
-		mapHeight(prize3);
-		mapHeight(prize4);
-			// build and set HUD
+		// build and set HUD
 		/*
 		 * time
 		 * int elapsTimeSec = Math.round((float)elapsTime);
@@ -455,6 +436,7 @@ public class MyGame extends VariableFrameRateGame {
 		 * Vector3f clockcolor = new Vector3f(1,1,1);
 		 */
 
+		// update HUD variables
 		String scoreStr = "Score: " + Integer.toString(score);
 		String dolLocStr = "X: " + avatar.getWorldLocation().x() + "  Z: " + avatar.getWorldLocation().z();
 		Vector3f dolLocColor = new Vector3f(1, 1, 1);
@@ -472,52 +454,59 @@ public class MyGame extends VariableFrameRateGame {
 
 		// process the networking functions
 		processNetworking((float) elapsTime);
+
+	} // END Update
+		// END VariableFrameRate Game Overrides
+
+	// -------------------------- NETWORKING SECTION --------------------------
+
+	private void setupNetworking() {
+		isClientConnected = false;
+		try {
+			protClient = new ProtocolClient(InetAddress.getByName(serverAddress), serverPort, serverProtocol, this);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (protClient == null) {
+			System.out.println("missing protocol host");
+		} else { // Send the initial join message with a unique identifier for this client
+			System.out.println("sending join message to protocol host");
+			protClient.sendJoinMessage();
+		}
 	}
 
-	private void positionCameraBehindAvatar() {
-		Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
-		Vector4f v = new Vector4f(0f, 1f, 0f, 1f);
-		Vector4f n = new Vector4f(0f, 0f, 1f, 1f);
-		u.mul(avatar.getWorldRotation());
-		v.mul(avatar.getWorldRotation());
-		n.mul(avatar.getWorldRotation());
-		Matrix4f w = avatar.getWorldTranslation();
-		Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
-		position.add(-n.x() * 2f, -n.y() * 2f, -n.z() * 2f);
-		position.add(v.x() * .75f, v.y() * .75f, v.z() * .75f);
-		Camera c = (engine.getRenderSystem()).getViewport("LEFT").getCamera();
-		c.setLocation(position);
-		c.setU(new Vector3f(u.x(), u.y(), u.z()));
-		c.setV(new Vector3f(v.x(), v.y(), v.z()));
-		c.setN(new Vector3f(n.x(), n.y(), n.z()));
+	// network custom functions ------------
+	protected void processNetworking(float elapsTime) { // Process packets received by the client from the server
+		if (protClient != null)
+			protClient.processPackets();
 	}
 
-	// getters
-	public GameObject getDolphin() {
-		return avatar;
+	// network getters ---------------------
+	public Vector3f getPlayerPosition() {
+		return avatar.getWorldLocation();
 	}
 
-	public Engine getEngine() {
-		return engine;
+	public ProtocolClient getProtoClient() {
+		return protClient;
 	}
 
-	public static Camera getMainCamera() {
-		return camMain;
+	// network setters ---------------------
+	public void setIsConnected(boolean value) {
+		this.isClientConnected = value;
 	}
 
-	public static Camera getSmallCamera() {
-		return camSma;
-	}
+	private class SendCloseConnectionPacketAction extends AbstractInputAction {
+		@Override
+		public void performAction(float time, net.java.games.input.Event evt) {
+			if (protClient != null && isClientConnected == true) {
+				protClient.sendByeMessage();
+			}
+		}
+	}// END Networking Section
 
-	public void togglePause() {
-		paused = !paused;
-	}
-
-	public float getFrameDiff() {
-		return (float) frameDiff;
-	}
-
-	// Custom Functions
+	// --------------------------- CUSTOM FUNCTIONS ---------------------------
 
 	/**
 	 * returns distance of any inputted GameObject to the current/main camera
@@ -557,7 +546,50 @@ public class MyGame extends VariableFrameRateGame {
 		return true;
 	}
 
-	// ---------- NETWORKING SECTION ----------------
+	private void mapHeight(GameObject object) {
+		Vector3f loc = object.getWorldLocation();
+		float height = ground.getHeight(loc.x(), loc.z());
+		object.setLocalLocation(new Vector3f(loc.x(), (height + 2.0f), loc.z()));
+	}
+
+	private void positionCameraBehindAvatar() {
+		Matrix4f w = avatar.getWorldTranslation();
+		Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
+		Vector4f v = new Vector4f(0f, 1f, 0f, 1f);
+		Vector4f n = new Vector4f(0f, 0f, 1f, 1f);
+		Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
+		Camera cam = (engine.getRenderSystem()).getViewport("LEFT").getCamera();
+
+		u.mul(avatar.getWorldRotation());
+		v.mul(avatar.getWorldRotation());
+		n.mul(avatar.getWorldRotation());
+
+		position.add(n.x() * 0.3f, n.y() * 0.3f, n.z() * 0.3f);
+		position.add(v.x() * .95f, v.y() * .95f, v.z() * .95f);
+
+		cam.setLocation(position);
+		cam.setU(new Vector3f(u.x(), u.y(), u.z()));
+		cam.setV(new Vector3f(v.x(), v.y(), v.z()));
+		cam.setN(new Vector3f(n.x(), n.y(), n.z()));
+
+	}// END Custom Functions
+
+	// -------------------------- GETTERS & SETTERS --------------------------
+	public GameObject getDolphin() {
+		return avatar;
+	}
+
+	public GameObject getAvatar() {
+		return avatar;
+	}
+
+	public Engine getEngine() {
+		return engine;
+	}
+
+	public static Camera getMainCamera() {
+		return camMain;
+	}
 
 	public ObjShape getGhostShape() {
 		return ghostS;
@@ -571,64 +603,77 @@ public class MyGame extends VariableFrameRateGame {
 		return gm;
 	}
 
-	private void setupNetworking() {
-		isClientConnected = false;
-		try {
-			protClient = new ProtocolClient(InetAddress.getByName(serverAddress), serverPort, serverProtocol, this);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if (protClient == null) {
-			System.out.println("missing protocol host");
-		} else { // Send the initial join message with a unique identifier for this client
-			System.out.println("sending join message to protocol host");
-			protClient.sendJoinMessage();
-		}
-
+	public void togglePause() {
+		paused = !paused;
 	}
 
-	protected void processNetworking(float elapsTime) { // Process packets received by the client from the server
-		if (protClient != null)
-			protClient.processPackets();
-	}
+	public float getFrameDiff() {
+		return (float) frameDiff;
 
-	public Vector3f getPlayerPosition() {
-		return avatar.getWorldLocation();
-	}
+	}// END Getters & Setters
 
-	public void setIsConnected(boolean value) {
-		this.isClientConnected = value;
-	}
-
-	public ProtocolClient getProtoClient() {
-		return protClient;
-	}
-
-	private class SendCloseConnectionPacketAction extends AbstractInputAction {
-		@Override
-		public void performAction(float time, net.java.games.input.Event evt) {
-			if (protClient != null && isClientConnected == true) {
-				protClient.sendByeMessage();
-			}
-		}
-	}
-
+	// -------------------------- SCRIPTING SECTION --------------------------
 	private void runScript(File scriptFile) {
 		try {
 			FileReader fileReader = new FileReader(scriptFile);
 			jsEngine.eval(fileReader);
 			fileReader.close();
+		} catch (FileNotFoundException e1) {
+			System.out.println(scriptFile + " not found " + e1);
+		} catch (IOException e2) {
+			System.out.println("IO problem with " + scriptFile + e2);
+		} catch (ScriptException e3) {
+			System.out.println("ScriptException in " + scriptFile + e3);
+		} catch (NullPointerException e4) {
+			System.out.println("Null ptr exception reading " + scriptFile + e4);
 		}
-		catch (FileNotFoundException e1) { System.out.println(scriptFile + " not found " + e1); }
-		catch (IOException e2) { System.out.println("IO problem with " + scriptFile + e2); }
-		catch (ScriptException e3) { System.out.println("ScriptException in " + scriptFile + e3); }
-		catch (NullPointerException e4) { System.out.println ("Null ptr exception reading " + scriptFile + e4);}
 	}
-	private void mapHeight(GameObject object){
-		Vector3f loc = object.getWorldLocation();
-		float height = ground.getHeight(loc.x(), loc.z());
-		object.setLocalLocation(new Vector3f(loc.x(), (height +2.0f), loc.z()));
+
+	// --------------------- MOUSE MANAGMENT -------------------- //
+	private void initMouseMode() {
+		RenderSystem rs = engine.getRenderSystem();
+		Viewport vw = rs.getViewport("LEFT");
+		float left = vw.getActualLeft();
+		float bottom = vw.getActualBottom();
+		float width = vw.getActualWidth();
+		float height = vw.getActualHeight();
+
+		centerX = (int) (left + width / 2);
+		centerY = (int) (bottom - height / 2);
+
+		isRecentering = false;
+
+		try {
+			robot = new Robot();
+		} catch (AWTException ex) {
+			throw new RuntimeException("Couldnt create robot");
+		}
+
+		recenterMouse();
+		prevMouseX = centerX;
+		prevMouseY = centerY;
+
+		/*
+		 * To be a cross hair
+		 * Image ch = new ImageIcon("./assets/textures/...").getImage();
+		 * Cursor crossHair = Toolkit.getDefaultToolkit().createCustomeCursor(ch, new
+		 * Point(0,0), "CrossHair");
+		 * canvas = rs.getCanvas();
+		 * canvas.setCursor(crossHair);
+		 */
+	}
+
+	private void recenterMouse() {
+		RenderSystem rs = engine.getRenderSystem();
+		Viewport vw = rs.getViewport("LEFT");
+		float left = vw.getActualLeft();
+		float bottom = vw.getActualBottom();
+		float width = vw.getActualWidth();
+		float height = vw.getActualHeight();
+		int centerX = (int) (left + width / 2.0f);
+		int centerY = (int) (bottom - height / 2.0f);
+
+		isRecentering = true;
+		robot.mouseMove((int) centerX, (int) centerY);
 	}
 }
