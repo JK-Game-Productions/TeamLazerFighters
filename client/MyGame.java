@@ -700,8 +700,8 @@ public class MyGame extends VariableFrameRateGame {
 		float bottom = vw.getActualBottom();
 		float width = vw.getActualWidth();
 		float height = vw.getActualHeight();
-		int centerX = (int) (left + width / 2.0f);
-		int centerY = (int) (bottom - height / 2.0f);
+		centerX = (int) (left + width / 2.0f);
+		centerY = (int) (bottom - height / 2.0f);
 
 		isRecentering = true;
 		robot.mouseMove((int) centerX, (int) centerY);
