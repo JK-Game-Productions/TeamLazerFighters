@@ -574,28 +574,26 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void positionCameraBehindAvatar() {
+		Matrix4f w = avatar.getWorldTranslation();
+		Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
+		Vector4f v = new Vector4f(0f, 1f, 0f, 1f);
+		Vector4f n = new Vector4f(0f, 0f, 1f, 1f);
+		Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
+
+		v.mul(avatar.getWorldRotation());
+		n.mul(avatar.getWorldRotation());
+
+		position.add(n.x() * 0.3f, n.y() * 0.3f, n.z() * 0.3f);
+		position.add(v.x() * .95f, v.y() * .95f, v.z() * .95f);
+
 		if (!cameraSetUp) {
-			Matrix4f w = avatar.getWorldTranslation();
-			Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
-			Vector4f v = new Vector4f(0f, 1f, 0f, 1f);
-			Vector4f n = new Vector4f(0f, 0f, 1f, 1f);
-			Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
-			Camera cam = (engine.getRenderSystem()).getViewport("LEFT").getCamera();
-
 			u.mul(avatar.getWorldRotation());
-			v.mul(avatar.getWorldRotation());
-			n.mul(avatar.getWorldRotation());
-
-			position.add(n.x() * 0.3f, n.y() * 0.3f, n.z() * 0.3f);
-			position.add(v.x() * .95f, v.y() * .95f, v.z() * .95f);
-
-			cam.setLocation(position);
-			cam.setU(new Vector3f(u.x(), u.y(), u.z()));
-			cam.setV(new Vector3f(v.x(), v.y(), v.z()));
-			cam.setN(new Vector3f(n.x(), n.y(), n.z()));
+			camMain.setU(new Vector3f(u.x(), u.y(), u.z()));
+			camMain.setV(new Vector3f(v.x(), v.y(), v.z()));
+			camMain.setN(new Vector3f(n.x(), n.y(), n.z()));
 			cameraSetUp = true;
 		}
-		camMain.setLocation(avatar.getWorldLocation());
+		camMain.setLocation(position);
 	}
 	// END Custom Functions
 
@@ -662,7 +660,7 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}
 
-	// --------------------- MOUSE MANAGMENT -------------------- //
+	// --------------------- MOUSE MANAGEMENT -------------------- //
 	private void initMouseMode() {
 		RenderSystem rs = engine.getRenderSystem();
 		Viewport vw = rs.getViewport("LEFT");
@@ -679,7 +677,7 @@ public class MyGame extends VariableFrameRateGame {
 		try {
 			robot = new Robot();
 		} catch (AWTException ex) {
-			throw new RuntimeException("Couldnt create robot");
+			throw new RuntimeException("couldn't create robot");
 		}
 
 		recenterMouse();
