@@ -11,6 +11,7 @@ import tage.input.action.*;
 import java.io.*;
 import java.util.*;
 import java.awt.*;
+//import java.awt.Component;
 import java.awt.Robot;
 import java.util.Random;
 import java.net.InetAddress;
@@ -687,10 +688,13 @@ public class MyGame extends VariableFrameRateGame {
 
 		// To be a cross hair
 		Image ch = new ImageIcon("./assets/textures/Blue-Crosshair-1.png").getImage();
-		Cursor crossHair = Toolkit.getDefaultToolkit().createCustomCursor(ch, new Point(0, 0), "CrossHair");
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		Cursor clear = tk.createCustomCursor(tk.getImage(""), new Point(), "ClearCursor");
 		Canvas canvas = rs.getGLCanvas();
-		canvas.setCursor(crossHair);
-
+		canvas.setCursor(clear);
+		//rs.imageUpdate(ch, 1, (int)centerX, (int)centerY, ch.getWidth(null), ch.getHeight(null));
+		
+		
 	}
 
 	private void recenterMouse() {
