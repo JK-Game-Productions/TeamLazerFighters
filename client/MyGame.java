@@ -55,14 +55,15 @@ public class MyGame extends VariableFrameRateGame {
 	private int score = 0;
 	private int serverPort;
 	private int lakeIslands;
-	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
+	private boolean isRecentering;
 	private boolean paused = false;
 	private boolean endGame = false;
-	private boolean isRecentering;
-	private boolean isClientConnected = false;
 	private float trailLength = -2.0f;
+	private boolean lazergunAimed = false;
+	private boolean isClientConnected = false;
 	private float distToP1, distToP2, distToP3, distToP4;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
+	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
 	// private int fluffyClouds;
 
 	// object variables
@@ -152,12 +153,15 @@ public class MyGame extends VariableFrameRateGame {
 		avatar.setLocalTranslation(initialTranslation);
 		avatar.setLocalScale(initialScale);
 
-		// GUN
+		// build lazergun object
 		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
 		initialTranslation = (new Matrix4f()).translation(4f, 4f, 4f);
-		initialScale = (new Matrix4f()).scaling(0.30f);
+		initialScale = (new Matrix4f()).scaling(0.20f);
 		lazergun.setLocalTranslation(initialTranslation);
 		lazergun.setLocalScale(initialScale);
+		lazergun.setParent(avatar);
+		lazergun.propagateRotation(true);
+		lazergun.propagateTranslation(true);
 
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
@@ -306,11 +310,14 @@ public class MyGame extends VariableFrameRateGame {
 		TurnAction turnAction = new TurnAction(this);
 		MoveAction moveAction = new MoveAction(this);
 		PauseAction pauseAction = new PauseAction(this);
+		AimAction aimAction = new AimAction(this);
 		// StrafeAction strafeAction = new StrafeAction(this);
 		ZoomCameraAction zoomAction = new ZoomCameraAction(this);
 		ToggleTransparentAction transAction = new ToggleTransparentAction(this, x, y, z);
 
 		// Keyboard Actions ---------------------------------------------------
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.R, aimAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.A, turnAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.D, turnAction,
@@ -353,7 +360,6 @@ public class MyGame extends VariableFrameRateGame {
 		// will need to find a way to make the map height
 		// translate to the ghost avatars
 		mapHeight(avatar);
-		mapHeight(lazergun);
 		mapHeight(prize1);
 		mapHeight(prize2);
 		mapHeight(prize3);
@@ -367,6 +373,15 @@ public class MyGame extends VariableFrameRateGame {
 
 			// orbitCam.updateCameraPosition();
 			positionCameraBehindAvatar();
+
+			// update lazergun position and aim
+			lazergun.applyParentRotationToPosition(true);
+			if (lazergunAimed) {
+				lazergun.setLocalTranslation(new Matrix4f().translation(-0.222f, 0.8f, 0.9f));
+			} else {
+				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
+			}
+			setLazergunAim(false);
 
 			distToP1 = distanceToDolphin(prize1);
 			distToP2 = distanceToDolphin(prize2);
@@ -610,7 +625,15 @@ public class MyGame extends VariableFrameRateGame {
 	public float getFrameDiff() {
 		return (float) frameDiff;
 
-	}// END Getters & Setters
+	}
+
+	public boolean getLazergunAim() {
+		return lazergunAimed;
+	}
+
+	public void setLazergunAim(boolean newValue) {
+		lazergunAimed = (newValue);
+	} // END Getters & Setters
 
 	// -------------------------- SCRIPTING SECTION --------------------------
 	private void runScript(File scriptFile) {
