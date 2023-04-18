@@ -384,7 +384,7 @@ public class GameObject
 
 
 	// --------------- private class for default height map ----------------
-
+	
 	private class DefaultHeightMap extends TextureImage
 	{	private String textureFile = "assets/defaultAssets/defaultHeightMap.JPG";
 		private int texture;
@@ -397,9 +397,21 @@ public class GameObject
 	public void yaw(float diff, boolean left){
 		Vector4f oldRot = new Vector4f(0f,1f,0f,1f).mul(new Matrix4f(this.getWorldRotation()));
 		if(left)
-			this.setLocalRotation((new Matrix4f().rotation(1.0f * diff, new Vector3f(oldRot.x(), oldRot.y(), oldRot.z()))).mul(this.getWorldRotation()));
+		this.setLocalRotation((new Matrix4f().rotation(1.0f * diff, new Vector3f(oldRot.x(), oldRot.y(), oldRot.z()))).mul(this.getWorldRotation()));
 		else
-			this.setLocalRotation((new Matrix4f().rotation(-1.0f * diff, new Vector3f(oldRot.x(), oldRot.y(), oldRot.z()))).mul(this.getWorldRotation()));
+		this.setLocalRotation((new Matrix4f().rotation(-1.0f * diff, new Vector3f(oldRot.x(), oldRot.y(), oldRot.z()))).mul(this.getWorldRotation()));
+	}
+	
+	public void yaw(float mouseDeltaX) {
+		float tilt;
+		Vector4f oldRot = new Vector4f(0f,1f,0f,1f).mul(new Matrix4f(this.getWorldRotation()));
+		if (mouseDeltaX < 0.0)
+			tilt = -1.0f;
+		else if (mouseDeltaX > 0.0)
+			tilt = 1.0f;
+		else
+			tilt = 0.0f;
+		this.setLocalRotation((new Matrix4f().rotation(tilt * 0.01f, new Vector3f(oldRot.x(), oldRot.y(), oldRot.z()))).mul(this.getWorldRotation()));
 	}
 
 	/** This function also rotates the game object around the Y axis based off time and direction */
@@ -464,4 +476,5 @@ public class GameObject
 	public float getMoveFact() {
 		return movFactor;
 	}
+
 }
