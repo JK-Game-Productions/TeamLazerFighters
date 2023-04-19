@@ -579,6 +579,7 @@ public class MyGame extends VariableFrameRateGame {
 		Vector4f n = new Vector4f(0f, 0f, 1f, 1f);
 		Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
 
+		u.mul(avatar.getWorldRotation());
 		v.mul(avatar.getWorldRotation());
 		n.mul(avatar.getWorldRotation());
 
@@ -586,7 +587,6 @@ public class MyGame extends VariableFrameRateGame {
 		position.add(v.x() * .95f, v.y() * .95f, v.z() * .95f);
 
 		if (!cameraSetUp) {
-			u.mul(avatar.getWorldRotation());
 			camMain.setU(new Vector3f(u.x(), u.y(), u.z()));
 			camMain.setV(new Vector3f(v.x(), v.y(), v.z()));
 			camMain.setN(new Vector3f(n.x(), n.y(), n.z()));
