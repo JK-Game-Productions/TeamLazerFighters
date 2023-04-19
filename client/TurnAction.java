@@ -35,7 +35,7 @@ public class TurnAction extends AbstractInputAction {
             // left
             if (keyValue > -.2 && keyValue < .2)
                 return;
-            dol = game.getDolphin();
+            dol = game.getAvatar();
             dol.yaw(fd, true);
             // dol.yaw(false);
             /*
@@ -55,7 +55,7 @@ public class TurnAction extends AbstractInputAction {
             if (keyValue > -.2 && keyValue < .2)
                 return;
 
-            dol = game.getDolphin();
+            dol = game.getAvatar();
             dol.yaw(fd, false);
             // c.turnWithDolphin(dol);
 

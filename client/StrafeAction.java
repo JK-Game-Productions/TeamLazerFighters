@@ -5,20 +5,19 @@ import tage.GameObject;
 import net.java.games.input.Event;
 import tage.input.action.AbstractInputAction;
 
-public class MoveAction extends AbstractInputAction {
+public class StrafeAction extends AbstractInputAction {
     private MyGame game;
     private Vector4f mov;
     private float frameDiff;
     private GameObject avatar;
     private Vector3f oldPos, newPos;
 
-    public MoveAction(MyGame g) {
+    public StrafeAction(MyGame g) {
         game = g;
     }
 
     @Override
     public void performAction(float time, Event e) {
-
         avatar = game.getAvatar();
         frameDiff = game.getFrameDiff();
 
@@ -30,15 +29,15 @@ public class MoveAction extends AbstractInputAction {
             return;
 
         oldPos = avatar.getWorldLocation();
-        mov = new Vector4f(0f, 0f, 1f, 1f);
+        mov = new Vector4f(1f, 0f, 0f, 1f);
         mov.mul(avatar.getWorldRotation());
-        mov.mul(3.0f * frameDiff);
+        mov.mul(4.0f * frameDiff);
 
-        // forward
-        if (componentValue.equals("W") || keyValue < 0) {
+        // move left
+        if (componentValue.equals("A") || keyValue < 0) {
             newPos = oldPos.add(mov.x(), mov.y(), mov.z());
         }
-        // reverse
+        // move Right
         else {
             newPos = oldPos.sub(mov.x(), mov.y(), mov.z());
         }

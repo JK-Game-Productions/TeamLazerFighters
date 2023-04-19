@@ -314,11 +314,11 @@ public class MyGame extends VariableFrameRateGame {
 
 		initMouseMode();
 
+		AimAction aimAction = new AimAction(this);
 		TurnAction turnAction = new TurnAction(this);
 		MoveAction moveAction = new MoveAction(this);
 		PauseAction pauseAction = new PauseAction(this);
-		AimAction aimAction = new AimAction(this);
-		// StrafeAction strafeAction = new StrafeAction(this);
+		StrafeAction strafeAction = new StrafeAction(this);
 		ZoomCameraAction zoomAction = new ZoomCameraAction(this);
 		ToggleMouseAction mouseAction = new ToggleMouseAction(this);
 
@@ -333,6 +333,10 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.S, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.A, strafeAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.D, strafeAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.COMMA, zoomAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.PERIOD, zoomAction,
@@ -341,7 +345,6 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.P, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
-		// add strafe
 
 		// Gamepad Actions ----------------------------------------------------
 		im.associateActionWithAllGamepads(Component.Identifier.Axis.X, turnAction,
@@ -678,7 +681,6 @@ public class MyGame extends VariableFrameRateGame {
 			recenterMouse();
 			prevMouseX = centerX;
 			prevMouseY = centerY;
-
 		}
 	}
 
@@ -701,6 +703,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		c.setV(upVector);
 		c.setN(fwdVector);
+
 	}
 
 	private void yaw(float mouseDeltaX) {
@@ -726,9 +729,6 @@ public class MyGame extends VariableFrameRateGame {
 	// END Custom Functions
 
 	// -------------------------- GETTERS & SETTERS --------------------------
-	public GameObject getDolphin() {
-		return avatar;
-	}
 
 	public GameObject getAvatar() {
 		return avatar;
