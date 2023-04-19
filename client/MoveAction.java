@@ -41,6 +41,7 @@ public class MoveAction extends AbstractInputAction {
             dol.setLocalLocation(newPos);
             // move camera down V
             // c.moveWithDolphin(dol);
+            game.getProtocolClient().sendMoveMessage(newPos);
         }
         // reverse
         else {
@@ -54,6 +55,7 @@ public class MoveAction extends AbstractInputAction {
             newPos = oldPos.sub(mov.x(), mov.y(), mov.z());
             dol.setLocalLocation(newPos);
             // c.moveWithDolphin(dol);
+            game.getProtocolClient().sendMoveMessage(newPos);
         }
     }
 }

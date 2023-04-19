@@ -62,6 +62,7 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean paused = false;
 	private boolean endGame = false;
 	private float trailLength = -2.0f;
+	private boolean mouseVisible = true;
 	private boolean lazergunAimed = false;
 	private boolean isClientConnected = false;
 	private float distToP1, distToP2, distToP3, distToP4;
@@ -319,7 +320,7 @@ public class MyGame extends VariableFrameRateGame {
 		AimAction aimAction = new AimAction(this);
 		// StrafeAction strafeAction = new StrafeAction(this);
 		ZoomCameraAction zoomAction = new ZoomCameraAction(this);
-		ToggleTransparentAction transAction = new ToggleTransparentAction(this, x, y, z);
+		ToggleMouseAction mouseAction = new ToggleMouseAction(this);
 
 		// Keyboard Actions ---------------------------------------------------
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.R, aimAction,
@@ -336,8 +337,8 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.PERIOD, zoomAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.T, transAction,
-				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.LALT, mouseAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.P, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		// add strafe
@@ -349,8 +350,8 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Axis.Z, zoomAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllGamepads(Component.Identifier.Button._6, transAction,
-				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		im.associateActionWithAllGamepads(Component.Identifier.Button._6, mouseAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Button._7, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		// add strafe
@@ -388,6 +389,12 @@ public class MyGame extends VariableFrameRateGame {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
 			}
 			setLazergunAim(false);
+
+			// process the networking functions
+			processNetworking((float) elapsTime);
+
+			// show/hide mouse logic
+			checkMouse();
 
 			distToP1 = distanceToDolphin(prize1);
 			distToP2 = distanceToDolphin(prize2);
@@ -439,7 +446,6 @@ public class MyGame extends VariableFrameRateGame {
 				prize4.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
 				trailLength += -1.5f;
 			}
-
 		} // pause scope and end game cutoff
 
 		// build and set HUD
@@ -464,8 +470,6 @@ public class MyGame extends VariableFrameRateGame {
 		Vector3f scoreColor = new Vector3f(0, 1, 0);
 		String winStr = "You Have Beaten The Blob";
 		Vector3f winColor = new Vector3f(0, 1, 0);
-		String loseStr = "The Blob Has Beaten You";
-		Vector3f loseColor = new Vector3f(1, 0, 0);
 		if (prize1.isCollected() && prize2.isCollected() && prize3.isCollected() && prize4.isCollected()) {
 			(engine.getHUDmanager()).setHUD1(winStr, winColor, (int) (width * 0.75f), 15);
 			endGame = true;
@@ -473,11 +477,37 @@ public class MyGame extends VariableFrameRateGame {
 			(engine.getHUDmanager()).setHUD1(dolLocStr, dolLocColor, (int) (width * 0.75f), 15);
 		(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
 
-		// process the networking functions
-		processNetworking((float) elapsTime);
-
 	} // END Update
 		// END VariableFrameRate Game Overrides
+
+	// --------------------- MOUSE MANAGEMENT -------------------- //
+	private void initMouseMode() {
+		RenderSystem rs = engine.getRenderSystem();
+		Viewport vw = rs.getViewport("LEFT");
+		float left = vw.getActualLeft();
+		float bottom = vw.getActualBottom();
+		float width = vw.getActualWidth();
+		float height = vw.getActualHeight();
+
+		centerX = (int) (left + width / 2);
+		centerY = (int) (bottom - height / 2);
+
+		isRecentering = false;
+
+		try {
+			robot = new Robot();
+		} catch (AWTException ex) {
+			throw new RuntimeException("couldn't create robot");
+		}
+
+		recenterMouse();
+		prevMouseX = centerX;
+		prevMouseY = centerY;
+
+		// rs.imageUpdate(ch, 1, (int)centerX, (int)centerY, ch.getWidth(null),
+		// ch.getHeight(null));
+
+	} // END Mouse Management
 
 	// -------------------------- NETWORKING SECTION --------------------------
 
@@ -509,7 +539,7 @@ public class MyGame extends VariableFrameRateGame {
 		return avatar.getWorldLocation();
 	}
 
-	public ProtocolClient getProtoClient() {
+	public ProtocolClient getProtocolClient() {
 		return protClient;
 	}
 
@@ -595,104 +625,24 @@ public class MyGame extends VariableFrameRateGame {
 		}
 		camMain.setLocation(position);
 	}
-	// END Custom Functions
 
-	// -------------------------- GETTERS & SETTERS --------------------------
-	public GameObject getDolphin() {
-		return avatar;
-	}
-
-	public GameObject getAvatar() {
-		return avatar;
-	}
-
-	public Engine getEngine() {
-		return engine;
-	}
-
-	public static Camera getMainCamera() {
-		return camMain;
-	}
-
-	public ObjShape getGhostShape() {
-		return ghostS;
-	}
-
-	public TextureImage getGhostTexture() {
-		return ghostT;
-	}
-
-	public GhostManager getGhostManager() {
-		return gm;
-	}
-
-	public void togglePause() {
-		paused = !paused;
-	}
-
-	public float getFrameDiff() {
-		return (float) frameDiff;
-
-	}
-
-	public boolean getLazergunAim() {
-		return lazergunAimed;
-	}
-
-	public void setLazergunAim(boolean newValue) {
-		lazergunAimed = (newValue);
-	} // END Getters & Setters
-
-	// -------------------------- SCRIPTING SECTION --------------------------
-	private void runScript(File scriptFile) {
-		try {
-			FileReader fileReader = new FileReader(scriptFile);
-			jsEngine.eval(fileReader);
-			fileReader.close();
-		} catch (FileNotFoundException e1) {
-			System.out.println(scriptFile + " not found " + e1);
-		} catch (IOException e2) {
-			System.out.println("IO problem with " + scriptFile + e2);
-		} catch (ScriptException e3) {
-			System.out.println("ScriptException in " + scriptFile + e3);
-		} catch (NullPointerException e4) {
-			System.out.println("Null ptr exception reading " + scriptFile + e4);
-		}
-	}
-
-	// --------------------- MOUSE MANAGEMENT -------------------- //
-	private void initMouseMode() {
+	// checks if mouse is hidden or shown and sets the cursor icon
+	private void checkMouse() {
 		RenderSystem rs = engine.getRenderSystem();
-		Viewport vw = rs.getViewport("LEFT");
-		float left = vw.getActualLeft();
-		float bottom = vw.getActualBottom();
-		float width = vw.getActualWidth();
-		float height = vw.getActualHeight();
-
-		centerX = (int) (left + width / 2);
-		centerY = (int) (bottom - height / 2);
-
-		isRecentering = false;
-
-		try {
-			robot = new Robot();
-		} catch (AWTException ex) {
-			throw new RuntimeException("couldn't create robot");
-		}
-
-		recenterMouse();
-		prevMouseX = centerX;
-		prevMouseY = centerY;
-
-		// To be a cross hair
-		Image ch = new ImageIcon("./assets/textures/Blue-Crosshair-1.png").getImage();
 		Toolkit tk = Toolkit.getDefaultToolkit();
-		Cursor clear = tk.createCustomCursor(tk.getImage(""), new Point(), "ClearCursor");
 		Canvas canvas = rs.getGLCanvas();
-		canvas.setCursor(clear);
-		//rs.imageUpdate(ch, 1, (int)centerX, (int)centerY, ch.getWidth(null), ch.getHeight(null));
-		
-		
+
+		Cursor clear = tk.createCustomCursor(tk.getImage(""), new Point(), "ClearCursor");
+		Cursor crosshair = tk.createCustomCursor(tk.getImage("./assets/textures/Blue-Crosshair-1.png"), new Point(),
+				"Crosshair");
+
+		if (!mouseVisible) {
+			canvas.setCursor(clear);
+		} else {
+			// set mouse back to default
+			canvas.setCursor(null);
+		}
+		setMouseVisible(false);
 	}
 
 	private void recenterMouse() {
@@ -718,6 +668,7 @@ public class MyGame extends VariableFrameRateGame {
 			curMouseY = e.getYOnScreen();
 			float mouseDeltaX = prevMouseX - curMouseX;
 			float mouseDeltaY = prevMouseY - curMouseY;
+
 			avatar.yaw(mouseDeltaX);
 			yaw(mouseDeltaX);
 			pitch(mouseDeltaY);
@@ -727,6 +678,7 @@ public class MyGame extends VariableFrameRateGame {
 			recenterMouse();
 			prevMouseX = centerX;
 			prevMouseY = centerY;
+
 		}
 	}
 
@@ -770,5 +722,72 @@ public class MyGame extends VariableFrameRateGame {
 
 		c.setU(rightVector);
 		c.setN(fwdVector);
+	}
+	// END Custom Functions
+
+	// -------------------------- GETTERS & SETTERS --------------------------
+	public GameObject getDolphin() {
+		return avatar;
+	}
+
+	public GameObject getAvatar() {
+		return avatar;
+	}
+
+	public Engine getEngine() {
+		return engine;
+	}
+
+	public static Camera getMainCamera() {
+		return camMain;
+	}
+
+	public ObjShape getGhostShape() {
+		return ghostS;
+	}
+
+	public TextureImage getGhostTexture() {
+		return ghostT;
+	}
+
+	public GhostManager getGhostManager() {
+		return gm;
+	}
+
+	public void togglePause() {
+		paused = !paused;
+	}
+
+	public float getFrameDiff() {
+		return (float) frameDiff;
+	}
+
+	public boolean getLazergunAim() {
+		return lazergunAimed;
+	}
+
+	public void setLazergunAim(boolean newValue) {
+		lazergunAimed = (newValue);
+	}
+
+	public void setMouseVisible(boolean newValue) {
+		mouseVisible = newValue;
+	}// END Getters & Setters
+
+	// -------------------------- SCRIPTING SECTION --------------------------
+	private void runScript(File scriptFile) {
+		try {
+			FileReader fileReader = new FileReader(scriptFile);
+			jsEngine.eval(fileReader);
+			fileReader.close();
+		} catch (FileNotFoundException e1) {
+			System.out.println(scriptFile + " not found " + e1);
+		} catch (IOException e2) {
+			System.out.println("IO problem with " + scriptFile + e2);
+		} catch (ScriptException e3) {
+			System.out.println("ScriptException in " + scriptFile + e3);
+		} catch (NullPointerException e4) {
+			System.out.println("Null ptr exception reading " + scriptFile + e4);
+		}
 	}
 }
