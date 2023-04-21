@@ -110,6 +110,18 @@ public class Camera
 		}
 	}
 
+	public void yaw(float mouseDeltaX) {
+		float tilt;
+		if (mouseDeltaX < 0.0)
+			tilt = -1.0f;
+		else if (mouseDeltaX > 0.0)
+			tilt = 1.0f;
+		else
+			tilt = 0.0f;
+		setU(u.rotateAxis(tilt * 0.01f, v.x(), v.y(), v.z()));
+		setN(n.rotateAxis(tilt * 0.01f, v.x(), v.y(), v.z()));
+	}
+
 	/** This function take a camera position and rotates around the U axis based on the difference in time and direction */
 	public void pitch(float diff, boolean up) {
 		if(up){
@@ -119,6 +131,17 @@ public class Camera
 			setV(v.rotateAxis(-1.0f * diff, u.x(), u.y(), u.z()));
 			setN(n.rotateAxis(-1.0f * diff, u.x(), u.y(), u.z()));
 		}
+	}
+	public void pitch(float mouseDeltaY) {
+		float tilt;
+		if (mouseDeltaY < 0.0)
+			tilt = -1.0f;
+		else if (mouseDeltaY > 0.0)
+			tilt = 1.0f;
+		else
+			tilt = 0.0f;
+		setV(v.rotateAxis(tilt * 0.01f, u.x(), u.y(), u.z()));
+		setN(n.rotateAxis(tilt * 0.01f, u.x(), u.y(), u.z()));
 	}
 
 	/** This function moves the camera down the positive V axis*/
