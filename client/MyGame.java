@@ -1,7 +1,6 @@
 package client;
 
 import org.joml.*;
-import org.w3c.dom.events.MouseEvent;
 
 import tage.*;
 import tage.input.*;
@@ -11,7 +10,6 @@ import tage.input.action.*;
 import java.io.*;
 import java.util.*;
 import java.awt.*;
-//import java.awt.Component;
 import java.awt.Robot;
 import java.util.Random;
 import java.net.InetAddress;
@@ -23,6 +21,7 @@ import javax.script.ScriptException;
 import javax.script.ScriptEngineManager;
 import javax.swing.*;
 
+import org.w3c.dom.events.MouseEvent;
 import net.java.games.input.Component;
 import tage.nodeControllers.FlattenController;
 import tage.nodeControllers.RotationController;
