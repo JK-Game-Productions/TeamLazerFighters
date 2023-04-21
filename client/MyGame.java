@@ -24,6 +24,7 @@ import javax.script.ScriptEngineManager;
 import javax.swing.*;
 
 import net.java.games.input.Component;
+import net.java.games.input.Component.Identifier;
 import tage.nodeControllers.FlattenController;
 import tage.nodeControllers.RotationController;
 import tage.networking.IGameConnection.ProtocolType;
@@ -510,7 +511,42 @@ public class MyGame extends VariableFrameRateGame {
 		// rs.imageUpdate(ch, 1, (int)centerX, (int)centerY, ch.getWidth(null),
 		// ch.getHeight(null));
 
-	} // END Mouse Management
+	} 
+	private void recenterMouse() {
+		RenderSystem rs = engine.getRenderSystem();
+		Viewport vw = rs.getViewport("LEFT");
+		float left = vw.getActualLeft();
+		float bottom = vw.getActualBottom();
+		float width = vw.getActualWidth();
+		float height = vw.getActualHeight();
+		centerX = (int) (left + width / 2.0f);
+		centerY = (int) (bottom - height / 2.0f);
+
+		isRecentering = true;
+		robot.mouseMove((int) centerX, (int) centerY);
+	}
+	@Override
+	public void mouseMoved(java.awt.event.MouseEvent e) {
+		if (isRecentering && centerX == e.getXOnScreen() && centerY == e.getYOnScreen()) {
+			isRecentering = false;
+		} else {
+			curMouseX = e.getXOnScreen();
+			curMouseY = e.getYOnScreen();
+			float mouseDeltaX = prevMouseX - curMouseX;
+			float mouseDeltaY = prevMouseY - curMouseY;
+
+			avatar.gyaw(getFrameDiff(), mouseDeltaX);
+			//camMain.yaw(mouseDeltaX);
+			avatar.pitch(getFrameDiff(), mouseDeltaY);
+			prevMouseX = curMouseX;
+			prevMouseY = curMouseY;
+
+			recenterMouse();
+			prevMouseX = centerX;
+			prevMouseY = centerY;
+		}
+	}
+	// END Mouse Management
 
 	// -------------------------- NETWORKING SECTION --------------------------
 
@@ -607,26 +643,34 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void positionCameraBehindAvatar() {
-		Matrix4f w = avatar.getWorldTranslation();
+		//Matrix4f w = avatar.getWorldTranslation();
 		Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
 		Vector4f v = new Vector4f(0f, 1f, 0f, 1f);
 		Vector4f n = new Vector4f(0f, 0f, 1f, 1f);
-		Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
-
+		//Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
+		Vector3f location = avatar.getWorldLocation();
+		//System.out.println("position:" + position);
+		//System.out.println("location" + location);
+		/* 
 		u.mul(avatar.getWorldRotation());
 		v.mul(avatar.getWorldRotation());
 		n.mul(avatar.getWorldRotation());
-
-		position.add(n.x() * 0.3f, n.y() * 0.3f, n.z() * 0.3f);
-		position.add(v.x() * .95f, v.y() * .95f, v.z() * .95f);
-
+		*/
+		camMain.setU(avatar.getWorldRightVector());
+		camMain.setV(avatar.getWorldUpVector());
+		camMain.setN(avatar.getWorldForwardVector());
+		//location.add(n.x() * 0.3f, n.y() * 0.3f, n.z() * 0.3f);
+		//location.add(v.x() * .95f, v.y() * .95f, v.z() * .95f);
+		location.add(camMain.getV().mul(.95f));
+		location.add(camMain.getN().mul(.3f));
+		cameraSetUp = true;
 		if (!cameraSetUp) {
 			camMain.setU(new Vector3f(u.x(), u.y(), u.z()));
 			camMain.setV(new Vector3f(v.x(), v.y(), v.z()));
 			camMain.setN(new Vector3f(n.x(), n.y(), n.z()));
 			cameraSetUp = true;
 		}
-		camMain.setLocation(position);
+		camMain.setLocation(location);
 	}
 
 	// checks if mouse is hidden or shown and sets the cursor icon
@@ -646,42 +690,6 @@ public class MyGame extends VariableFrameRateGame {
 			canvas.setCursor(null);
 		}
 		setMouseVisible(false);
-	}
-
-	private void recenterMouse() {
-		RenderSystem rs = engine.getRenderSystem();
-		Viewport vw = rs.getViewport("LEFT");
-		float left = vw.getActualLeft();
-		float bottom = vw.getActualBottom();
-		float width = vw.getActualWidth();
-		float height = vw.getActualHeight();
-		centerX = (int) (left + width / 2.0f);
-		centerY = (int) (bottom - height / 2.0f);
-
-		isRecentering = true;
-		robot.mouseMove((int) centerX, (int) centerY);
-	}
-
-	@Override
-	public void mouseMoved(java.awt.event.MouseEvent e) {
-		if (isRecentering && centerX == e.getXOnScreen() && centerY == e.getYOnScreen()) {
-			isRecentering = false;
-		} else {
-			curMouseX = e.getXOnScreen();
-			curMouseY = e.getYOnScreen();
-			float mouseDeltaX = prevMouseX - curMouseX;
-			float mouseDeltaY = prevMouseY - curMouseY;
-
-			avatar.yaw(mouseDeltaX);
-			yaw(mouseDeltaX);
-			pitch(mouseDeltaY);
-			prevMouseX = curMouseX;
-			prevMouseY = curMouseY;
-
-			recenterMouse();
-			prevMouseX = centerX;
-			prevMouseY = centerY;
-		}
 	}
 
 	private void pitch(float mouseDeltaY) {
