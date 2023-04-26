@@ -7,7 +7,14 @@
     "c:\\javagaming\\jogl\\joal.jar",
     "c:\\javagaming\\jogl\\jogl-all.jar",
     "c:\\javagaming\\joml\\joml-1.10.0.jar",
-    "c:\\javagaming\\vecmath\\vecmath.jar"
+    "c:\\javagaming\\vecmath\\vecmath.jar",
+    "/Users/johnwishek/homework/Comp Sci/csc165/javagaming/jbullet/jbullet.jar",
+    "/Users/johnwishek/homework/Comp Sci/csc165/javagaming/jinput/jinput.jar",
+    "/Users/johnwishek/homework/Comp Sci/csc165/javagaming/jogl/gluegen-rt.jar",
+    "/Users/johnwishek/homework/Comp Sci/csc165/javagaming/jogl/joal.jar",
+    "/Users/johnwishek/homework/Comp Sci/csc165/javagaming/jogl/jogl-all.jar",
+    "/Users/johnwishek/homework/Comp Sci/csc165/javagaming/joml/joml-1.10.0.jar",
+    "/Users/johnwishek/homework/Comp Sci/csc165/javagaming/vecmath/vecmath.jar"
   ],
   "cSpell.words": [
     "curr",
