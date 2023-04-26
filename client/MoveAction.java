@@ -32,7 +32,7 @@ public class MoveAction extends AbstractInputAction {
         oldPos = avatar.getWorldLocation();
         mov = new Vector4f(0f, 0f, 1f, 1f);
         mov.mul(avatar.getWorldRotation());
-        mov.mul(3.0f * frameDiff);
+        mov.mul(game.getMoveSpeed() * frameDiff);
 
         // forward
         if (componentValue.equals("W") || keyValue < 0) {

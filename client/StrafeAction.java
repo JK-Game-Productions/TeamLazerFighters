@@ -31,7 +31,7 @@ public class StrafeAction extends AbstractInputAction {
         oldPos = avatar.getWorldLocation();
         mov = new Vector4f(1f, 0f, 0f, 1f);
         mov.mul(avatar.getWorldRotation());
-        mov.mul(4.0f * frameDiff);
+        mov.mul(game.getMoveSpeed() * frameDiff);
 
         // move left
         if (componentValue.equals("A") || keyValue < 0) {

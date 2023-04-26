@@ -62,6 +62,7 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean paused = false;
 	private boolean endGame = false;
 	private float trailLength = -2.0f;
+	private float moveSpeed = 3.0f;
 	private boolean mouseVisible = true;
 	private boolean lazergunAimed = false;
 	private boolean isClientConnected = false;
@@ -318,6 +319,7 @@ public class MyGame extends VariableFrameRateGame {
 		TurnAction turnAction = new TurnAction(this);
 		MoveAction moveAction = new MoveAction(this);
 		PauseAction pauseAction = new PauseAction(this);
+		SprintAction sprintAction = new SprintAction(this);
 		StrafeAction strafeAction = new StrafeAction(this);
 		ZoomCameraAction zoomAction = new ZoomCameraAction(this);
 		ToggleMouseAction mouseAction = new ToggleMouseAction(this);
@@ -345,6 +347,7 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.P, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.LSHIFT, sprintAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 
 		// Gamepad Actions ----------------------------------------------------
 		im.associateActionWithAllGamepads(Component.Identifier.Axis.X, turnAction,
@@ -391,6 +394,7 @@ public class MyGame extends VariableFrameRateGame {
 			} else {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
 			}
+			setMoveSpeed(3.0f);
 			setLazergunAim(false);
 
 			// process the networking functions
@@ -775,6 +779,13 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void setLazergunAim(boolean newValue) {
 		lazergunAimed = (newValue);
+	}
+	public float getMoveSpeed() {
+		return moveSpeed;
+	}
+
+	public void setMoveSpeed(float moveSpeed) {
+		this.moveSpeed = moveSpeed;
 	}
 
 	public void setMouseVisible(boolean newValue) {
