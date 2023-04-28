@@ -316,11 +316,8 @@ public class MyGame extends VariableFrameRateGame {
 		initMouseMode();
 
 		AimAction aimAction = new AimAction(this);
-		TurnAction turnAction = new TurnAction(this);
 		MoveAction moveAction = new MoveAction(this);
 		PauseAction pauseAction = new PauseAction(this);
-		SprintAction sprintAction = new SprintAction(this);
-		StrafeAction strafeAction = new StrafeAction(this);
 		ZoomCameraAction zoomAction = new ZoomCameraAction(this);
 		ToggleMouseAction mouseAction = new ToggleMouseAction(this);
 
@@ -335,9 +332,9 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.S, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.A, strafeAction,
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.A, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.D, strafeAction,
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.D, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.COMMA, zoomAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -347,10 +344,11 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.P, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.LSHIFT, sprintAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.LSHIFT, moveAction,
+				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 
 		// Gamepad Actions ----------------------------------------------------
-		im.associateActionWithAllGamepads(Component.Identifier.Axis.X, turnAction,
+		im.associateActionWithAllGamepads(Component.Identifier.Axis.X, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Axis.Y, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -383,6 +381,7 @@ public class MyGame extends VariableFrameRateGame {
 		if (!paused && !endGame) {
 			elapsTime += frameDiff;
 			im.update((float) elapsTime);
+			// System.out.println(this.getMoveSpeed());
 
 			// orbitCam.updateCameraPosition();
 			positionCameraBehindAvatar();
@@ -394,7 +393,7 @@ public class MyGame extends VariableFrameRateGame {
 			} else {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
 			}
-			setMoveSpeed(3.0f);
+			// setMoveSpeed(3.0f);
 			setLazergunAim(false);
 
 			// process the networking functions
@@ -514,7 +513,8 @@ public class MyGame extends VariableFrameRateGame {
 		// rs.imageUpdate(ch, 1, (int)centerX, (int)centerY, ch.getWidth(null),
 		// ch.getHeight(null));
 
-	} 
+	}
+
 	private void recenterMouse() {
 		RenderSystem rs = engine.getRenderSystem();
 		Viewport vw = rs.getViewport("LEFT");
@@ -528,6 +528,7 @@ public class MyGame extends VariableFrameRateGame {
 		isRecentering = true;
 		robot.mouseMove((int) centerX, (int) centerY);
 	}
+
 	@Override
 	public void mouseMoved(java.awt.event.MouseEvent e) {
 		if (isRecentering && centerX == e.getXOnScreen() && centerY == e.getYOnScreen()) {
@@ -539,7 +540,7 @@ public class MyGame extends VariableFrameRateGame {
 			float mouseDeltaY = prevMouseY - curMouseY;
 
 			avatar.gyaw(getFrameDiff(), mouseDeltaX);
-			//camMain.yaw(mouseDeltaX);
+			// camMain.yaw(mouseDeltaX);
 			avatar.pitch(getFrameDiff(), mouseDeltaY);
 			prevMouseX = curMouseX;
 			prevMouseY = curMouseY;
@@ -646,24 +647,24 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	private void positionCameraBehindAvatar() {
-		//Matrix4f w = avatar.getWorldTranslation();
+		// Matrix4f w = avatar.getWorldTranslation();
 		Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
 		Vector4f v = new Vector4f(0f, 1f, 0f, 1f);
 		Vector4f n = new Vector4f(0f, 0f, 1f, 1f);
-		//Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
+		// Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
 		Vector3f location = avatar.getWorldLocation();
-		//System.out.println("position:" + position);
-		//System.out.println("location" + location);
-		/* 
-		u.mul(avatar.getWorldRotation());
-		v.mul(avatar.getWorldRotation());
-		n.mul(avatar.getWorldRotation());
-		*/
+		// System.out.println("position:" + position);
+		// System.out.println("location" + location);
+		/*
+		 * u.mul(avatar.getWorldRotation());
+		 * v.mul(avatar.getWorldRotation());
+		 * n.mul(avatar.getWorldRotation());
+		 */
 		camMain.setU(avatar.getWorldRightVector());
 		camMain.setV(avatar.getWorldUpVector());
 		camMain.setN(avatar.getWorldForwardVector());
-		//location.add(n.x() * 0.3f, n.y() * 0.3f, n.z() * 0.3f);
-		//location.add(v.x() * .95f, v.y() * .95f, v.z() * .95f);
+		// location.add(n.x() * 0.3f, n.y() * 0.3f, n.z() * 0.3f);
+		// location.add(v.x() * .95f, v.y() * .95f, v.z() * .95f);
 		location.add(camMain.getV().mul(.95f));
 		location.add(camMain.getN().mul(.3f));
 		cameraSetUp = true;
@@ -780,6 +781,7 @@ public class MyGame extends VariableFrameRateGame {
 	public void setLazergunAim(boolean newValue) {
 		lazergunAimed = (newValue);
 	}
+
 	public float getMoveSpeed() {
 		return moveSpeed;
 	}
