@@ -134,7 +134,7 @@ public class MyGame extends VariableFrameRateGame {
 		p1tx = new TextureImage("tex_Water.jpg");
 		p4tx = new TextureImage("rooffrance.jpg");
 		johntx = new TextureImage("galt_cow.jpg");
-		groundtx = new TextureImage("grass2.png");
+		groundtx = new TextureImage("brown_mud_leaves_01_diff_1k.jpg");
 		river = new TextureImage("river.jpg");
 	}
 
@@ -150,6 +150,7 @@ public class MyGame extends VariableFrameRateGame {
 		initialScale = (new Matrix4f()).scaling(100.0f, 5.0f, 100.0f);
 		ground.setLocalTranslation(initialTranslation);
 		ground.setLocalScale(initialScale);
+		ground.getRenderStates().setTiling(1);
 		ground.setHeightMap(river);
 
 		// build avatar in the center of the window
