@@ -616,9 +616,9 @@ public class GameObject {
 	public void gyaw(float diff, float mouseDeltaX) {
 		float tilt;
 		if (mouseDeltaX < 0.0)
-			tilt = -1.0f;
+			tilt = -2.0f;
 		else if (mouseDeltaX > 0.0)
-			tilt = 1.0f;
+			tilt = 2.0f;
 		else
 			tilt = 0.0f;
 		this.setLocalRotation((new Matrix4f().rotationY(tilt * diff)).mul(this.getWorldRotation()));
@@ -652,9 +652,9 @@ public class GameObject {
 		float tilt;
 		Vector4f oldRot = new Vector4f(1f, 0f, 0f, 1f).mul(new Matrix4f(this.getWorldRotation()));
 		if (mouseDeltaY < 0.0)
-			tilt = 1.0f;
+			tilt = 2.0f;
 		else if (mouseDeltaY > 0.0)
-			tilt = -1.0f;
+			tilt = -2.0f;
 		else
 			tilt = 0.0f;
 		this.setLocalRotation((new Matrix4f().rotation(tilt * diff, new Vector3f(oldRot.x(), oldRot.y(), oldRot.z())))
