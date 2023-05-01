@@ -11,7 +11,16 @@ import com.bulletphysics.dynamics.RigidBody;
 import tage.*;
 import tage.input.*;
 import tage.shapes.*;
+import tage.audio.Sound;
+import tage.audio.SoundType;
 import tage.input.action.*;
+import tage.audio.AudioManagerFactory;
+import tage.audio.AudioResource;
+import tage.audio.AudioResourceType;
+import tage.audio.IAudioManager;
+import tage.audio.joal.JOALAudioManager;
+import tage.audio.joal.*;
+import tage.audio.*;
 
 import java.io.*;
 import java.util.*;
@@ -47,7 +56,6 @@ public class MyGame extends VariableFrameRateGame {
 	private Light light1;
 	private InputManager im;
 	private GhostManager gm;
-	private PhysicsEngine ps;
 	private Robot robot;
 	private File scriptFile1;
 	private String serverAddress;
@@ -56,9 +64,12 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private Vector<GameObject> objects;
 	private NodeController rc1, rc2, rc3, rc4, fc;
+	private Sound oceanSound;
 
 	// network & script variables
+	private PhysicsEngine ps;
 	private ScriptEngine jsEngine;
+	private IAudioManager audioMgr;
 	private ProtocolType serverProtocol;
 
 	// Basic Variables
@@ -271,8 +282,10 @@ public class MyGame extends VariableFrameRateGame {
 		// String gpName = im.getFirstGamepadName();
 		// orbitCam = new CameraOrbit3D(camMain, avatar, gpName, engine);
 
-		// --------------- initialize network ---------------- //
+		// --------------- initialize custom functions ---------------- //
 		setupNetworking();
+		initMouseMode();
+		// initAudio();
 
 		// -------------------- game logic ------------------- //
 		distToP1 = distanceToObject(prize1);
@@ -301,8 +314,6 @@ public class MyGame extends VariableFrameRateGame {
 		(engine.getSceneGraph()).addNodeController(fc);
 
 		// ------------------- Input Setup ------------------- //
-
-		initMouseMode();
 
 		AimAction aimAction = new AimAction(this);
 		MoveAction moveAction = new MoveAction(this);
@@ -366,13 +377,13 @@ public class MyGame extends VariableFrameRateGame {
 		prize1P = ps.addCapsuleObject(ps.nextUID(), mass, tempTransform, prize1.getScale(), prize1.getScale());
 		prize1P.setBounciness(0.5f);
 		prize1.setPhysicsObject(prize1P);
-		/* 
-		translation = new Matrix4f(avatar.getLocalTranslation());
-		tempTransform = toDoubleArray(translation.get(vals));
-		avatarP = ps.addSphereObject(ps.nextUID(), mass, tempTransform, 0.33f);
-		//avatarP.setFriction(0f);
-		avatar.setPhysicsObject(avatarP);
-		*/
+		/*
+		 * translation = new Matrix4f(avatar.getLocalTranslation());
+		 * tempTransform = toDoubleArray(translation.get(vals));
+		 * avatarP = ps.addSphereObject(ps.nextUID(), mass, tempTransform, 0.33f);
+		 * //avatarP.setFriction(0f);
+		 * avatar.setPhysicsObject(avatarP);
+		 */
 		translation = new Matrix4f(ground.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		groundP = ps.addStaticPlaneObject(ps.nextUID(), tempTransform, up, 0.0f);
@@ -421,25 +432,29 @@ public class MyGame extends VariableFrameRateGame {
 			// show/hide mouse logic
 			checkMouse();
 
+			// update sound
+			// oceanSound.setLocation(lazergun.getWorldLocation());
+			// setEarParameters();
+
 			distToP1 = distanceToDolphin(prize1);
 			distToP2 = distanceToDolphin(prize2);
 			distToP3 = distanceToDolphin(prize3);
 			distToP4 = distanceToDolphin(prize4);
 
 			// Player logic
-			/* 
-			if (distToP1 <= prize1.getScale() && !prize1.isCollected()) {
-				score++;
-				prize1.collect();
-				rc1.toggle();
-				prize1.setParent(avatar);
-				prize1.propagateRotation(false);
-				prize1.setLocalScale(new Matrix4f().scaling(0.25f));
-				prize1.applyParentRotationToPosition(true);
-				prize1.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
-				trailLength += -1.5f;
-			}
-			*/
+			/*
+			 * if (distToP1 <= prize1.getScale() && !prize1.isCollected()) {
+			 * score++;
+			 * prize1.collect();
+			 * rc1.toggle();
+			 * prize1.setParent(avatar);
+			 * prize1.propagateRotation(false);
+			 * prize1.setLocalScale(new Matrix4f().scaling(0.25f));
+			 * prize1.applyParentRotationToPosition(true);
+			 * prize1.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
+			 * trailLength += -1.5f;
+			 * }
+			 */
 			if (distToP2 <= prize2.getScale() && !prize2.isCollected()) {
 				score++;
 				prize2.collect();
@@ -478,10 +493,10 @@ public class MyGame extends VariableFrameRateGame {
 		// ---------------------PHYSICS LOGIC--------------------------//
 		Matrix4f currentTranslation, currentRotation;
 		// if(running){
-			Matrix4f matrix = new Matrix4f();
-			Matrix4f rotMatrix = new Matrix4f();
-			AxisAngle4f aAngle = new AxisAngle4f();
-			Matrix4f identityMatrix = new Matrix4f().identity();
+		Matrix4f matrix = new Matrix4f();
+		Matrix4f rotMatrix = new Matrix4f();
+		AxisAngle4f aAngle = new AxisAngle4f();
+		Matrix4f identityMatrix = new Matrix4f().identity();
 		checkCollisions();
 		ps.update((float) elapsTime);
 		for (GameObject go : engine.getSceneGraph().getGameObjects()) {
@@ -768,12 +783,40 @@ public class MyGame extends VariableFrameRateGame {
 			for (int j = 0; j < pm.getNumContacts(); j++) {
 				contactPoint = pm.getContactPoint(j);
 				if (contactPoint.getDistance() < 0.0f) {
-					//                Collison logic
-					//System.out.println("hit between: " + obj1 + " and " + obj2);
+					// Collison logic
+					// System.out.println("hit between: " + obj1 + " and " + obj2);
 					break;
 				}
 			}
 		}
+	}
+
+	public void initAudio() {
+		AudioResource resource2;
+		audioMgr = AudioManagerFactory.createAudioManager(
+				"tage.audio.joal.JOALAudioManager");
+		if (!audioMgr.initialize()) {
+			System.out.println("Audio Manager failed to initialize!");
+			return;
+		}
+		resource2 = audioMgr.createAudioResource(
+				"assets/sounds/flashLaser.wav", AudioResourceType.AUDIO_SAMPLE);
+		oceanSound = new Sound(resource2,
+				SoundType.SOUND_EFFECT, 100, true);
+		oceanSound.initialize(audioMgr);
+		oceanSound.setMaxDistance(10.0f);
+		oceanSound.setMinDistance(0.5f);
+		oceanSound.setRollOff(5.0f);
+		oceanSound.setLocation(lazergun.getWorldLocation());
+		setEarParameters();
+		oceanSound.play();
+	}
+
+	public void setEarParameters() {
+		Camera camera = (engine.getRenderSystem()).getViewport("MAIN").getCamera();
+		audioMgr.getEar().setLocation(avatar.getWorldLocation());
+		audioMgr.getEar().setOrientation(camera.getN(),
+				new Vector3f(0.0f, 1.0f, 0.0f));
 	}
 
 	private float[] toFloatArray(double[] arr) {
