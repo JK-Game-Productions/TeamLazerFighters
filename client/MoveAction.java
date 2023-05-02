@@ -2,6 +2,7 @@ package client;
 
 import org.joml.*;
 import tage.GameObject;
+import tage.audio.Sound;
 import net.java.games.input.Event;
 import tage.input.action.AbstractInputAction;
 
@@ -10,8 +11,8 @@ public class MoveAction extends AbstractInputAction {
     private Vector4f mov;
     private float frameDiff;
     private GameObject avatar;
-    private Vector3f oldPos, newPos;
     private String lastComponent;
+    private Vector3f oldPos, newPos;
 
     public MoveAction(MyGame g) {
         game = g;
@@ -24,6 +25,7 @@ public class MoveAction extends AbstractInputAction {
         frameDiff = game.getFrameDiff();
         oldPos = avatar.getWorldLocation();
         float keyValue = e.getValue();
+
         String currentComponent = e.getComponent().toString();
 
         System.out.println(currentComponent);
@@ -54,7 +56,6 @@ public class MoveAction extends AbstractInputAction {
             mov.mul(avatar.getWorldRotation());
             mov.mul(game.getMoveSpeed() * frameDiff);
         }
-
         // forward and left
         if (currentComponent.equals("W")
                 || currentComponent.equals("A")
@@ -64,17 +65,17 @@ public class MoveAction extends AbstractInputAction {
             newPos = oldPos.add(mov.x(), mov.y(), mov.z());
         }
         // back and right
-        else if (currentComponent.equals("S") 
-                || currentComponent.equals("D") 
+        else if (currentComponent.equals("S")
+                || currentComponent.equals("D")
                 || lastComponent.equals("S") && currentComponent.equals("Left Shift")
-                || lastComponent.equals("D") && currentComponent.equals("Left Shift")
-                ) {
+                || lastComponent.equals("D") && currentComponent.equals("Left Shift")) {
             newPos = oldPos.sub(mov.x(), mov.y(), mov.z());
         } else {
             newPos = oldPos;
         }
         lastComponent = currentComponent;
 
+        game.setAvatarWalking(true);
         avatar.setLocalLocation(newPos);
         game.getProtocolClient().sendMoveMessage(newPos);
     }

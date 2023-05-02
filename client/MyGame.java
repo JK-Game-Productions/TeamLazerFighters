@@ -64,7 +64,7 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private Vector<GameObject> objects;
 	private NodeController rc1, rc2, rc3, rc4, fc;
-	private Sound oceanSound;
+	private Sound laserSound, walkingSound;
 
 	// network & script variables
 	private PhysicsEngine ps;
@@ -83,6 +83,7 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean endGame = false;
 	private float trailLength = -2.0f;
 	private float moveSpeed = 3.0f;
+	private boolean isWalking = false;
 	private boolean mouseVisible = true;
 	private boolean lazergunAimed = false;
 	private boolean isClientConnected = false;
@@ -285,7 +286,7 @@ public class MyGame extends VariableFrameRateGame {
 		// --------------- initialize custom functions ---------------- //
 		setupNetworking();
 		initMouseMode();
-		// initAudio();
+		initAudio();
 
 		// -------------------- game logic ------------------- //
 		distToP1 = distanceToObject(prize1);
@@ -324,10 +325,6 @@ public class MyGame extends VariableFrameRateGame {
 		// Keyboard Actions ---------------------------------------------------
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.R, aimAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		// im.associateActionWithAllKeyboards(Component.Identifier.Key.A,
-		// turnAction,InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		// im.associateActionWithAllKeyboards(Component.Identifier.Key.D,
-		// turnAction,InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.W, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.S, moveAction,
@@ -360,7 +357,8 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		// add strafe
 
-		// ---------------PHYSICS ENGINE---------------------------//
+		// --------------- PHYSICS ENGINE ---------------------------//
+
 		// init physics engine
 		String engine = "tage.physics.JBullet.JBulletPhysicsEngine";
 		float[] gravity = { 0f, -10f, 0f };
@@ -371,7 +369,8 @@ public class MyGame extends VariableFrameRateGame {
 		float mass = 1.0f;
 		float up[] = { 0, 1, 0 };
 		double[] tempTransform;
-		// -----------------Physics Objects---------------------//
+
+		// ----------------- Physics Objects ---------------------//
 		Matrix4f translation = new Matrix4f(prize1.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		prize1P = ps.addCapsuleObject(ps.nextUID(), mass, tempTransform, prize1.getScale(), prize1.getScale());
@@ -426,6 +425,13 @@ public class MyGame extends VariableFrameRateGame {
 			// setMoveSpeed(3.0f);
 			setLazergunAim(false);
 
+			if (isWalking) {
+				walkingSound.play();
+			} else {
+				walkingSound.pause();
+			}
+			setAvatarWalking(false);
+
 			// process the networking functions
 			processNetworking((float) elapsTime);
 
@@ -433,8 +439,9 @@ public class MyGame extends VariableFrameRateGame {
 			checkMouse();
 
 			// update sound
-			// oceanSound.setLocation(lazergun.getWorldLocation());
-			// setEarParameters();
+			laserSound.setLocation(lazergun.getWorldLocation());
+			walkingSound.setLocation(avatar.getWorldLocation());
+			setEarParameters();
 
 			distToP1 = distanceToDolphin(prize1);
 			distToP2 = distanceToDolphin(prize2);
@@ -611,12 +618,13 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// System.out.println(e.getButton());
+		System.out.println(e.getButton());
+		laserSound.play();
 	}
 
 	@Override
 	public void mousePressed(java.awt.event.MouseEvent e) {
-		System.out.println(e.getButton());
+		// System.out.println(e.getButton());
 	}
 	// END Mouse Management
 
@@ -792,28 +800,38 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public void initAudio() {
-		AudioResource resource2;
+		AudioResource resource1, resource2;
 		audioMgr = AudioManagerFactory.createAudioManager(
 				"tage.audio.joal.JOALAudioManager");
 		if (!audioMgr.initialize()) {
 			System.out.println("Audio Manager failed to initialize!");
 			return;
 		}
+		resource1 = audioMgr.createAudioResource(
+				"assets/sounds/grassWalking.wav", AudioResourceType.AUDIO_SAMPLE);
+		walkingSound = new Sound(resource1,
+				SoundType.SOUND_EFFECT, 10, true);
+		walkingSound.initialize(audioMgr);
+		walkingSound.setMaxDistance(10.0f);
+		walkingSound.setMinDistance(0.5f);
+		walkingSound.setRollOff(5.0f);
+		walkingSound.setLocation(avatar.getWorldLocation());
+
 		resource2 = audioMgr.createAudioResource(
-				"assets/sounds/flashLaser.wav", AudioResourceType.AUDIO_SAMPLE);
-		oceanSound = new Sound(resource2,
-				SoundType.SOUND_EFFECT, 100, true);
-		oceanSound.initialize(audioMgr);
-		oceanSound.setMaxDistance(10.0f);
-		oceanSound.setMinDistance(0.5f);
-		oceanSound.setRollOff(5.0f);
-		oceanSound.setLocation(lazergun.getWorldLocation());
+				"assets/sounds/laser.wav", AudioResourceType.AUDIO_SAMPLE);
+		laserSound = new Sound(resource2,
+				SoundType.SOUND_EFFECT, 100, false);
+		laserSound.initialize(audioMgr);
+		laserSound.setMaxDistance(10.0f);
+		laserSound.setMinDistance(0.5f);
+		laserSound.setRollOff(5.0f);
+		laserSound.setLocation(lazergun.getWorldLocation());
+
 		setEarParameters();
-		oceanSound.play();
 	}
 
 	public void setEarParameters() {
-		Camera camera = (engine.getRenderSystem()).getViewport("MAIN").getCamera();
+		Camera camera = getMainCamera();
 		audioMgr.getEar().setLocation(avatar.getWorldLocation());
 		audioMgr.getEar().setOrientation(camera.getN(),
 				new Vector3f(0.0f, 1.0f, 0.0f));
@@ -882,6 +900,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void setLazergunAim(boolean newValue) {
 		lazergunAimed = (newValue);
+	}
+
+	public void setAvatarWalking(boolean newValue) {
+		isWalking = newValue;
 	}
 
 	public float getMoveSpeed() {
