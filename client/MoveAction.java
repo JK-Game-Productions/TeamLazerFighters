@@ -2,7 +2,6 @@ package client;
 
 import org.joml.*;
 import tage.GameObject;
-import tage.audio.Sound;
 import net.java.games.input.Event;
 import tage.input.action.AbstractInputAction;
 
@@ -24,20 +23,27 @@ public class MoveAction extends AbstractInputAction {
         avatar = game.getAvatar();
         frameDiff = game.getFrameDiff();
         oldPos = avatar.getWorldLocation();
+
         float keyValue = e.getValue();
-
         String currentComponent = e.getComponent().toString();
-
         System.out.println(currentComponent);
 
         // controller dead zones
         if (keyValue > -.2 && keyValue < .2)
             return;
-        // run time
-        if (currentComponent.equals("Left Shift"))
-            game.setMoveSpeed(6.0f);
-        else
-            game.setMoveSpeed(3.0f);
+
+        // run
+        if (currentComponent.equals("Left Shift")) {
+            game.setMoveSpeed(10.0f);
+            game.setAvatarRunning(true);
+            game.setAvatarWalking(false);
+        }
+        // walk
+        else {
+            game.setMoveSpeed(5.0f);
+            game.setAvatarRunning(false);
+            game.setAvatarWalking(true);
+        }
         // forward and back
         if (currentComponent.equals("W")
                 || currentComponent.equals("S")
@@ -75,7 +81,6 @@ public class MoveAction extends AbstractInputAction {
         }
         lastComponent = currentComponent;
 
-        game.setAvatarWalking(true);
         avatar.setLocalLocation(newPos);
         game.getProtocolClient().sendMoveMessage(newPos);
     }
