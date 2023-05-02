@@ -289,26 +289,6 @@ public class MyGame extends VariableFrameRateGame {
 
 		// -------------------- game logic ------------------- //
 
-		// Rotational Controllers
-		rc1 = new RotationController(engine, new Vector3f(0, 1, 0), 0.001f);
-		rc1.addTarget(prize1);
-		rc2 = new RotationController(engine, new Vector3f(0, 1, 0), 0.001f);
-		rc2.addTarget(prize2);
-		rc3 = new RotationController(engine, new Vector3f(0, 1, 0), 0.001f);
-		rc3.addTarget(prize3);
-		rc4 = new RotationController(engine, new Vector3f(0, 1, 0), 0.001f);
-		rc4.addTarget(prize4);
-
-		(engine.getSceneGraph()).addNodeController(rc1);
-		(engine.getSceneGraph()).addNodeController(rc2);
-		(engine.getSceneGraph()).addNodeController(rc3);
-		(engine.getSceneGraph()).addNodeController(rc4);
-
-		// Flatten Controller
-		fc = new FlattenController(avatar.getLocalScale().m11());
-		fc.addTarget(avatar);
-		(engine.getSceneGraph()).addNodeController(fc);
-
 		// ------------------- Input Setup ------------------- //
 
 		AimAction aimAction = new AimAction(this);
@@ -319,7 +299,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Keyboard Actions ---------------------------------------------------
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.R, aimAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.W, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.S, moveAction,
@@ -334,7 +314,7 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.LALT, mouseAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.P, pauseAction,
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.TAB, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.LSHIFT, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -350,7 +330,6 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Button._7, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
-		// add strafe
 
 		// --------------------- Physics Engine --------------------- //
 
@@ -416,11 +395,10 @@ public class MyGame extends VariableFrameRateGame {
 			// update lazergun position and aim
 			lazergun.applyParentRotationToPosition(true);
 			if (lazergunAimed) {
-				lazergun.setLocalTranslation(new Matrix4f().translation(-0.224f, 0.8f, 0.9f));
+				lazergun.setLocalTranslation(new Matrix4f().translation(-0.217f, 0.8f, 0.9f));
 			} else {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
 			}
-			setLazergunAim(false);
 
 			// update walking sound
 			if (isWalking && (walkingSound.getIsPlaying() == false)) {
@@ -453,31 +431,32 @@ public class MyGame extends VariableFrameRateGame {
 
 			// show/hide mouse logic
 			checkMouse();
+			setMouseVisible(false);
+
+			// ---------------------PHYSICS LOGIC--------------------------//
+
+			Matrix4f currentTranslation, currentRotation;
+			// if(running){
+			Matrix4f matrix = new Matrix4f();
+			Matrix4f rotMatrix = new Matrix4f();
+			AxisAngle4f aAngle = new AxisAngle4f();
+			Matrix4f identityMatrix = new Matrix4f().identity();
+			checkCollisions();
+			ps.update((float) elapsTime);
+			for (GameObject go : engine.getSceneGraph().getGameObjects()) {
+				if (go.getPhysicsObject() != null) {
+					matrix.getRotation(aAngle);
+					matrix.set(toFloatArray(go.getPhysicsObject().getTransform()));
+					identityMatrix.set(3, 0, matrix.m30());
+					identityMatrix.set(3, 1, matrix.m31());
+					identityMatrix.set(3, 2, matrix.m32());
+					go.setLocalTranslation(identityMatrix);
+					rotMatrix.rotation(aAngle);
+				}
+			}
+			// } If condition for running physics with scripts
 
 		} // END if statement for game not paused
-
-		// ---------------------PHYSICS LOGIC--------------------------//
-
-		Matrix4f currentTranslation, currentRotation;
-		// if(running){
-		Matrix4f matrix = new Matrix4f();
-		Matrix4f rotMatrix = new Matrix4f();
-		AxisAngle4f aAngle = new AxisAngle4f();
-		Matrix4f identityMatrix = new Matrix4f().identity();
-		checkCollisions();
-		ps.update((float) elapsTime);
-		for (GameObject go : engine.getSceneGraph().getGameObjects()) {
-			if (go.getPhysicsObject() != null) {
-				matrix.getRotation(aAngle);
-				matrix.set(toFloatArray(go.getPhysicsObject().getTransform()));
-				identityMatrix.set(3, 0, matrix.m30());
-				identityMatrix.set(3, 1, matrix.m31());
-				identityMatrix.set(3, 2, matrix.m32());
-				go.setLocalTranslation(identityMatrix);
-				rotMatrix.rotation(aAngle);
-			}
-		}
-		// } If condition for running physics with scripts
 
 		// update HUD variables
 		String scoreStr = "Score: " + Integer.toString(score);
@@ -499,77 +478,99 @@ public class MyGame extends VariableFrameRateGame {
 	// ------------------------- MOUSE MANAGEMENT ------------------------ //
 
 	private void initMouseMode() {
-		RenderSystem rs = engine.getRenderSystem();
-		Viewport vw = rs.getViewport("LEFT");
-		float left = vw.getActualLeft();
-		float bottom = vw.getActualBottom();
-		float width = vw.getActualWidth();
-		float height = vw.getActualHeight();
+		if (paused) {
+			return;
+		} else {
+			RenderSystem rs = engine.getRenderSystem();
+			Viewport vw = rs.getViewport("LEFT");
+			float left = vw.getActualLeft();
+			float bottom = vw.getActualBottom();
+			float width = vw.getActualWidth();
+			float height = vw.getActualHeight();
 
-		centerX = (int) (left + width / 2);
-		centerY = (int) (bottom - height / 2);
+			centerX = (int) (left + width / 2);
+			centerY = (int) (bottom - height / 2);
 
-		isRecentering = false;
+			isRecentering = false;
 
-		try {
-			robot = new Robot();
-		} catch (AWTException ex) {
-			throw new RuntimeException("couldn't create robot");
+			try {
+				robot = new Robot();
+			} catch (AWTException ex) {
+				throw new RuntimeException("couldn't create robot");
+			}
+
+			recenterMouse();
+			prevMouseX = centerX;
+			prevMouseY = centerY;
 		}
-
-		recenterMouse();
-		prevMouseX = centerX;
-		prevMouseY = centerY;
 
 		// rs.imageUpdate(ch, 1, (int)centerX, (int)centerY, ch.getWidth(null),
 		// ch.getHeight(null));
 	}
 
 	private void recenterMouse() {
-		RenderSystem rs = engine.getRenderSystem();
-		Viewport vw = rs.getViewport("LEFT");
-		float left = vw.getActualLeft();
-		float bottom = vw.getActualBottom();
-		float width = vw.getActualWidth();
-		float height = vw.getActualHeight();
-		centerX = (int) (left + width / 2.0f);
-		centerY = (int) (bottom - height / 2.0f);
-
-		isRecentering = true;
-		robot.mouseMove((int) centerX, (int) centerY);
-	}
-
-	@Override
-	public void mouseMoved(java.awt.event.MouseEvent e) {
-		if (isRecentering && centerX == e.getXOnScreen() && centerY == e.getYOnScreen()) {
-			isRecentering = false;
+		if (paused) {
+			return;
 		} else {
-			curMouseX = e.getXOnScreen();
-			curMouseY = e.getYOnScreen();
-			float mouseDeltaX = prevMouseX - curMouseX;
-			float mouseDeltaY = prevMouseY - curMouseY;
+			RenderSystem rs = engine.getRenderSystem();
+			Viewport vw = rs.getViewport("LEFT");
+			float left = vw.getActualLeft();
+			float bottom = vw.getActualBottom();
+			float width = vw.getActualWidth();
+			float height = vw.getActualHeight();
 
-			avatar.gyaw(getFrameDiff(), mouseDeltaX);
-			// camMain.yaw(mouseDeltaX);
-			avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
-			prevMouseX = curMouseX;
-			prevMouseY = curMouseY;
-
-			recenterMouse();
-			prevMouseX = centerX;
-			prevMouseY = centerY;
+			centerX = (int) (left + width / 2.0f);
+			centerY = (int) (bottom - height / 2.0f);
+			isRecentering = true;
+			robot.mouseMove((int) centerX, (int) centerY);
 		}
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent e) {
-		System.out.println(e.getButton());
-		laserSound.play();
+	public void mouseMoved(java.awt.event.MouseEvent e) {
+		if (paused) {
+			return;
+		} else {
+			if (isRecentering && centerX == e.getXOnScreen() && centerY == e.getYOnScreen()) {
+				isRecentering = false;
+			} else {
+
+				curMouseX = e.getXOnScreen();
+				curMouseY = e.getYOnScreen();
+				float mouseDeltaX = prevMouseX - curMouseX;
+				float mouseDeltaY = prevMouseY - curMouseY;
+
+				avatar.gyaw(getFrameDiff(), mouseDeltaX);
+				// camMain.yaw(mouseDeltaX);
+				avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
+				prevMouseX = curMouseX;
+				prevMouseY = curMouseY;
+
+				recenterMouse();
+				prevMouseX = centerX;
+				prevMouseY = centerY;
+			}
+		}
 	}
 
 	@Override
-	public void mousePressed(java.awt.event.MouseEvent e) {
+	// triggers on release of mouse click
+	public void mouseClicked(MouseEvent e) {
 		// System.out.println(e.getButton());
+		setLazergunAim(false);
+	}
+
+	@Override
+	// triggers on first press of mouse
+	public void mousePressed(java.awt.event.MouseEvent e) {
+		System.out.println(e.getButton());
+
+		if (paused) {
+			return;
+		} else {
+			laserSound.play();
+			setLazergunAim(true);
+		}
 	}
 	// END Mouse Management
 
@@ -763,7 +764,6 @@ public class MyGame extends VariableFrameRateGame {
 			// set mouse back to default
 			canvas.setCursor(null);
 		}
-		setMouseVisible(false);
 	}
 
 	private void checkCollisions() {
@@ -842,10 +842,6 @@ public class MyGame extends VariableFrameRateGame {
 		return gm;
 	}
 
-	public void togglePause() {
-		paused = !paused;
-	}
-
 	public float getFrameDiff() {
 		return (float) frameDiff;
 	}
@@ -859,6 +855,18 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	// -----------------------------------------
+
+	public void togglePause() {
+		paused = !paused;
+	}
+
+	public void toggleMouse() {
+		mouseVisible = !mouseVisible;
+	}
+
+	public void toggleAim() {
+		lazergunAimed = !lazergunAimed;
+	}
 
 	public void setLazergunAim(boolean newValue) {
 		lazergunAimed = (newValue);

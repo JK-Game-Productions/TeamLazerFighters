@@ -13,5 +13,6 @@ public class PauseAction extends AbstractInputAction {
     @Override
     public void performAction(float time, Event e) {
         game.togglePause();
+        game.toggleMouse();
     }
 }
