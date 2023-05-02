@@ -175,12 +175,12 @@ public class MyGame extends VariableFrameRateGame {
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
 		avatar.setLocalTranslation((new Matrix4f()).translation(0f, 4f, 0f));
-		avatar.setLocalScale((new Matrix4f()).scaling(0.33f));
+		avatar.setLocalScale((new Matrix4f()).scaling(0.43f));
 
 		// build lazergun object
 		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
 		lazergun.setLocalTranslation((new Matrix4f()).translation(4f, 4f, 4f));
-		lazergun.setLocalScale((new Matrix4f()).scaling(0.20f));
+		lazergun.setLocalScale((new Matrix4f()).scaling(0.15f));
 		lazergun.setParent(avatar);
 		lazergun.propagateRotation(true);
 		lazergun.propagateTranslation(true);
@@ -352,7 +352,7 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		// add strafe
 
-		// --------------- Physics Engine ---------------------------//
+		// --------------------- Physics Engine --------------------- //
 
 		// init physics engine
 		String engine = "tage.physics.JBullet.JBulletPhysicsEngine";
@@ -365,7 +365,7 @@ public class MyGame extends VariableFrameRateGame {
 		float up[] = { 0, 1, 0 };
 		double[] tempTransform;
 
-		// ----------------- Physics Objects --------------------- //
+		// --------------------- Physics Objects --------------------- //
 		Matrix4f translation = new Matrix4f(prize1.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		prize1P = ps.addCapsuleObject(ps.nextUID(), mass, tempTransform, prize1.getScale(), prize1.getScale());
@@ -416,7 +416,7 @@ public class MyGame extends VariableFrameRateGame {
 			// update lazergun position and aim
 			lazergun.applyParentRotationToPosition(true);
 			if (lazergunAimed) {
-				lazergun.setLocalTranslation(new Matrix4f().translation(-0.222f, 0.8f, 0.9f));
+				lazergun.setLocalTranslation(new Matrix4f().translation(-0.224f, 0.8f, 0.9f));
 			} else {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
 			}
@@ -551,7 +551,7 @@ public class MyGame extends VariableFrameRateGame {
 
 			avatar.gyaw(getFrameDiff(), mouseDeltaX);
 			// camMain.yaw(mouseDeltaX);
-			avatar.pitch(getFrameDiff(), mouseDeltaY);
+			avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
 			prevMouseX = curMouseX;
 			prevMouseY = curMouseY;
 
@@ -710,10 +710,10 @@ public class MyGame extends VariableFrameRateGame {
 		return true;
 	}
 
-	private void mapHeight(GameObject object) {
+	public void mapHeight(GameObject object) {
 		Vector3f loc = object.getWorldLocation();
 		float height = ground.getHeight(loc.x(), loc.z());
-		object.setLocalLocation(new Vector3f(loc.x(), (height + 2.0f), loc.z()));
+		object.setLocalLocation(new Vector3f(loc.x(), (height + 1.0f), loc.z()));
 	}
 
 	private void positionCameraBehindAvatar() {
