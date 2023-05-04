@@ -4,6 +4,7 @@ import org.joml.*;
 import tage.GameObject;
 import net.java.games.input.Event;
 import tage.input.action.AbstractInputAction;
+import tage.physics.PhysicsObject;
 
 public class MoveAction extends AbstractInputAction {
     private MyGame game;
@@ -12,6 +13,8 @@ public class MoveAction extends AbstractInputAction {
     private GameObject avatar;
     private Vector3f oldPos, newPos;
     private String lastComponent;
+    private PhysicsObject pObject;
+    private float vals[] = new float[16];
 
     public MoveAction(MyGame g) {
         game = g;
@@ -21,6 +24,7 @@ public class MoveAction extends AbstractInputAction {
     @Override
     public void performAction(float time, Event e) {
         avatar = game.getAvatar();
+        pObject = avatar.getPhysicsObject();
         frameDiff = game.getFrameDiff();
         oldPos = avatar.getWorldLocation();
         float keyValue = e.getValue();
@@ -44,6 +48,7 @@ public class MoveAction extends AbstractInputAction {
             mov = new Vector4f(0f, 0f, 1f, 1f);
             mov.mul(avatar.getWorldRotation());
             mov.mul(game.getMoveSpeed() * frameDiff);
+            //System.out.println("Mov values: " + mov.x()+ ","+mov.y()+","+mov.z()+","+mov.w());
         }
         // left and right
         if (currentComponent.equals("A")
@@ -69,10 +74,11 @@ public class MoveAction extends AbstractInputAction {
                 || lastComponent.equals("S") && currentComponent.equals("Left Shift")
                 || lastComponent.equals("D") && currentComponent.equals("Left Shift")
                 ) {
-            newPos = oldPos.sub(mov.x(), mov.y(), mov.z());
-        } else {
+                    newPos = oldPos.sub(mov.x(), mov.y(), mov.z());
+                } else {
             newPos = oldPos;
         }
+        
         lastComponent = currentComponent;
 
         avatar.setLocalLocation(newPos);
