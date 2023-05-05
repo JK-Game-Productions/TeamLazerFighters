@@ -26,6 +26,7 @@ import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Random;
 import java.net.InetAddress;
@@ -54,6 +55,7 @@ public class MyGame extends VariableFrameRateGame {
 
 	// Tage Class Variables
 	private Light light1;
+	private Image crosshair;
 	private InputManager im;
 	private GhostManager gm;
 	private Robot robot;
@@ -63,8 +65,7 @@ public class MyGame extends VariableFrameRateGame {
 	private Vector3f lastCamLocation;
 	private ProtocolClient protClient;
 	private Vector<GameObject> objects;
-	private NodeController rc1, rc2, rc3, rc4, fc;
-	private Sound laserSound, walkingSound, runningSound;
+	private Sound laserSound, walkingSound, runningSound, voiceline1;
 
 	// network & script variables
 	private PhysicsEngine ps;
@@ -83,6 +84,7 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean endGame = false;
 	private boolean isRunning = false;
 	private boolean isWalking = false;
+	private boolean cameraSetUp = false;
 	private boolean mouseVisible = true;
 	private float vals[] = new float[16];
 	private boolean lazergunAimed = false;
@@ -92,11 +94,10 @@ public class MyGame extends VariableFrameRateGame {
 	// private int fluffyClouds;
 
 	// object variables
-	private GameObject avatar, lazergun, prize1, prize2, prize3, prize4, ground, x, y, z;
-	private ObjShape ghostS, avatarS, lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS;
-	private TextureImage ghostT, avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river;
+	private GameObject avatar, NPC, lazergun, prize1, prize2, prize3, prize4, ground, x, y, z;
+	private ObjShape ghostS, avatarS, NPCs, lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS;
+	private TextureImage ghostT, avatartx, NPCtx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river;
 	private PhysicsObject groundP, prize1P, avatarP;
-	private boolean cameraSetUp = false;
 
 	// ----------------------------------------------------------------------------
 
@@ -133,6 +134,7 @@ public class MyGame extends VariableFrameRateGame {
 	public void loadShapes() {
 		avatarS = new ImportedModel("man4.obj");
 		ghostS = avatarS;
+		NPCs = avatarS;
 
 		lazergunS = new ImportedModel("lazergun.obj");
 		prize1S = new Torus();
@@ -149,6 +151,7 @@ public class MyGame extends VariableFrameRateGame {
 	public void loadTextures() {
 		avatartx = new TextureImage("man4.png");
 		ghostT = avatartx;
+		NPCtx = avatartx;
 
 		lazerguntx = new TextureImage("lazergun.png");
 		p2tx = new TextureImage("gold_energy.jpg");
@@ -176,6 +179,11 @@ public class MyGame extends VariableFrameRateGame {
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
 		avatar.setLocalTranslation((new Matrix4f()).translation(0f, 4f, 0f));
 		avatar.setLocalScale((new Matrix4f()).scaling(0.43f));
+
+		// NPC
+		NPC = new GameObject(GameObject.root(), NPCs, NPCtx);
+		NPC.setLocalTranslation((new Matrix4f()).translation(30f, 5f, 24f));
+		NPC.setLocalScale((new Matrix4f()).scaling(0.43f));
 
 		// build lazergun object
 		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
@@ -384,10 +392,14 @@ public class MyGame extends VariableFrameRateGame {
 			// will need to find a way to make the map height
 			// translate to the ghost avatars
 			mapHeight(avatar);
+			mapHeight(NPC);
 			mapHeight(prize1);
 			mapHeight(prize2);
 			mapHeight(prize3);
 			mapHeight(prize4);
+			mapHeight(x);
+			mapHeight(y);
+			mapHeight(z);
 
 			// orbitCam.updateCameraPosition();
 			positionCameraBehindAvatar();
@@ -424,6 +436,7 @@ public class MyGame extends VariableFrameRateGame {
 			// update all sounds
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
+			voiceline1.setLocation(NPC.getWorldLocation());
 			setEarParameters();
 
 			// process the networking functions
@@ -474,6 +487,20 @@ public class MyGame extends VariableFrameRateGame {
 
 	} // END Update
 		// END VariableFrameRate Game Overrides
+
+	// ------------------------- KEY PRESSED ------------------------ //
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_F: {
+				voiceline1.play();
+				break;
+			}
+		}
+
+		super.keyPressed(e);
+	}
 
 	// ------------------------- MOUSE MANAGEMENT ------------------------ //
 
@@ -577,7 +604,7 @@ public class MyGame extends VariableFrameRateGame {
 	// ------------------------- AUDIO SECTION ------------------------ //
 
 	public void initAudio() {
-		AudioResource resource1, resource2, resource3;
+		AudioResource resource1, resource2, resource3, resource4;
 		audioMgr = AudioManagerFactory.createAudioManager(
 				"tage.audio.joal.JOALAudioManager");
 		if (!audioMgr.initialize()) {
@@ -610,6 +637,15 @@ public class MyGame extends VariableFrameRateGame {
 		laserSound.setMinDistance(0.5f);
 		laserSound.setRollOff(5.0f);
 		laserSound.setLocation(lazergun.getWorldLocation());
+
+		resource4 = audioMgr.createAudioResource("assets/sounds/teatimeVoiceline.wav",
+				AudioResourceType.AUDIO_SAMPLE);
+		voiceline1 = new Sound(resource4, SoundType.SOUND_EFFECT, 100, false);
+		voiceline1.initialize(audioMgr);
+		voiceline1.setMaxDistance(5.0f);
+		voiceline1.setMinDistance(0.5f);
+		voiceline1.setRollOff(3.0f);
+		voiceline1.setLocation(NPC.getWorldLocation());
 
 		setEarParameters();
 	}
@@ -755,11 +791,11 @@ public class MyGame extends VariableFrameRateGame {
 		Canvas canvas = rs.getGLCanvas();
 
 		Cursor clear = tk.createCustomCursor(tk.getImage(""), new Point(), "ClearCursor");
-		Cursor crosshair = tk.createCustomCursor(tk.getImage("./assets/textures/Blue-Crosshair-1.png"), new Point(),
+		Cursor crosshair = tk.createCustomCursor(tk.getImage("./assets/textures/normalCrosshair.png"), new Point(),
 				"Crosshair");
 
 		if (!mouseVisible) {
-			canvas.setCursor(clear);
+			canvas.setCursor(crosshair);
 		} else {
 			// set mouse back to default
 			canvas.setCursor(null);
