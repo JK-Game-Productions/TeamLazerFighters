@@ -1,6 +1,7 @@
 package client;
 
 import org.joml.*;
+import org.joml.Math;
 
 import com.bulletphysics.collision.broadphase.Dispatcher;
 import com.bulletphysics.collision.narrowphase.ManifoldPoint;
@@ -94,10 +95,13 @@ public class MyGame extends VariableFrameRateGame {
 	// private int fluffyClouds;
 
 	// object variables
-	private GameObject avatar, NPC, lazergun, prize1, prize2, prize3, prize4, ground, x, y, z;
-	private ObjShape ghostS, avatarS, NPCs, lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS;
-	private TextureImage ghostT, avatartx, NPCtx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river;
-	private PhysicsObject groundP, prize1P, avatarP;
+	private GameObject avatar, NPC, lazergun, lazergun1, prize1, prize2, prize3, prize4, ground, x, y, z, npc, lazer1;
+	private ObjShape ghostS, avatarS, NPCs, lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS,
+			lazerS;
+	private TextureImage ghostT, avatartx, NPCtx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river, lazerT;
+	private PhysicsObject groundP, prize1P, avatarP, prize2P, prize1GroundP, avatarGroundP, prize2GroundP, npcP,
+			npcGroundP, lazerP, lazerGroundP;
+	private boolean placedOnMap = false;
 
 	// ----------------------------------------------------------------------------
 
@@ -137,6 +141,7 @@ public class MyGame extends VariableFrameRateGame {
 		NPCs = avatarS;
 
 		lazergunS = new ImportedModel("lazergun.obj");
+		lazerS = new Sphere();
 		prize1S = new Torus();
 		prize2S = new Cube();
 		prize3S = new Sphere();
@@ -151,6 +156,7 @@ public class MyGame extends VariableFrameRateGame {
 	public void loadTextures() {
 		avatartx = new TextureImage("man4.png");
 		ghostT = avatartx;
+		lazerT = new TextureImage("lazerbeam.png");
 		NPCtx = avatartx;
 
 		lazerguntx = new TextureImage("lazergun.png");
@@ -175,10 +181,24 @@ public class MyGame extends VariableFrameRateGame {
 		ground.getRenderStates().setTiling(1);
 		ground.setHeightMap(river);
 
+		npc = new GameObject(GameObject.root(), avatarS, avatartx);
+		npc.setLocalTranslation(new Matrix4f().translation(80.0f, 0.0f, 20.0f));
+		npc.setLocalRotation(new Matrix4f().rotateY((float) Math.PI));
+		npc.setLocalScale(new Matrix4f().scale(.50f));
+
+		lazergun1 = new GameObject(GameObject.root(), lazergunS, lazerguntx);
+		lazergun1.setLocalTranslation((new Matrix4f()).translation(80.00f, 41.00f, 15.00f));
+		lazergun1.setLocalScale((new Matrix4f()).scaling(0.20f));
+
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
-		avatar.setLocalTranslation((new Matrix4f()).translation(0f, 4f, 0f));
-		avatar.setLocalScale((new Matrix4f()).scaling(0.43f));
+		avatar.setLocalTranslation((new Matrix4f()).translation(80f, 0f, 12.0f));
+		avatar.setLocalScale((new Matrix4f()).scaling(.43f));
+
+		// NPC
+		NPC = new GameObject(GameObject.root(), NPCs, NPCtx);
+		NPC.setLocalTranslation((new Matrix4f()).translation(30f, 5f, 24f));
+		NPC.setLocalScale((new Matrix4f()).scaling(0.43f));
 
 		// NPC
 		NPC = new GameObject(GameObject.root(), NPCs, NPCtx);
@@ -192,6 +212,15 @@ public class MyGame extends VariableFrameRateGame {
 		lazergun.setParent(avatar);
 		lazergun.propagateRotation(true);
 		lazergun.propagateTranslation(true);
+
+		lazer1 = new GameObject(GameObject.root(), lazerS, lazerT);
+		lazer1.setLocalTranslation(new Matrix4f().translation(80.67f, 40.955f, 15.18f));
+		lazer1.setLocalScale(new Matrix4f().scale(0.02f, 0.02f, 0.30f));
+		lazer1.setParent(lazergun);
+		lazer1.propagateRotation(true);
+		lazer1.propagateScale(false);
+		// lazer1.propagateTranslation(true);
+		lazer1.setLocalTranslation(new Matrix4f().translation(.67f, -.045f, .18f));
 
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
@@ -241,6 +270,7 @@ public class MyGame extends VariableFrameRateGame {
 		light1 = new Light();
 		light1.setLocation(new Vector3f(0.0f, 50.0f, 0.0f));
 		(engine.getSceneGraph()).addLight(light1);
+
 	}
 
 	@Override
@@ -349,26 +379,69 @@ public class MyGame extends VariableFrameRateGame {
 		ps.setGravity(gravity);
 		// creating physics world
 		float mass = 1.0f;
+		float massless = 0.0f;
 		float up[] = { 0, 1, 0 };
+		float gsize[] = { 1f, 0.1f, 1f };
+		float asize[] = { .33f, .33f, .33f };
+		float psize[] = { 4.0f, 4.0f, 4.0f };
+		float nsize[] = { 1.0f, 1.0f, 1.0f };
 		double[] tempTransform;
 
 		// --------------------- Physics Objects --------------------- //
 		Matrix4f translation = new Matrix4f(prize1.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
-		prize1P = ps.addCapsuleObject(ps.nextUID(), mass, tempTransform, prize1.getScale(), prize1.getScale());
+		prize1P = ps.addSphereObject(ps.nextUID(), massless, tempTransform, 3.0f);
 		prize1P.setBounciness(0.5f);
 		prize1.setPhysicsObject(prize1P);
+
+		translation = new Matrix4f().translation(0, 0, 0);
+		tempTransform = toDoubleArray(translation.get(vals));
+		prize1GroundP = ps.addBoxObject(ps.nextUID(), massless, tempTransform, gsize);
+		prize1GroundP.setFriction(0.5f);
+		prize1GroundP.setBounciness(0.1f);
+
 		/*
 		 * translation = new Matrix4f(avatar.getLocalTranslation());
 		 * tempTransform = toDoubleArray(translation.get(vals));
-		 * avatarP = ps.addSphereObject(ps.nextUID(), mass, tempTransform, 0.33f);
+		 * avatarP = ps.addBoxObject(ps.nextUID(), mass, tempTransform, asize);
 		 * //avatarP.setFriction(0f);
 		 * avatar.setPhysicsObject(avatarP);
+		 * 
 		 */
+		translation = new Matrix4f().translation(0, 0, 0);
+		tempTransform = toDoubleArray(translation.get(vals));
+		avatarGroundP = ps.addBoxObject(ps.nextUID(), massless, tempTransform, gsize);
+
+		translation = new Matrix4f(prize2.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		prize2P = ps.addBoxObject(ps.nextUID(), massless, tempTransform, psize);
+		prize2P.setFriction(0.5f);
+		prize2P.setBounciness(1.0f);
+		prize2.setPhysicsObject(prize2P);
+
+		translation = new Matrix4f().translation(0, 0, 0);
+		tempTransform = toDoubleArray(translation.get(vals));
+		prize2GroundP = ps.addBoxObject(ps.nextUID(), massless, tempTransform, gsize);
+
+		translation = new Matrix4f(npc.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		npcP = ps.addBoxObject(ps.nextUID(), mass, tempTransform, nsize);
+		npcP.setDamping(0f, 1f);
+		npc.setPhysicsObject(npcP);
+
+		translation = new Matrix4f().translation(0, 0, 0);
+		tempTransform = toDoubleArray(translation.get(vals));
+		npcGroundP = ps.addBoxObject(ps.nextUID(), massless, tempTransform, gsize);
+
+		translation = new Matrix4f(lazer1.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		lazerP = ps.addCapsuleObject(ps.nextUID(), mass - .99f, tempTransform, 0.30f, 0.02f);
+
 		translation = new Matrix4f(ground.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		groundP = ps.addStaticPlaneObject(ps.nextUID(), tempTransform, up, 0.0f);
-		groundP.setBounciness(1.0f);
+		groundP.setBounciness(0.1f);
+		groundP.setFriction(1.0f);
 		ground.setPhysicsObject(groundP);
 	}
 
@@ -406,6 +479,7 @@ public class MyGame extends VariableFrameRateGame {
 
 			// update lazergun position and aim
 			lazergun.applyParentRotationToPosition(true);
+			// lazer1.applyParentRotationToPosition(true);
 			if (lazergunAimed) {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.217f, 0.8f, 0.9f));
 			} else {
@@ -446,8 +520,57 @@ public class MyGame extends VariableFrameRateGame {
 			checkMouse();
 			setMouseVisible(false);
 
-			// ---------------------PHYSICS LOGIC--------------------------//
+			// Player logic
+			/*
+			 * if (distToP1 <= prize1.getScale() && !prize1.isCollected()) {
+			 * score++;
+			 * prize1.collect();
+			 * rc1.toggle();
+			 * prize1.setParent(avatar);
+			 * prize1.propagateRotation(false);
+			 * prize1.setLocalScale(new Matrix4f().scaling(0.25f));
+			 * prize1.applyParentRotationToPosition(true);
+			 * prize1.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
+			 * trailLength += -1.5f;
+			 * }
+			 * 
+			 * if (distToP2 <= prize2.getScale() && !prize2.isCollected()) {
+			 * score++;
+			 * prize2.collect();
+			 * rc2.toggle();
+			 * prize2.setParent(avatar);
+			 * prize2.propagateRotation(false);
+			 * prize2.setLocalScale(new Matrix4f().scaling(0.25f));
+			 * prize2.applyParentRotationToPosition(true);
+			 * prize2.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
+			 * trailLength += -1.5f;
+			 * }
+			 * if (distToP3 <= prize3.getScale() && !prize3.isCollected()) {
+			 * score++;
+			 * prize3.collect();
+			 * rc3.toggle();
+			 * prize3.setParent(avatar);
+			 * prize3.propagateRotation(false);
+			 * prize3.setLocalScale(new Matrix4f().scaling(0.25f));
+			 * prize3.applyParentRotationToPosition(true);
+			 * prize3.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
+			 * trailLength += -1.5f;
+			 * }
+			 * if (distToP4 <= prize4.getScale() && !prize4.isCollected()) {
+			 * score++;
+			 * prize4.collect();
+			 * rc4.toggle();
+			 * prize4.setParent(avatar);
+			 * prize4.propagateRotation(false);
+			 * prize4.setLocalScale(new Matrix4f().scaling(0.25f));
+			 * prize4.applyParentRotationToPosition(true);
+			 * prize4.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
+			 * trailLength += -1.5f;
+			 * }
+			 */
+			// pause scope and end game cutoff
 
+			// ---------------------PHYSICS LOGIC--------------------------//
 			Matrix4f currentTranslation, currentRotation;
 			// if(running){
 			Matrix4f matrix = new Matrix4f();
@@ -458,22 +581,29 @@ public class MyGame extends VariableFrameRateGame {
 			ps.update((float) elapsTime);
 			for (GameObject go : engine.getSceneGraph().getGameObjects()) {
 				if (go.getPhysicsObject() != null) {
-					matrix.getRotation(aAngle);
 					matrix.set(toFloatArray(go.getPhysicsObject().getTransform()));
+					matrix.getRotation(aAngle);
+					rotMatrix.rotation(aAngle);
+					go.setLocalRotation(rotMatrix);
 					identityMatrix.set(3, 0, matrix.m30());
 					identityMatrix.set(3, 1, matrix.m31());
 					identityMatrix.set(3, 2, matrix.m32());
 					go.setLocalTranslation(identityMatrix);
-					rotMatrix.rotation(aAngle);
 				}
 			}
-			// } If condition for running physics with scripts
 
-		} // END if statement for game not paused
+			mapHeight(avatar, avatarGroundP);
+			mapHeight(prize2, prize2GroundP);
+			mapHeight(prize1, prize1GroundP);
+			mapHeight(npc, npcGroundP);
+			// } If condition for running physics with scripts
+		}
+		// END if statement for game not paused
 
 		// update HUD variables
 		String scoreStr = "Score: " + Integer.toString(score);
-		String dolLocStr = "X: " + avatar.getWorldLocation().x() + "  Z: " + avatar.getWorldLocation().z();
+		String dolLocStr = "X: " + avatar.getWorldLocation().x() + " Y: " + avatar.getWorldLocation().y() + "  Z: "
+				+ avatar.getWorldLocation().z();
 		Vector3f dolLocColor = new Vector3f(1, 1, 1);
 		Vector3f scoreColor = new Vector3f(0, 1, 0);
 		String winStr = "You Have Beaten The Blob";
@@ -481,13 +611,45 @@ public class MyGame extends VariableFrameRateGame {
 		if (prize1.isCollected() && prize2.isCollected() && prize3.isCollected() && prize4.isCollected()) {
 			(engine.getHUDmanager()).setHUD1(winStr, winColor, (int) (width * 0.75f), 15);
 			endGame = true;
-		} else
+		} else {
 			(engine.getHUDmanager()).setHUD1(dolLocStr, dolLocColor, (int) (width * 0.75f), 15);
-		(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
+			(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
+		} // END Update
+	}// END VariableFrameRate Game Overrides
 
-	} // END Update
-		// END VariableFrameRate Game Overrides
+	private void checkCollisions() {
+		DynamicsWorld dw;
+		Dispatcher dist;
+		PersistentManifold pm;
+		RigidBody object1, object2;
+		ManifoldPoint contactPoint;
 
+		dw = ((JBulletPhysicsEngine) ps).getDynamicsWorld();
+		dist = dw.getDispatcher();
+		int mCount = dist.getNumManifolds();
+		for (int i = 0; i < mCount; i++) {
+			pm = dist.getManifoldByIndexInternal(i);
+			object1 = (RigidBody) pm.getBody0();
+			object2 = (RigidBody) pm.getBody1();
+			JBulletPhysicsObject obj1 = JBulletPhysicsObject.getJBulletPhysicsObject(object1);
+			JBulletPhysicsObject obj2 = JBulletPhysicsObject.getJBulletPhysicsObject(object2);
+			for (int j = 0; j < pm.getNumContacts(); j++) {
+				contactPoint = pm.getContactPoint(j);
+				if (contactPoint.getDistance() < 0.0f) {
+					// handle collison?
+					if (npcP.getUID() == obj1.getUID()
+							|| npcP.getUID() == obj2.getUID() && lazerP.getUID() == obj1.getUID()
+							|| lazerP.getUID() == obj2.getUID()) {
+						System.out.println("");
+						System.out.println("hit between: " + obj1 + " and " + obj2);
+						break;
+					} else {
+						System.out.println("No Collision");
+					}
+				}
+			}
+		}
+	}
 	// ------------------------- KEY PRESSED ------------------------ //
 
 	@Override
@@ -590,7 +752,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	// triggers on first press of mouse
 	public void mousePressed(java.awt.event.MouseEvent e) {
-		System.out.println(e.getButton());
+		// System.out.println(e.getButton());
 
 		if (paused) {
 			return;
@@ -598,10 +760,17 @@ public class MyGame extends VariableFrameRateGame {
 			laserSound.play();
 			setLazergunAim(true);
 		}
+		if (e.getButton() == 1) {
+			System.out.println("fire");
+			fireLazer();
+		}
 	}
 	// END Mouse Management
 
 	// ------------------------- AUDIO SECTION ------------------------ //
+
+	private void fireLazer() {
+	}
 
 	public void initAudio() {
 		AudioResource resource1, resource2, resource3, resource4;
@@ -747,10 +916,13 @@ public class MyGame extends VariableFrameRateGame {
 		return true;
 	}
 
-	public void mapHeight(GameObject object) {
+	private void mapHeight(GameObject object, PhysicsObject objGround) {
 		Vector3f loc = object.getWorldLocation();
 		float height = ground.getHeight(loc.x(), loc.z());
 		object.setLocalLocation(new Vector3f(loc.x(), (height + 1.0f), loc.z()));
+		Matrix4f translation = new Matrix4f().translation(loc.x(), height - .05f, loc.z());
+		double[] tempTransform = toDoubleArray(translation.get(vals));
+		objGround.setTransform(tempTransform);
 	}
 
 	private void positionCameraBehindAvatar() {
@@ -802,33 +974,6 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}
 
-	private void checkCollisions() {
-		DynamicsWorld dw;
-		Dispatcher dist;
-		PersistentManifold pm;
-		RigidBody object1, object2;
-		ManifoldPoint contactPoint;
-
-		dw = ((JBulletPhysicsEngine) ps).getDynamicsWorld();
-		dist = dw.getDispatcher();
-		int mCount = dist.getNumManifolds();
-		for (int i = 0; i < mCount; i++) {
-			pm = dist.getManifoldByIndexInternal(i);
-			object1 = (RigidBody) pm.getBody0();
-			object2 = (RigidBody) pm.getBody1();
-			JBulletPhysicsObject obj1 = JBulletPhysicsObject.getJBulletPhysicsObject(object1);
-			JBulletPhysicsObject obj2 = JBulletPhysicsObject.getJBulletPhysicsObject(object2);
-			for (int j = 0; j < pm.getNumContacts(); j++) {
-				contactPoint = pm.getContactPoint(j);
-				if (contactPoint.getDistance() < 0.0f) {
-					// Collison logic
-					// System.out.println("hit between: " + obj1 + " and " + obj2);
-					break;
-				}
-			}
-		}
-	}
-
 	private float[] toFloatArray(double[] arr) {
 		if (arr == null)
 			return null;
@@ -840,7 +985,7 @@ public class MyGame extends VariableFrameRateGame {
 		return ret;
 	}
 
-	private double[] toDoubleArray(float[] arr) {
+	protected double[] toDoubleArray(float[] arr) {
 		if (arr == null)
 			return null;
 		int n = arr.length;
