@@ -456,8 +456,8 @@ public class MyGame extends VariableFrameRateGame {
 			// update lazergun position and aim
 			lazergun.applyParentRotationToPosition(true);
 			// lazer1.applyParentRotationToPosition(true);
-			if (lazergunAimed) {
-				lazergun.setLocalTranslation(new Matrix4f().translation(-0.217f, 0.8f, 0.9f));
+			if (lazergunAimed) { //-0.217f, 0.8f, 0.9f
+				lazergun.setLocalTranslation(new Matrix4f().translation(-0.227f, 0.8f, 0.85f));
 			} else {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
 			}
@@ -566,11 +566,11 @@ public class MyGame extends VariableFrameRateGame {
 					if (npcP.getUID() == obj1.getUID()
 							|| npcP.getUID() == obj2.getUID() && lazerP.getUID() == obj1.getUID()
 							|| lazerP.getUID() == obj2.getUID()) {
-						System.out.println("");
-						System.out.println("hit between: " + obj1 + " and " + obj2);
+						// System.out.println("");
+						// System.out.println("hit between: " + obj1 + " and " + obj2);
 						break;
 					} else {
-						System.out.println("No Collision");
+						// System.out.println("No Collision");
 					}
 				}
 			}
@@ -670,33 +670,53 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	// triggers on release of mouse click
-	public void mouseClicked(MouseEvent e) {
-		// System.out.println(e.getButton());
-		setLazergunAim(false);
+	public void mouseReleased(MouseEvent e) {
+		if (paused) {
+			return;
+		} else if (e.getButton() == 3) {
+			setLazergunAim(false);
+		} else
+			System.out.println(e.getButton());
 	}
 
 	@Override
 	// triggers on first press of mouse
 	public void mousePressed(java.awt.event.MouseEvent e) {
-		// System.out.println(e.getButton());
-
 		if (paused) {
 			return;
-		} else {
+		} else if (e.getButton() == 1) {
 			laserSound.play();
-			setLazergunAim(true);
-		}
-		if (e.getButton() == 1) {
-			System.out.println("fire");
 			fireLazer();
+		} else if (e.getButton() == 3) {
+			setLazergunAim(true);
+		} else
+			System.out.println(e.getButton());
+	}
+
+	@Override
+	public void mouseDragged(java.awt.event.MouseEvent e) {
+		if (paused) {
+			return;
+		} else if (e.getButton() == 0) {
+			curMouseX = e.getXOnScreen();
+			curMouseY = e.getYOnScreen();
+			float mouseDeltaX = prevMouseX - curMouseX;
+			float mouseDeltaY = prevMouseY - curMouseY;
+
+			avatar.gyaw(getFrameDiff(), mouseDeltaX);
+			// camMain.yaw(mouseDeltaX);
+			avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
+			prevMouseX = curMouseX;
+			prevMouseY = curMouseY;
+			recenterMouse();
+			prevMouseX = centerX;
+			prevMouseY = centerY;
 		}
+		System.out.println(e.getButton());
 	}
 	// END Mouse Management
 
 	// ------------------------- AUDIO SECTION ------------------------ //
-
-	private void fireLazer() {
-	}
 
 	public void initAudio() {
 		AudioResource resource1, resource2, resource3, resource4;
@@ -851,6 +871,10 @@ public class MyGame extends VariableFrameRateGame {
 		objGround.setTransform(tempTransform);
 	}
 
+	private void fireLazer() {
+
+	}
+
 	private void positionCameraBehindAvatar() {
 		// Matrix4f w = avatar.getWorldTranslation();
 		Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
@@ -889,7 +913,7 @@ public class MyGame extends VariableFrameRateGame {
 		Canvas canvas = rs.getGLCanvas();
 
 		Cursor clear = tk.createCustomCursor(tk.getImage(""), new Point(), "ClearCursor");
-		Cursor crosshair = tk.createCustomCursor(tk.getImage("./assets/textures/normalCrosshair.png"), new Point(),
+		Cursor crosshair = tk.createCustomCursor(tk.getImage("./assets/textures/Blue-Crosshair-1.png"), new Point(),
 				"Crosshair");
 
 		if (!mouseVisible) {
