@@ -441,104 +441,100 @@ public class MyGame extends VariableFrameRateGame {
 		// will need to find a way to make the map height
 		// translate to the ghost avatars
 
-			// orbitCam.updateCameraPosition();
-			positionCameraBehindAvatar();
+		// orbitCam.updateCameraPosition();
+		positionCameraBehindAvatar();
 
-			// update lazergun position and aim
-			lazergun.applyParentRotationToPosition(true);
-			// lazer1.applyParentRotationToPosition(true);
-			if (lazergunAimed) {
-				lazergun.setLocalTranslation(new Matrix4f().translation(-0.217f, 0.8f, 0.9f));
-			} else {
-				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
-			}
+		// update lazergun position and aim
+		lazergun.applyParentRotationToPosition(true);
+		// lazer1.applyParentRotationToPosition(true);
+		if (lazergunAimed) {
+			lazergun.setLocalTranslation(new Matrix4f().translation(-0.217f, 0.8f, 0.9f));
+		} else {
+			lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
+		}
 
-			// update walking sound
-			if (isWalking && (walkingSound.getIsPlaying() == false)) {
-				walkingSound.play();
-				walkingSound.resume();
-			}
-			if (!isWalking && (walkingSound.getIsPlaying() == true)) {
-				walkingSound.pause();
-			}
-			setAvatarWalking(false);
+		// update walking sound
+		if (isWalking && (walkingSound.getIsPlaying() == false)) {
+			walkingSound.play();
+			walkingSound.resume();
+		}
+		if (!isWalking && (walkingSound.getIsPlaying() == true)) {
+			walkingSound.pause();
+		}
+		setAvatarWalking(false);
 
-			// update running sound
-			if (isRunning && (runningSound.getIsPlaying() == false)) {
-				runningSound.play();
-				runningSound.resume();
-			}
-			if (!isRunning && (runningSound.getIsPlaying() == true)) {
-				runningSound.pause();
-			}
-			setAvatarWalking(false);
-			setAvatarRunning(false);
+		// update running sound
+		if (isRunning && (runningSound.getIsPlaying() == false)) {
+			runningSound.play();
+			runningSound.resume();
+		}
+		if (!isRunning && (runningSound.getIsPlaying() == true)) {
+			runningSound.pause();
+		}
+		setAvatarWalking(false);
+		setAvatarRunning(false);
 
-			// update all sounds
-			laserSound.setLocation(lazergun.getWorldLocation());
-			walkingSound.setLocation(avatar.getWorldLocation());
-			setEarParameters();
+		// update all sounds
+		laserSound.setLocation(lazergun.getWorldLocation());
+		walkingSound.setLocation(avatar.getWorldLocation());
+		setEarParameters();
 
-			// process the networking functions
-			processNetworking((float) elapsTime);
+		// process the networking functions
+		processNetworking((float) elapsTime);
 
-			// show/hide mouse logic
-			checkMouse();
-			setMouseVisible(false);
+		// show/hide mouse logic
+		checkMouse();
+		setMouseVisible(false);
 
-			distToP1 = distanceToDolphin(prize1);
-			distToP2 = distanceToDolphin(prize2);
-			distToP3 = distanceToDolphin(prize3);
-			distToP4 = distanceToDolphin(prize4);
-
-			// Player logic
-			/*
-			 * if (distToP1 <= prize1.getScale() && !prize1.isCollected()) {
-			 * score++;
-			 * prize1.collect();
-			 * rc1.toggle();
-			 * prize1.setParent(avatar);
-			 * prize1.propagateRotation(false);
-			 * prize1.setLocalScale(new Matrix4f().scaling(0.25f));
-			 * prize1.applyParentRotationToPosition(true);
-			 * prize1.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
-			 * trailLength += -1.5f;
-			 * }
-			 */
-			if (distToP2 <= prize2.getScale() && !prize2.isCollected()) {
-				score++;
-				prize2.collect();
-				rc2.toggle();
-				prize2.setParent(avatar);
-				prize2.propagateRotation(false);
-				prize2.setLocalScale(new Matrix4f().scaling(0.25f));
-				prize2.applyParentRotationToPosition(true);
-				prize2.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
-				trailLength += -1.5f;
-			}
-			if (distToP3 <= prize3.getScale() && !prize3.isCollected()) {
-				score++;
-				prize3.collect();
-				rc3.toggle();
-				prize3.setParent(avatar);
-				prize3.propagateRotation(false);
-				prize3.setLocalScale(new Matrix4f().scaling(0.25f));
-				prize3.applyParentRotationToPosition(true);
-				prize3.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
-				trailLength += -1.5f;
-			}
-			if (distToP4 <= prize4.getScale() && !prize4.isCollected()) {
-				score++;
-				prize4.collect();
-				rc4.toggle();
-				prize4.setParent(avatar);
-				prize4.propagateRotation(false);
-				prize4.setLocalScale(new Matrix4f().scaling(0.25f));
-				prize4.applyParentRotationToPosition(true);
-				prize4.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
-				trailLength += -1.5f;
-			}
-		} // pause scope and end game cutoff
+		// Player logic
+		/*
+		 * if (distToP1 <= prize1.getScale() && !prize1.isCollected()) {
+		 * score++;
+		 * prize1.collect();
+		 * rc1.toggle();
+		 * prize1.setParent(avatar);
+		 * prize1.propagateRotation(false);
+		 * prize1.setLocalScale(new Matrix4f().scaling(0.25f));
+		 * prize1.applyParentRotationToPosition(true);
+		 * prize1.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
+		 * trailLength += -1.5f;
+		 * }
+		 * 
+		 * if (distToP2 <= prize2.getScale() && !prize2.isCollected()) {
+		 * score++;
+		 * prize2.collect();
+		 * rc2.toggle();
+		 * prize2.setParent(avatar);
+		 * prize2.propagateRotation(false);
+		 * prize2.setLocalScale(new Matrix4f().scaling(0.25f));
+		 * prize2.applyParentRotationToPosition(true);
+		 * prize2.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
+		 * trailLength += -1.5f;
+		 * }
+		 * if (distToP3 <= prize3.getScale() && !prize3.isCollected()) {
+		 * score++;
+		 * prize3.collect();
+		 * rc3.toggle();
+		 * prize3.setParent(avatar);
+		 * prize3.propagateRotation(false);
+		 * prize3.setLocalScale(new Matrix4f().scaling(0.25f));
+		 * prize3.applyParentRotationToPosition(true);
+		 * prize3.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
+		 * trailLength += -1.5f;
+		 * }
+		 * if (distToP4 <= prize4.getScale() && !prize4.isCollected()) {
+		 * score++;
+		 * prize4.collect();
+		 * rc4.toggle();
+		 * prize4.setParent(avatar);
+		 * prize4.propagateRotation(false);
+		 * prize4.setLocalScale(new Matrix4f().scaling(0.25f));
+		 * prize4.applyParentRotationToPosition(true);
+		 * prize4.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
+		 * trailLength += -1.5f;
+		 * }
+		 */
+		// pause scope and end game cutoff
 
 		// ---------------------PHYSICS LOGIC--------------------------//
 		Matrix4f currentTranslation, currentRotation;
@@ -561,13 +557,14 @@ public class MyGame extends VariableFrameRateGame {
 				go.setLocalTranslation(identityMatrix);
 			}
 		}
+
 		mapHeight(avatar, avatarGroundP);
 		mapHeight(prize2, prize2GroundP);
 		mapHeight(prize1, prize1GroundP);
 		mapHeight(npc, npcGroundP);
 		// } If condition for running physics with scripts
 
-		} // END if statement for game not paused
+		// END if statement for game not paused
 
 		// update HUD variables
 		String scoreStr = "Score: " + Integer.toString(score);
@@ -580,13 +577,45 @@ public class MyGame extends VariableFrameRateGame {
 		if (prize1.isCollected() && prize2.isCollected() && prize3.isCollected() && prize4.isCollected()) {
 			(engine.getHUDmanager()).setHUD1(winStr, winColor, (int) (width * 0.75f), 15);
 			endGame = true;
-		} else
+		} else {
 			(engine.getHUDmanager()).setHUD1(dolLocStr, dolLocColor, (int) (width * 0.75f), 15);
-		(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
+			(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
+		} // END Update
+	}// END VariableFrameRate Game Overrides
 
-	} // END Update
-		// END VariableFrameRate Game Overrides
+	private void checkCollisions() {
+		DynamicsWorld dw;
+		Dispatcher dist;
+		PersistentManifold pm;
+		RigidBody object1, object2;
+		ManifoldPoint contactPoint;
 
+		dw = ((JBulletPhysicsEngine) ps).getDynamicsWorld();
+		dist = dw.getDispatcher();
+		int mCount = dist.getNumManifolds();
+		for (int i = 0; i < mCount; i++) {
+			pm = dist.getManifoldByIndexInternal(i);
+			object1 = (RigidBody) pm.getBody0();
+			object2 = (RigidBody) pm.getBody1();
+			JBulletPhysicsObject obj1 = JBulletPhysicsObject.getJBulletPhysicsObject(object1);
+			JBulletPhysicsObject obj2 = JBulletPhysicsObject.getJBulletPhysicsObject(object2);
+			for (int j = 0; j < pm.getNumContacts(); j++) {
+				contactPoint = pm.getContactPoint(j);
+				if (contactPoint.getDistance() < 0.0f) {
+					// handle collison?
+					if (npcP.getUID() == obj1.getUID()
+							|| npcP.getUID() == obj2.getUID() && lazerP.getUID() == obj1.getUID()
+							|| lazerP.getUID() == obj2.getUID()) {
+						System.out.println("");
+						System.out.println("hit between: " + obj1 + " and " + obj2);
+						break;
+					} else {
+						System.out.println("No Collision");
+					}
+				}
+			}
+		}
+	}
 	// ------------------------- MOUSE MANAGEMENT ------------------------ //
 
 	private void initMouseMode() {
@@ -691,6 +720,9 @@ public class MyGame extends VariableFrameRateGame {
 	// END Mouse Management
 
 	// ------------------------- AUDIO SECTION ------------------------ //
+
+	private void fireLazer() {
+	}
 
 	public void initAudio() {
 		AudioResource resource1, resource2, resource3;
@@ -882,39 +914,6 @@ public class MyGame extends VariableFrameRateGame {
 		} else {
 			// set mouse back to default
 			canvas.setCursor(null);
-		}
-	}
-
-	private void checkCollisions() {
-		DynamicsWorld dw;
-		Dispatcher dist;
-		PersistentManifold pm;
-		RigidBody object1, object2;
-		ManifoldPoint contactPoint;
-
-		dw = ((JBulletPhysicsEngine) ps).getDynamicsWorld();
-		dist = dw.getDispatcher();
-		int mCount = dist.getNumManifolds();
-		for (int i = 0; i < mCount; i++) {
-			pm = dist.getManifoldByIndexInternal(i);
-			object1 = (RigidBody) pm.getBody0();
-			object2 = (RigidBody) pm.getBody1();
-			JBulletPhysicsObject obj1 = JBulletPhysicsObject.getJBulletPhysicsObject(object1);
-			JBulletPhysicsObject obj2 = JBulletPhysicsObject.getJBulletPhysicsObject(object2);
-			for (int j = 0; j < pm.getNumContacts(); j++) {
-				contactPoint = pm.getContactPoint(j);
-				if (contactPoint.getDistance() < 0.0f) {
-					// handle collison?
-					if (npcP.getUID() == obj1.getUID() || npcP.getUID() == obj2.getUID() && lazerP.getUID() == obj1.getUID() || lazerP.getUID() == obj2.getUID()) {
-						System.out.println("");
-						System.out.println("hit between: " + obj1 + " and " + obj2);
-						break;
-					}
-					else {
-						System.out.println("No Collision");
-					}
-				}
-			}
 		}
 	}
 
