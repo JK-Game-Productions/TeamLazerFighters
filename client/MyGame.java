@@ -12,7 +12,16 @@ import com.bulletphysics.dynamics.RigidBody;
 import tage.*;
 import tage.input.*;
 import tage.shapes.*;
+import tage.audio.Sound;
+import tage.audio.SoundType;
 import tage.input.action.*;
+import tage.audio.AudioManagerFactory;
+import tage.audio.AudioResource;
+import tage.audio.AudioResourceType;
+import tage.audio.IAudioManager;
+import tage.audio.joal.JOALAudioManager;
+import tage.audio.joal.*;
+import tage.audio.*;
 
 import java.io.*;
 import java.util.*;
@@ -48,7 +57,6 @@ public class MyGame extends VariableFrameRateGame {
 	private Light light1;
 	private InputManager im;
 	private GhostManager gm;
-	private PhysicsEngine ps;
 	private Robot robot;
 	private File scriptFile1;
 	private String serverAddress;
@@ -57,26 +65,29 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private Vector<GameObject> objects;
 	private NodeController rc1, rc2, rc3, rc4, fc;
+	private Sound laserSound, walkingSound, runningSound;
 
 	// network & script variables
+	private PhysicsEngine ps;
 	private ScriptEngine jsEngine;
+	private IAudioManager audioMgr;
 	private ProtocolType serverProtocol;
 
 	// Basic Variables
 	private int width;
 	private int score = 0;
 	private int serverPort;
-	private float vals[] = new float[16];
 	private int lakeIslands;
 	private boolean isRecentering;
+	private float moveSpeed = 3.0f;
 	private boolean paused = false;
 	private boolean endGame = false;
-	private float trailLength = -2.0f;
-	private float moveSpeed = 3.0f;
+	private boolean isRunning = false;
+	private boolean isWalking = false;
 	private boolean mouseVisible = true;
+	private float vals[] = new float[16];
 	private boolean lazergunAimed = false;
 	private boolean isClientConnected = false;
-	private float distToP1, distToP2, distToP3, distToP4;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
 	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
 	// private int fluffyClouds;
@@ -176,12 +187,12 @@ public class MyGame extends VariableFrameRateGame {
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
 		avatar.setLocalTranslation((new Matrix4f()).translation(80f, 0f, 12.0f));
-		avatar.setLocalScale((new Matrix4f()).scaling(.33f));
+		avatar.setLocalScale((new Matrix4f()).scaling(.43f));
 
 		// build lazergun object
 		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
 		lazergun.setLocalTranslation((new Matrix4f()).translation(4f, 4f, 4f));
-		lazergun.setLocalScale((new Matrix4f()).scaling(0.20f));
+		lazergun.setLocalScale((new Matrix4f()).scaling(0.15f));
 		lazergun.setParent(avatar);
 		lazergun.propagateRotation(true);
 		lazergun.propagateTranslation(true);
@@ -293,38 +304,14 @@ public class MyGame extends VariableFrameRateGame {
 		// String gpName = im.getFirstGamepadName();
 		// orbitCam = new CameraOrbit3D(camMain, avatar, gpName, engine);
 
-		// --------------- initialize network ---------------- //
+		// --------------- initialize custom functions ---------------- //
 		setupNetworking();
+		initMouseMode();
+		initAudio();
 
 		// -------------------- game logic ------------------- //
-		distToP1 = distanceToObject(prize1);
-		distToP2 = distanceToObject(prize2);
-		distToP3 = distanceToObject(prize3);
-		distToP4 = distanceToObject(prize4);
-
-		// Rotational Controllers
-		rc1 = new RotationController(engine, new Vector3f(0, 1, 0), 0.001f);
-		rc1.addTarget(prize1);
-		rc2 = new RotationController(engine, new Vector3f(0, 1, 0), 0.001f);
-		rc2.addTarget(prize2);
-		rc3 = new RotationController(engine, new Vector3f(0, 1, 0), 0.001f);
-		rc3.addTarget(prize3);
-		rc4 = new RotationController(engine, new Vector3f(0, 1, 0), 0.001f);
-		rc4.addTarget(prize4);
-
-		(engine.getSceneGraph()).addNodeController(rc1);
-		(engine.getSceneGraph()).addNodeController(rc2);
-		(engine.getSceneGraph()).addNodeController(rc3);
-		(engine.getSceneGraph()).addNodeController(rc4);
-
-		// Flatten Controller
-		fc = new FlattenController(avatar.getLocalScale().m11());
-		fc.addTarget(avatar);
-		(engine.getSceneGraph()).addNodeController(fc);
 
 		// ------------------- Input Setup ------------------- //
-
-		initMouseMode();
 
 		AimAction aimAction = new AimAction(this);
 		MoveAction moveAction = new MoveAction(this);
@@ -334,11 +321,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// Keyboard Actions ---------------------------------------------------
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.R, aimAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		// im.associateActionWithAllKeyboards(Component.Identifier.Key.A,
-		// turnAction,InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		// im.associateActionWithAllKeyboards(Component.Identifier.Key.D,
-		// turnAction,InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.W, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.S, moveAction,
@@ -353,7 +336,7 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.LALT, mouseAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.P, pauseAction,
+		im.associateActionWithAllKeyboards(Component.Identifier.Key.TAB, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.LSHIFT, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -369,9 +352,9 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Button._7, pauseAction,
 				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
-		// add strafe
 
-		// ---------------PHYSICS ENGINE---------------------------//
+		// --------------------- Physics Engine --------------------- //
+
 		// init physics engine
 		String engine = "tage.physics.JBullet.JBulletPhysicsEngine";
 		float[] gravity = { 0f, -10f, 0f };
@@ -387,7 +370,8 @@ public class MyGame extends VariableFrameRateGame {
 		float psize[] = { 4.0f, 4.0f, 4.0f };
 		float nsize[] = { 1.0f, 1.0f, 1.0f };
 		double[] tempTransform;
-		// -----------------Physics Objects---------------------//
+
+		// --------------------- Physics Objects --------------------- //
 		Matrix4f translation = new Matrix4f(prize1.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		prize1P = ps.addSphereObject(ps.nextUID(), massless, tempTransform, 3.0f);
@@ -445,6 +429,8 @@ public class MyGame extends VariableFrameRateGame {
 		ground.setPhysicsObject(groundP);
 	}
 
+	// -------------------------- UPDATE -------------------------- //
+
 	@Override
 	public void update() {
 		lastFrameTime = currFrameTime;
@@ -455,13 +441,6 @@ public class MyGame extends VariableFrameRateGame {
 		// will need to find a way to make the map height
 		// translate to the ghost avatars
 
-		if (paused)
-			im.update((float) elapsTime);
-		if (!paused && !endGame) {
-			elapsTime += frameDiff;
-			im.update((float) elapsTime);
-			// System.out.println(this.getMoveSpeed());
-
 			// orbitCam.updateCameraPosition();
 			positionCameraBehindAvatar();
 
@@ -469,18 +448,43 @@ public class MyGame extends VariableFrameRateGame {
 			lazergun.applyParentRotationToPosition(true);
 			// lazer1.applyParentRotationToPosition(true);
 			if (lazergunAimed) {
-				lazergun.setLocalTranslation(new Matrix4f().translation(-0.222f, 0.8f, 0.9f));
+				lazergun.setLocalTranslation(new Matrix4f().translation(-0.217f, 0.8f, 0.9f));
 			} else {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 0.8f, 0.9f));
 			}
-			// setMoveSpeed(3.0f);
-			setLazergunAim(false);
+
+			// update walking sound
+			if (isWalking && (walkingSound.getIsPlaying() == false)) {
+				walkingSound.play();
+				walkingSound.resume();
+			}
+			if (!isWalking && (walkingSound.getIsPlaying() == true)) {
+				walkingSound.pause();
+			}
+			setAvatarWalking(false);
+
+			// update running sound
+			if (isRunning && (runningSound.getIsPlaying() == false)) {
+				runningSound.play();
+				runningSound.resume();
+			}
+			if (!isRunning && (runningSound.getIsPlaying() == true)) {
+				runningSound.pause();
+			}
+			setAvatarWalking(false);
+			setAvatarRunning(false);
+
+			// update all sounds
+			laserSound.setLocation(lazergun.getWorldLocation());
+			walkingSound.setLocation(avatar.getWorldLocation());
+			setEarParameters();
 
 			// process the networking functions
 			processNetworking((float) elapsTime);
 
 			// show/hide mouse logic
 			checkMouse();
+			setMouseVisible(false);
 
 			distToP1 = distanceToDolphin(prize1);
 			distToP2 = distanceToDolphin(prize2);
@@ -563,20 +567,7 @@ public class MyGame extends VariableFrameRateGame {
 		mapHeight(npc, npcGroundP);
 		// } If condition for running physics with scripts
 
-		// build and set HUD
-		/*
-		 * time
-		 * int elapsTimeSec = Math.round((float)elapsTime);
-		 * int minutes = (elapsTimeSec/60) % 60;
-		 * int seconds = elapsTimeSec % 60;
-		 * String secondsStr;
-		 * if(seconds <= 9)
-		 * secondsStr = "0" + seconds;
-		 * else
-		 * secondsStr = Integer.toString(seconds);
-		 * String clock = "Time = " + Integer.toString(minutes) + ":" + secondsStr;
-		 * Vector3f clockcolor = new Vector3f(1,1,1);
-		 */
+		} // END if statement for game not paused
 
 		// update HUD variables
 		String scoreStr = "Score: " + Integer.toString(score);
@@ -596,79 +587,102 @@ public class MyGame extends VariableFrameRateGame {
 	} // END Update
 		// END VariableFrameRate Game Overrides
 
-	// --------------------- MOUSE MANAGEMENT -------------------- //
+	// ------------------------- MOUSE MANAGEMENT ------------------------ //
+
 	private void initMouseMode() {
-		RenderSystem rs = engine.getRenderSystem();
-		Viewport vw = rs.getViewport("LEFT");
-		float left = vw.getActualLeft();
-		float bottom = vw.getActualBottom();
-		float width = vw.getActualWidth();
-		float height = vw.getActualHeight();
-
-		centerX = (int) (left + width / 2);
-		centerY = (int) (bottom - height / 2);
-
-		isRecentering = false;
-
-		try {
-			robot = new Robot();
-		} catch (AWTException ex) {
-			throw new RuntimeException("couldn't create robot");
-		}
-
-		recenterMouse();
-		prevMouseX = centerX;
-		prevMouseY = centerY;
-
-		// rs.imageUpdate(ch, 1, (int)centerX, (int)centerY, ch.getWidth(null),
-		// ch.getHeight(null));
-
-	}
-
-	private void recenterMouse() {
-		RenderSystem rs = engine.getRenderSystem();
-		Viewport vw = rs.getViewport("LEFT");
-		float left = vw.getActualLeft();
-		float bottom = vw.getActualBottom();
-		float width = vw.getActualWidth();
-		float height = vw.getActualHeight();
-		centerX = (int) (left + width / 2.0f);
-		centerY = (int) (bottom - height / 2.0f);
-
-		isRecentering = true;
-		robot.mouseMove((int) centerX, (int) centerY);
-	}
-
-	@Override
-	public void mouseMoved(java.awt.event.MouseEvent e) {
-		if (isRecentering && centerX == e.getXOnScreen() && centerY == e.getYOnScreen()) {
-			isRecentering = false;
+		if (paused) {
+			return;
 		} else {
-			curMouseX = e.getXOnScreen();
-			curMouseY = e.getYOnScreen();
-			float mouseDeltaX = prevMouseX - curMouseX;
-			float mouseDeltaY = prevMouseY - curMouseY;
+			RenderSystem rs = engine.getRenderSystem();
+			Viewport vw = rs.getViewport("LEFT");
+			float left = vw.getActualLeft();
+			float bottom = vw.getActualBottom();
+			float width = vw.getActualWidth();
+			float height = vw.getActualHeight();
 
-			avatar.gyaw(getFrameDiff(), mouseDeltaX);
-			// camMain.yaw(mouseDeltaX);
-			avatar.pitch(getFrameDiff(), mouseDeltaY);
-			prevMouseX = curMouseX;
-			prevMouseY = curMouseY;
+			centerX = (int) (left + width / 2);
+			centerY = (int) (bottom - height / 2);
+
+			isRecentering = false;
+
+			try {
+				robot = new Robot();
+			} catch (AWTException ex) {
+				throw new RuntimeException("couldn't create robot");
+			}
 
 			recenterMouse();
 			prevMouseX = centerX;
 			prevMouseY = centerY;
 		}
+
+		// rs.imageUpdate(ch, 1, (int)centerX, (int)centerY, ch.getWidth(null),
+		// ch.getHeight(null));
+	}
+
+	private void recenterMouse() {
+		if (paused) {
+			return;
+		} else {
+			RenderSystem rs = engine.getRenderSystem();
+			Viewport vw = rs.getViewport("LEFT");
+			float left = vw.getActualLeft();
+			float bottom = vw.getActualBottom();
+			float width = vw.getActualWidth();
+			float height = vw.getActualHeight();
+
+			centerX = (int) (left + width / 2.0f);
+			centerY = (int) (bottom - height / 2.0f);
+			isRecentering = true;
+			robot.mouseMove((int) centerX, (int) centerY);
+		}
 	}
 
 	@Override
+	public void mouseMoved(java.awt.event.MouseEvent e) {
+		if (paused) {
+			return;
+		} else {
+			if (isRecentering && centerX == e.getXOnScreen() && centerY == e.getYOnScreen()) {
+				isRecentering = false;
+			} else {
+
+				curMouseX = e.getXOnScreen();
+				curMouseY = e.getYOnScreen();
+				float mouseDeltaX = prevMouseX - curMouseX;
+				float mouseDeltaY = prevMouseY - curMouseY;
+
+				avatar.gyaw(getFrameDiff(), mouseDeltaX);
+				// camMain.yaw(mouseDeltaX);
+				avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
+				prevMouseX = curMouseX;
+				prevMouseY = curMouseY;
+
+				recenterMouse();
+				prevMouseX = centerX;
+				prevMouseY = centerY;
+			}
+		}
+	}
+
+	@Override
+	// triggers on release of mouse click
 	public void mouseClicked(MouseEvent e) {
 		// System.out.println(e.getButton());
+		setLazergunAim(false);
 	}
 
 	@Override
+	// triggers on first press of mouse
 	public void mousePressed(java.awt.event.MouseEvent e) {
 		// System.out.println(e.getButton());
+
+		if (paused) {
+			return;
+		} else {
+			laserSound.play();
+			setLazergunAim(true);
+		}
 		if (e.getButton() == 1) {
 			System.out.println("fire");
 			fireLazer();
@@ -676,15 +690,54 @@ public class MyGame extends VariableFrameRateGame {
 	}
 	// END Mouse Management
 
-	// -------------------------- NETWORKING SECTION --------------------------
+	// ------------------------- AUDIO SECTION ------------------------ //
 
-	private void fireLazer() {
-		lazer1.propagateTranslation(false);
+	public void initAudio() {
+		AudioResource resource1, resource2, resource3;
+		audioMgr = AudioManagerFactory.createAudioManager(
+				"tage.audio.joal.JOALAudioManager");
+		if (!audioMgr.initialize()) {
+			System.out.println("Audio Manager failed to initialize!");
+			return;
+		}
+		resource1 = audioMgr.createAudioResource("assets/sounds/grassWalking.wav",
+				AudioResourceType.AUDIO_SAMPLE);
+		walkingSound = new Sound(resource1, SoundType.SOUND_EFFECT, 40, true);
+		walkingSound.initialize(audioMgr);
+		walkingSound.setMaxDistance(10.0f);
+		walkingSound.setMinDistance(0.5f);
+		walkingSound.setRollOff(5.0f);
+		walkingSound.setLocation(avatar.getWorldLocation());
 
-		lazerP.applyForce(0, 0, (float) elapsTime, 0, 0, 0);
+		resource2 = audioMgr.createAudioResource("assets/sounds/grassRunning.wav",
+				AudioResourceType.AUDIO_SAMPLE);
+		runningSound = new Sound(resource2, SoundType.SOUND_EFFECT, 40, true);
+		runningSound.initialize(audioMgr);
+		runningSound.setMaxDistance(10.0f);
+		runningSound.setMinDistance(0.5f);
+		runningSound.setRollOff(5.0f);
+		runningSound.setLocation(avatar.getWorldLocation());
 
-		// lazer1.propagateTranslation(true);
+		resource3 = audioMgr.createAudioResource("assets/sounds/laser.wav",
+				AudioResourceType.AUDIO_SAMPLE);
+		laserSound = new Sound(resource3, SoundType.SOUND_EFFECT, 100, false);
+		laserSound.initialize(audioMgr);
+		laserSound.setMaxDistance(10.0f);
+		laserSound.setMinDistance(0.5f);
+		laserSound.setRollOff(5.0f);
+		laserSound.setLocation(lazergun.getWorldLocation());
+
+		setEarParameters();
 	}
+
+	public void setEarParameters() {
+		Camera camera = getMainCamera();
+		audioMgr.getEar().setLocation(avatar.getWorldLocation());
+		audioMgr.getEar().setOrientation(camera.getN(),
+				new Vector3f(0.0f, 1.0f, 0.0f));
+	}// END Audio Section
+
+	// -------------------------- NETWORKING SECTION -------------------------- //
 
 	private void setupNetworking() {
 		isClientConnected = false;
@@ -697,14 +750,16 @@ public class MyGame extends VariableFrameRateGame {
 		}
 		if (protClient == null) {
 			System.out.println("missing protocol host");
-		} else { // Send the initial join message with a unique identifier for this client
+		} else {
+			// Send the initial join message with a unique identifier for this client
 			System.out.println("sending join message to protocol host");
 			protClient.sendJoinMessage();
 		}
 	}
 
 	// network custom functions ------------
-	protected void processNetworking(float elapsTime) { // Process packets received by the client from the server
+	protected void processNetworking(float elapsTime) {
+		// Process packets received by the client from the server
 		if (protClient != null)
 			protClient.processPackets();
 	}
@@ -732,7 +787,7 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}// END Networking Section
 
-	// --------------------------- CUSTOM FUNCTIONS ---------------------------
+	// --------------------------- CUSTOM FUNCTIONS --------------------------- //
 
 	/**
 	 * returns distance of any inputted GameObject to the current/main camera
@@ -775,7 +830,7 @@ public class MyGame extends VariableFrameRateGame {
 	private void mapHeight(GameObject object, PhysicsObject objGround) {
 		Vector3f loc = object.getWorldLocation();
 		float height = ground.getHeight(loc.x(), loc.z());
-		object.setLocalLocation(new Vector3f(loc.x(), (height + 2.0f), loc.z()));
+		object.setLocalLocation(new Vector3f(loc.x(), (height + 1.0f), loc.z()));
 		Matrix4f translation = new Matrix4f().translation(loc.x(), height - .05f, loc.z());
 		double[] tempTransform = toDoubleArray(translation.get(vals));
 		objGround.setTransform(tempTransform);
@@ -828,7 +883,6 @@ public class MyGame extends VariableFrameRateGame {
 			// set mouse back to default
 			canvas.setCursor(null);
 		}
-		setMouseVisible(false);
 	}
 
 	private void checkCollisions() {
@@ -887,7 +941,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 	// END Custom Functions
 
-	// -------------------------- GETTERS & SETTERS --------------------------
+	// -------------------------- GETTERS & SETTERS -------------------------- //
 
 	public GameObject getAvatar() {
 		return avatar;
@@ -913,10 +967,6 @@ public class MyGame extends VariableFrameRateGame {
 		return gm;
 	}
 
-	public void togglePause() {
-		paused = !paused;
-	}
-
 	public float getFrameDiff() {
 		return (float) frameDiff;
 	}
@@ -925,12 +975,34 @@ public class MyGame extends VariableFrameRateGame {
 		return lazergunAimed;
 	}
 
+	public float getMoveSpeed() {
+		return moveSpeed;
+	}
+
+	// -----------------------------------------
+
+	public void togglePause() {
+		paused = !paused;
+	}
+
+	public void toggleMouse() {
+		mouseVisible = !mouseVisible;
+	}
+
+	public void toggleAim() {
+		lazergunAimed = !lazergunAimed;
+	}
+
 	public void setLazergunAim(boolean newValue) {
 		lazergunAimed = (newValue);
 	}
 
-	public float getMoveSpeed() {
-		return moveSpeed;
+	public void setAvatarWalking(boolean newValue) {
+		isWalking = newValue;
+	}
+
+	public void setAvatarRunning(boolean newValue) {
+		isRunning = newValue;
 	}
 
 	public void setMoveSpeed(float moveSpeed) {
@@ -941,7 +1013,8 @@ public class MyGame extends VariableFrameRateGame {
 		mouseVisible = newValue;
 	}// END Getters & Setters
 
-	// -------------------------- SCRIPTING SECTION --------------------------
+	// -------------------------- SCRIPTING SECTION -------------------------- //
+
 	private void runScript(File scriptFile) {
 		try {
 			FileReader fileReader = new FileReader(scriptFile);
@@ -957,4 +1030,4 @@ public class MyGame extends VariableFrameRateGame {
 			System.out.println("Null ptr exception reading " + scriptFile + e4);
 		}
 	}
-}
+}// END

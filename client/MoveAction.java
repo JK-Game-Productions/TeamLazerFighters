@@ -11,8 +11,8 @@ public class MoveAction extends AbstractInputAction {
     private Vector4f mov;
     private float frameDiff;
     private GameObject avatar;
-    private Vector3f oldPos, newPos;
     private String lastComponent;
+    private Vector3f oldPos, newPos;
     private PhysicsObject pObject;
     private float vals[] = new float[16];
 
@@ -27,19 +27,27 @@ public class MoveAction extends AbstractInputAction {
         pObject = avatar.getPhysicsObject();
         frameDiff = game.getFrameDiff();
         oldPos = avatar.getWorldLocation();
+
         float keyValue = e.getValue();
         String currentComponent = e.getComponent().toString();
-
         System.out.println(currentComponent);
 
         // controller dead zones
         if (keyValue > -.2 && keyValue < .2)
             return;
-        // run time
-        if (currentComponent.equals("Left Shift"))
-            game.setMoveSpeed(6.0f);
-        else
-            game.setMoveSpeed(3.0f);
+
+        // run
+        if (currentComponent.equals("Left Shift")) {
+            game.setMoveSpeed(10.0f);
+            game.setAvatarRunning(true);
+            game.setAvatarWalking(false);
+        }
+        // walk
+        else {
+            game.setMoveSpeed(5.0f);
+            game.setAvatarRunning(false);
+            game.setAvatarWalking(true);
+        }
         // forward and back
         if (currentComponent.equals("W")
                 || currentComponent.equals("S")
@@ -59,7 +67,6 @@ public class MoveAction extends AbstractInputAction {
             mov.mul(avatar.getWorldRotation());
             mov.mul(game.getMoveSpeed() * frameDiff);
         }
-
         // forward and left
         if (currentComponent.equals("W")
                 || currentComponent.equals("A")
@@ -69,13 +76,12 @@ public class MoveAction extends AbstractInputAction {
             newPos = oldPos.add(mov.x(), mov.y(), mov.z());
         }
         // back and right
-        else if (currentComponent.equals("S") 
-                || currentComponent.equals("D") 
+        else if (currentComponent.equals("S")
+                || currentComponent.equals("D")
                 || lastComponent.equals("S") && currentComponent.equals("Left Shift")
-                || lastComponent.equals("D") && currentComponent.equals("Left Shift")
-                ) {
-                    newPos = oldPos.sub(mov.x(), mov.y(), mov.z());
-                } else {
+                || lastComponent.equals("D") && currentComponent.equals("Left Shift")) {
+            newPos = oldPos.sub(mov.x(), mov.y(), mov.z());
+        } else {
             newPos = oldPos;
         }
         
