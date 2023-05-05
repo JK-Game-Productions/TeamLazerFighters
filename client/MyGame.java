@@ -462,18 +462,6 @@ public class MyGame extends VariableFrameRateGame {
 			elapsTime += frameDiff;
 			im.update((float) elapsTime);
 
-			// will need to find a way to make the map height
-			// translate to the ghost avatars
-			mapHeight(avatar);
-			mapHeight(NPC);
-			mapHeight(prize1);
-			mapHeight(prize2);
-			mapHeight(prize3);
-			mapHeight(prize4);
-			mapHeight(x);
-			mapHeight(y);
-			mapHeight(z);
-
 			// orbitCam.updateCameraPosition();
 			positionCameraBehindAvatar();
 
