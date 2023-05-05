@@ -95,10 +95,10 @@ public class MyGame extends VariableFrameRateGame {
 	// private int fluffyClouds;
 
 	// object variables
-	private GameObject avatar, NPC, lazergun, lazergun1, prize1, prize2, prize3, prize4, ground, x, y, z, npc, lazer1;
-	private ObjShape ghostS, avatarS, NPCs, lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS,
+	private GameObject avatar, lazergun, lazergun1, prize1, prize2, prize3, prize4, ground, x, y, z, npc, lazer1;
+	private ObjShape ghostS, avatarS, lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS,
 			lazerS;
-	private TextureImage ghostT, avatartx, NPCtx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river, lazerT;
+	private TextureImage ghostT, avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river, lazerT;
 	private PhysicsObject groundP, prize1P, avatarP, prize2P, prize1GroundP, avatarGroundP, prize2GroundP, npcP,
 			npcGroundP, lazerP, lazerGroundP;
 	private boolean placedOnMap = false;
@@ -138,7 +138,6 @@ public class MyGame extends VariableFrameRateGame {
 	public void loadShapes() {
 		avatarS = new ImportedModel("man4.obj");
 		ghostS = avatarS;
-		NPCs = avatarS;
 
 		lazergunS = new ImportedModel("lazergun.obj");
 		lazerS = new Sphere();
@@ -156,9 +155,8 @@ public class MyGame extends VariableFrameRateGame {
 	public void loadTextures() {
 		avatartx = new TextureImage("man4.png");
 		ghostT = avatartx;
-		lazerT = new TextureImage("lazerbeam.png");
-		NPCtx = avatartx;
 
+		lazerT = new TextureImage("lazerbeam.png");
 		lazerguntx = new TextureImage("lazergun.png");
 		p2tx = new TextureImage("gold_energy.jpg");
 		p1tx = new TextureImage("tex_Water.jpg");
@@ -194,16 +192,6 @@ public class MyGame extends VariableFrameRateGame {
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
 		avatar.setLocalTranslation((new Matrix4f()).translation(80f, 0f, 12.0f));
 		avatar.setLocalScale((new Matrix4f()).scaling(.43f));
-
-		// NPC
-		NPC = new GameObject(GameObject.root(), NPCs, NPCtx);
-		NPC.setLocalTranslation((new Matrix4f()).translation(30f, 5f, 24f));
-		NPC.setLocalScale((new Matrix4f()).scaling(0.43f));
-
-		// NPC
-		NPC = new GameObject(GameObject.root(), NPCs, NPCtx);
-		NPC.setLocalTranslation((new Matrix4f()).translation(30f, 5f, 24f));
-		NPC.setLocalScale((new Matrix4f()).scaling(0.43f));
 
 		// build lazergun object
 		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
@@ -498,7 +486,7 @@ public class MyGame extends VariableFrameRateGame {
 			// update all sounds
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
-			voiceline1.setLocation(NPC.getWorldLocation());
+			voiceline1.setLocation(npc.getWorldLocation());
 			setEarParameters();
 
 			// process the networking functions
@@ -507,56 +495,6 @@ public class MyGame extends VariableFrameRateGame {
 			// show/hide mouse logic
 			checkMouse();
 			setMouseVisible(false);
-
-			// Player logic
-			/*
-			 * if (distToP1 <= prize1.getScale() && !prize1.isCollected()) {
-			 * score++;
-			 * prize1.collect();
-			 * rc1.toggle();
-			 * prize1.setParent(avatar);
-			 * prize1.propagateRotation(false);
-			 * prize1.setLocalScale(new Matrix4f().scaling(0.25f));
-			 * prize1.applyParentRotationToPosition(true);
-			 * prize1.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
-			 * trailLength += -1.5f;
-			 * }
-			 * 
-			 * if (distToP2 <= prize2.getScale() && !prize2.isCollected()) {
-			 * score++;
-			 * prize2.collect();
-			 * rc2.toggle();
-			 * prize2.setParent(avatar);
-			 * prize2.propagateRotation(false);
-			 * prize2.setLocalScale(new Matrix4f().scaling(0.25f));
-			 * prize2.applyParentRotationToPosition(true);
-			 * prize2.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
-			 * trailLength += -1.5f;
-			 * }
-			 * if (distToP3 <= prize3.getScale() && !prize3.isCollected()) {
-			 * score++;
-			 * prize3.collect();
-			 * rc3.toggle();
-			 * prize3.setParent(avatar);
-			 * prize3.propagateRotation(false);
-			 * prize3.setLocalScale(new Matrix4f().scaling(0.25f));
-			 * prize3.applyParentRotationToPosition(true);
-			 * prize3.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
-			 * trailLength += -1.5f;
-			 * }
-			 * if (distToP4 <= prize4.getScale() && !prize4.isCollected()) {
-			 * score++;
-			 * prize4.collect();
-			 * rc4.toggle();
-			 * prize4.setParent(avatar);
-			 * prize4.propagateRotation(false);
-			 * prize4.setLocalScale(new Matrix4f().scaling(0.25f));
-			 * prize4.applyParentRotationToPosition(true);
-			 * prize4.setLocalTranslation(new Matrix4f().translation(0f, 0f, trailLength));
-			 * trailLength += -1.5f;
-			 * }
-			 */
-			// pause scope and end game cutoff
 
 			// ---------------------PHYSICS LOGIC--------------------------//
 			Matrix4f currentTranslation, currentRotation;
@@ -799,10 +737,10 @@ public class MyGame extends VariableFrameRateGame {
 				AudioResourceType.AUDIO_SAMPLE);
 		voiceline1 = new Sound(resource4, SoundType.SOUND_EFFECT, 100, false);
 		voiceline1.initialize(audioMgr);
-		voiceline1.setMaxDistance(5.0f);
+		voiceline1.setMaxDistance(10.0f);
 		voiceline1.setMinDistance(0.5f);
-		voiceline1.setRollOff(3.0f);
-		voiceline1.setLocation(NPC.getWorldLocation());
+		voiceline1.setRollOff(5.0f);
+		voiceline1.setLocation(npc.getWorldLocation());
 
 		setEarParameters();
 	}
