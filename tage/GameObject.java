@@ -600,18 +600,21 @@ public class GameObject {
 	/**
 	 * This function also rotates the game object around the Y axis based off time
 	 * and direction
-	 *//* 
-	public void gyaw(float diff, boolean left) {
-
-		if (left)
-			// this.setLocalRotation(this.getWorldRotation().mul(new
-			// Matrix4f().rotationY(-0.005f)));
-			this.setLocalRotation((new Matrix4f().rotationY(1.0f * diff)).mul(this.getWorldRotation()));
-		else
-			// this.setLocalRotation(this.getWorldRotation().mul(new
-			// Matrix4f().rotationY(0.005f)));
-			this.setLocalRotation((new Matrix4f().rotationY(-1.0f * diff)).mul(this.getWorldRotation()));
-	}*/
+	 *//*
+		 * public void gyaw(float diff, boolean left) {
+		 * 
+		 * if (left)
+		 * // this.setLocalRotation(this.getWorldRotation().mul(new
+		 * // Matrix4f().rotationY(-0.005f)));
+		 * this.setLocalRotation((new Matrix4f().rotationY(1.0f *
+		 * diff)).mul(this.getWorldRotation()));
+		 * else
+		 * // this.setLocalRotation(this.getWorldRotation().mul(new
+		 * // Matrix4f().rotationY(0.005f)));
+		 * this.setLocalRotation((new Matrix4f().rotationY(-1.0f *
+		 * diff)).mul(this.getWorldRotation()));
+		 * }
+		 */
 
 	public void gyaw(float diff, float mouseDeltaX) {
 		float tilt;
@@ -623,31 +626,34 @@ public class GameObject {
 			tilt = 0.0f;
 		this.setLocalRotation((new Matrix4f().rotationY(tilt * diff)).mul(this.getWorldRotation()));
 	}
-	
+
 	/**
 	 * This function rotates the game object around the X Axis based off time and
 	 * direction
 	 */
 	/*
-	public void pitch(float diff, boolean up) {
-		Vector4f oldRot = new Vector4f(1f, 0f, 0f, 1f).mul(new Matrix4f(this.getWorldRotation()));
-		if (up)
-			// this.setLocalRotation(this.getWorldRotation().mul(new
-			// Matrix4f().rotation(-0.005f,new Vector3f(oldRot.x(), oldRot.y(),
-			// oldRot.z()))));
-			this.setLocalRotation(
-					(new Matrix4f().rotation(-1.0f * diff, new Vector3f(oldRot.x(), oldRot.y(), oldRot.z())))
-							.mul(this.getWorldRotation()));
-		else
-			// this.setLocalRotation(this.getWorldRotation().mul(new
-			// Matrix4f().rotation(0.005f,new Vector3f(oldRot.x(), oldRot.y(),
-			// oldRot.z()))));
-			this.setLocalRotation(
-					(new Matrix4f().rotation(1.0f * diff, new Vector3f(oldRot.x(), oldRot.y(), oldRot.z())))
-							.mul(this.getWorldRotation()));
-
-	}
-	*/
+	 * public void pitch(float diff, boolean up) {
+	 * Vector4f oldRot = new Vector4f(1f, 0f, 0f, 1f).mul(new
+	 * Matrix4f(this.getWorldRotation()));
+	 * if (up)
+	 * // this.setLocalRotation(this.getWorldRotation().mul(new
+	 * // Matrix4f().rotation(-0.005f,new Vector3f(oldRot.x(), oldRot.y(),
+	 * // oldRot.z()))));
+	 * this.setLocalRotation(
+	 * (new Matrix4f().rotation(-1.0f * diff, new Vector3f(oldRot.x(), oldRot.y(),
+	 * oldRot.z())))
+	 * .mul(this.getWorldRotation()));
+	 * else
+	 * // this.setLocalRotation(this.getWorldRotation().mul(new
+	 * // Matrix4f().rotation(0.005f,new Vector3f(oldRot.x(), oldRot.y(),
+	 * // oldRot.z()))));
+	 * this.setLocalRotation(
+	 * (new Matrix4f().rotation(1.0f * diff, new Vector3f(oldRot.x(), oldRot.y(),
+	 * oldRot.z())))
+	 * .mul(this.getWorldRotation()));
+	 * 
+	 * }
+	 */
 	public void pitch(float diff, float mouseDeltaY) {
 		float tilt;
 		Vector4f oldRot = new Vector4f(1f, 0f, 0f, 1f).mul(new Matrix4f(this.getWorldRotation()));
