@@ -840,9 +840,9 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}
 
-	public void SendCloseConnectionPacketAction() {
-		SendCloseConnectionPacketAction();
-	}
+	// public void SendCloseConnectionPacketAction() {
+	// SendCloseConnectionPacketAction();
+	// }
 	// END Networking Section
 
 	// --------------------------- CUSTOM FUNCTIONS --------------------------- //

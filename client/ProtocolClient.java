@@ -78,7 +78,6 @@ public class ProtocolClient extends GameConnectionClient {
 															// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
 				ghostManager.removeGhostAvatar(ghostID);
-				game.SendCloseConnectionPacketAction();
 			}
 
 			// Handle CREATE message
