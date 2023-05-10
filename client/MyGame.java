@@ -405,7 +405,7 @@ public class MyGame extends VariableFrameRateGame {
 			// update time
 			elapsTime += frameDiff;
 			im.update((float) elapsTime);
-
+			positionCameraBehindAvatar();
 			// update all sounds
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
@@ -536,8 +536,7 @@ public class MyGame extends VariableFrameRateGame {
 		Matrix4f translation = new Matrix4f(npc.getLocalTranslation());
 		Vector3f loc = npc.getWorldLocation();
 		double[] tempTransform = toDoubleArray(translation.get(vals));
-		npcUid = ps.nextUID();
-		npcP = ps.addBoxObject(npcUid, 1.0f, tempTransform, psize);
+		npcP = ps.addBoxObject(ps.nextUID(), 1.0f, tempTransform, psize);
 		npcP.setDamping(.5f, .8f);
 		npcP.setBounciness(1.0f);
 		npc.setPhysicsObject(npcP);
@@ -899,7 +898,7 @@ public class MyGame extends VariableFrameRateGame {
 		GameObject newLazer = new GameObject(GameObject.root(), lazerS, lazerT);
 		Vector3f loc = getPlayerPosition();
 		Vector3f fwd = avatar.getLocalForwardVector();
-		newLazer.setLocalTranslation(new Matrix4f().translation(loc.x(), loc.y()+.8f, loc.z()));
+		newLazer.setLocalTranslation(new Matrix4f().translation(loc.x()-.1f, loc.y()+1f, loc.z()));
 		newLazer.setLocalScale(new Matrix4f().scaling(0.02f, 0.02f, 0.02f));
 
 		Matrix4f translation = new Matrix4f(newLazer.getLocalTranslation());
