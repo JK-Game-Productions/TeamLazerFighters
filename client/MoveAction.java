@@ -4,7 +4,8 @@ import org.joml.*;
 import tage.GameObject;
 import net.java.games.input.Event;
 import tage.input.action.AbstractInputAction;
-import tage.physics.PhysicsObject;
+//import tage.physics.PhysicsObject;
+//import tage.shapes.AnimatedShape;
 
 public class MoveAction extends AbstractInputAction {
     private MyGame game;
@@ -12,9 +13,9 @@ public class MoveAction extends AbstractInputAction {
     private float frameDiff;
     private GameObject avatar;
     private String lastComponent;
+    // private PhysicsObject pObject;
     private Vector3f oldPos, newPos;
-    private PhysicsObject pObject;
-    private float vals[] = new float[16];
+    // private float vals[] = new float[16];
 
     public MoveAction(MyGame g) {
         game = g;
@@ -24,7 +25,7 @@ public class MoveAction extends AbstractInputAction {
     @Override
     public void performAction(float time, Event e) {
         avatar = game.getAvatar();
-        pObject = avatar.getPhysicsObject();
+        // pObject = avatar.getPhysicsObject();
         frameDiff = game.getFrameDiff();
         oldPos = avatar.getWorldLocation();
 
@@ -56,7 +57,8 @@ public class MoveAction extends AbstractInputAction {
             mov = new Vector4f(0f, 0f, 1f, 1f);
             mov.mul(avatar.getWorldRotation());
             mov.mul(game.getMoveSpeed() * frameDiff);
-            //System.out.println("Mov values: " + mov.x()+ ","+mov.y()+","+mov.z()+","+mov.w());
+            // System.out.println("Mov values: " + mov.x()+
+            // ","+mov.y()+","+mov.z()+","+mov.w());
         }
         // left and right
         if (currentComponent.equals("A")
@@ -84,7 +86,7 @@ public class MoveAction extends AbstractInputAction {
         } else {
             newPos = oldPos;
         }
-        
+
         lastComponent = currentComponent;
 
         avatar.setLocalLocation(newPos);
