@@ -71,7 +71,6 @@ public class MyGame extends VariableFrameRateGame {
 	private int width;
 	private int score = 0;
 	private int serverPort;
-	private int lakeIslands;
 	private boolean isRecentering;
 	private float moveSpeed = 3.0f;
 	private boolean paused = false;
@@ -178,14 +177,14 @@ public class MyGame extends VariableFrameRateGame {
 		npc = new GameObject(GameObject.root(), avatarS, avatartx);
 		npc.setLocalTranslation(new Matrix4f().translation(80.0f, 0.0f, 20.0f));
 		npc.setLocalRotation(new Matrix4f().rotateY((float) Math.PI));
-		npc.setLocalScale(new Matrix4f().scale(.50f));
+		npc.setLocalScale(new Matrix4f().scale(.45f));
 
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
 		avatar.setLocalTranslation((new Matrix4f()).translation(80f, 0f, 12.0f));
 		avatar.setLocalScale((new Matrix4f()).scaling(.43f));
-		// avatar.setLocalRotation((new Matrix4f()).rotationY((float)
-		// java.lang.Math.toRadians(180.0f)));
+		avatar.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
 
 		// build lazergun object
 		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
@@ -247,7 +246,6 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadSkyBoxes() {
 		forest = (engine.getSceneGraph()).loadCubeMap("forest");
-		// lakeIslands = (engine.getSceneGraph()).loadCubeMap("lakeIslands");
 		(engine.getSceneGraph()).setActiveSkyBoxTexture(forest);
 		(engine.getSceneGraph()).setSkyBoxEnabled(true);
 	}
@@ -503,8 +501,7 @@ public class MyGame extends VariableFrameRateGame {
 		} // END Update
 	}// END VariableFrameRate Game Overrides
 
-	// ------------------COLLISION DETECTION AND HANDLING---------------------------
-	// //
+	// --------------- COLLISION DETECTION AND HANDLING --------------- //
 	private void checkCollisions() {
 		DynamicsWorld dw;
 		Dispatcher dist;
@@ -545,7 +542,7 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}
 
-	// ------------------------- KEY PRESSED ------------------------ //
+	// ------------------------- KEY PRESSED ------------------------- //
 
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -826,12 +823,7 @@ public class MyGame extends VariableFrameRateGame {
 				protClient.sendByeMessage();
 			}
 		}
-	}
-
-	// public void SendCloseConnectionPacketAction() {
-	// SendCloseConnectionPacketAction();
-	// }
-	// END Networking Section
+	}// END Networking Section
 
 	// --------------------------- CUSTOM FUNCTIONS --------------------------- //
 

@@ -2,8 +2,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.UUID;
 
-import javax.vecmath.Vector3f;
-
 import tage.networking.server.GameConnectionServer;
 import tage.networking.server.IClientInfo;
 
