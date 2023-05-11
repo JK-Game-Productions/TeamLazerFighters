@@ -1,14 +1,57 @@
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.UUID;
+
+import javax.vecmath.Vector3f;
 
 import tage.networking.server.GameConnectionServer;
 import tage.networking.server.IClientInfo;
 
 public class GameServerUDP extends GameConnectionServer<UUID> {
-	public GameServerUDP(int localPort) throws IOException {
+	NPCcontroller npcCtrl;
+
+	public GameServerUDP(int localPort, NPCcontroller npc) throws IOException {
 		super(localPort, ProtocolType.UDP);
+		npcCtrl = npc;
+	}
+
+	// ------------- Additional protocols for NPCs ------------- //
+	public void sendCheckForAvatarNear() {
+		/*
+		 * try {
+		 * String message = new String("isnr");
+		 * message += "," + (npcCtrl.getNPC()).getX();
+		 * message += "," + (npcCtrl.getNPC()).getY();
+		 * message += "," + (npcCtrl.getNPC()).getZ();
+		 * message += "," + (npcCtrl.getCriteria());
+		 * sendPacketToAll(message);
+		 * } catch (IOException e) {
+		 * System.out.println("couldn't send msg");
+		 * e.printStackTrace();
+		 * }
+		 */
+	}
+
+	public void sendNPCinfo() {
+
+	}
+
+	public void sendNPCstart(UUID clientID) {
+		try {
+			String message = new String("createNPC");
+			message += "," + (npcCtrl.getNPC()).getX();
+			message += "," + (npcCtrl.getNPC()).getY();
+			message += "," + (npcCtrl.getNPC()).getZ();
+			message += "," + (npcCtrl.getCriteria());
+			sendPacketToAll(message);
+		} catch (IOException e) {
+			System.out.println("couldn't send msg");
+			e.printStackTrace();
+		}
+	}
+
+	public void handleNearTiming(UUID clientID) {
+		npcCtrl.setNearFlag(true);
 	}
 
 	@Override
@@ -16,8 +59,9 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 		String message = (String) o;
 		String[] messageTokens = message.split(",");
 
-		if (messageTokens.length > 0) { // JOIN -- Case where client just joined the server
-										// Received Message Format: (join,localId)
+		if (messageTokens.length > 0) {
+			// JOIN -- Case where client just joined the server
+			// Received Message Format: (join,localId)
 			if (messageTokens[0].compareTo("join") == 0) {
 				try {
 					IClientInfo ci;
@@ -26,6 +70,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 					addClient(ci, clientID);
 					System.out.println("Join request received from - " + clientID.toString());
 					sendJoinedMessage(clientID, true);
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -48,6 +93,8 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				String[] pos = { messageTokens[2], messageTokens[3], messageTokens[4] };
 				sendCreateMessages(clientID, pos);
 				sendWantsDetailsMessages(clientID);
+
+				sendNPCstart(clientID);// need this in the create call
 			}
 
 			// DETAILS-FOR --- Case where server receives a details for message
@@ -66,6 +113,38 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				String[] pos = { messageTokens[2], messageTokens[3], messageTokens[4] };
 				sendMoveMessages(clientID, pos);
 			}
+
+			// --------------- NPC SECTION --------------- //
+
+			// Case where server receives request for NPCs
+			// Received Message Format: (needNPC,id)//and x,y,z
+			if (messageTokens[0].compareTo("needNPC") == 0) {
+				System.out.println("server got a needNPC message");
+				UUID clientID = UUID.fromString(messageTokens[1]);
+				sendNPCstart(clientID);
+			}
+
+			// Case where server receives notice that an av is close to the npc
+			// Received Message Format: (isnear,id)
+			if (messageTokens[0].compareTo("isnear") == 0) {
+				UUID clientID = UUID.fromString(messageTokens[1]);
+				handleNearTiming(clientID);
+			}
+		}
+	}
+
+	// ----------------- SENDING NPC MESSAGES ----------------- //
+	// Informs clients of the whereabouts of the NPCs.
+	public void sendCreateNPCmsg(UUID clientID, String[] position) {
+		try {
+			System.out.println("server telling clients about an NPC");
+			String message = new String("createNPC," + clientID.toString());
+			// message += "," + position[0];
+			// message += "," + position[1];
+			// message += "," + position[2];
+			forwardPacketToAll(message, clientID);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

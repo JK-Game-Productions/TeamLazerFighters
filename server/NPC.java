@@ -1,3 +1,5 @@
+import javax.vecmath.Vector3f;
+
 public class NPC {
     double locationX, locationY, locationZ;
     double dir = 0.1;
@@ -27,12 +29,16 @@ public class NPC {
         return locationZ;
     }
 
+    public Vector3f getLocation() {
+        return new Vector3f((float) locationX, (float) locationY, (float) locationZ);
+    }
+
     public void getBig() {
-        size = 2.0;
+        size = 2.0;// 2.0
     }
 
     public void getSmall() {
-        size = 1.0;
+        size = 0.2;// 1.0
     }
 
     public double getSize() {

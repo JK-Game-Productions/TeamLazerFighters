@@ -31,7 +31,7 @@ public class MoveAction extends AbstractInputAction {
 
         float keyValue = e.getValue();
         String currentComponent = e.getComponent().toString();
-        System.out.println(currentComponent);
+        // System.out.println(currentComponent);
 
         // controller dead zones
         if (keyValue > -.2 && keyValue < .2)

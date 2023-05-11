@@ -3,7 +3,7 @@ import tage.ai.behaviortrees.BTCondition;
 public class OneSecPassed extends BTCondition {
     NPC npc;
     NPCcontroller npcc;
-    GameAIServerUDP server;
+    GameServerUDP server;
 
     public OneSecPassed(NPCcontroller c, NPC n, boolean toNegate) {
         super(toNegate);

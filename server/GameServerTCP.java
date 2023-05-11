@@ -16,8 +16,9 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 		String message = (String) o;
 		String[] messageTokens = message.split(",");
 
-		if (messageTokens.length > 0) { // JOIN -- Case where client just joined the server
-										// Received Message Format: (join,localId)
+		if (messageTokens.length > 0) {
+			// JOIN -- Case where client just joined the server
+			// Received Message Format: (join,localId)
 			if (messageTokens[0].compareTo("join") == 0) {
 				UUID clientID = UUID.fromString(messageTokens[1]);
 				addClient(ci, clientID);
@@ -31,8 +32,9 @@ public class GameServerTCP extends GameConnectionServer<UUID> {
 		String message = (String) o;
 		String[] messageTokens = message.split(",");
 
-		if (messageTokens.length > 0) { // Case where client just joined the server
-										// Received Message Format: (join,localId)
+		if (messageTokens.length > 0) {
+			// Case where client just joined the server
+			// Received Message Format: (join,localId)
 			/*
 			 * if(messageTokens[0].compareTo("join") == 0)
 			 * {

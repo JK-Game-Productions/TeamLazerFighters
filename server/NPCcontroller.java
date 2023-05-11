@@ -1,5 +1,7 @@
 import java.util.Random;
 
+import javax.vecmath.Vector3f;
+
 import tage.ai.behaviortrees.BTCompositeType;
 import tage.ai.behaviortrees.BTSequence;
 import tage.ai.behaviortrees.BehaviorTree;
@@ -11,14 +13,14 @@ public class NPCcontroller {
     boolean nearFlag = false;
     long thinkStartTime, tickStartTime;
     long lastThinkUpdateTime, lastTickUpdateTime;
-    GameAIServerUDP server;
+    GameServerUDP server;
     double criteria = 2.0;
 
     public void updateNPCs() {
         npc.updateLocation();
     }
 
-    public void start(GameAIServerUDP s) {
+    public void start(GameServerUDP s) {
         thinkStartTime = System.nanoTime();
         tickStartTime = System.nanoTime();
         lastThinkUpdateTime = thinkStartTime;
@@ -76,4 +78,5 @@ public class NPCcontroller {
     public void setNearFlag(boolean newValue) {
         nearFlag = newValue;
     }
+
 }

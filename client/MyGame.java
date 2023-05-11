@@ -82,14 +82,15 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean cameraSetUp = false;
 	private boolean mouseVisible = true;
 	private float vals[] = new float[16];
+	private boolean NPCisWalking = false;
 	private boolean lazergunAimed = false;
 	private boolean isClientConnected = false;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
 	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
-	// private int fluffyClouds;
+	private int forest;
 
 	// object variables
-	private AnimatedShape avatarS;
+	private AnimatedShape avatarS, npcS;
 	private GameObject lazergun, avatar, lazergun1, prize1, prize2, prize3, prize4, ground, x, y, z, npc, lazer1;
 	private ObjShape lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS, lazerS;
 	private TextureImage avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river, lazerT;
@@ -130,9 +131,10 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void loadShapes() {
 		// avatarS = new ImportedModel("man4.obj");
-
 		avatarS = new AnimatedShape("man4.rkm", "man4.rks");
 		avatarS.loadAnimation("WALK", "man4.rka");
+		npcS = new AnimatedShape("man4.rkm", "man4.rks");
+		npcS.loadAnimation("WALK", "man4.rka");
 		lazergunS = new ImportedModel("lazergun.obj");
 		lazerS = new Sphere();
 		prize1S = new Torus();
@@ -175,11 +177,6 @@ public class MyGame extends VariableFrameRateGame {
 		npc.setLocalTranslation(new Matrix4f().translation(80.0f, 0.0f, 20.0f));
 		npc.setLocalRotation(new Matrix4f().rotateY((float) Math.PI));
 		npc.setLocalScale(new Matrix4f().scale(.50f));
-
-		// build lazergun
-		lazergun1 = new GameObject(GameObject.root(), lazergunS, lazerguntx);
-		lazergun1.setLocalTranslation((new Matrix4f()).translation(80.00f, 41.00f, 15.00f));
-		lazergun1.setLocalScale((new Matrix4f()).scaling(0.20f));
 
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
@@ -257,9 +254,9 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void loadSkyBoxes() {
-		// fluffyClouds = (engine.getSceneGraph()).loadCubeMap("fluffyClouds");
-		lakeIslands = (engine.getSceneGraph()).loadCubeMap("lakeIslands");
-		(engine.getSceneGraph()).setActiveSkyBoxTexture(lakeIslands);
+		forest = (engine.getSceneGraph()).loadCubeMap("forest");
+		// lakeIslands = (engine.getSceneGraph()).loadCubeMap("lakeIslands");
+		(engine.getSceneGraph()).setActiveSkyBoxTexture(forest);
 		(engine.getSceneGraph()).setSkyBoxEnabled(true);
 	}
 
@@ -981,20 +978,20 @@ public class MyGame extends VariableFrameRateGame {
 		return engine;
 	}
 
+	public static Camera getMainCamera() {
+		return camMain;
+	}
+
 	public GameObject getNPC() {
 		return npc;
 	}
 
 	public ObjShape getNPCshape() {
-		return avatarS;
+		return npcS;
 	}
 
 	public TextureImage getNPCtexture() {
-		return avatartx;
-	}
-
-	public static Camera getMainCamera() {
-		return camMain;
+		return p1tx;
 	}
 
 	public ObjShape getGhostShape() {
@@ -1037,6 +1034,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void setLazergunAim(boolean newValue) {
 		lazergunAimed = newValue;
+	}
+
+	public void setNPCWalking(boolean newValue) {
+		NPCisWalking = newValue;
 	}
 
 	public void setAvatarWalking(boolean newValue) {
