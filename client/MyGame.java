@@ -91,9 +91,9 @@ public class MyGame extends VariableFrameRateGame {
 
 	// object variables
 	private AnimatedShape avatarS, npcS;
-	private GameObject lazergun, avatar, prize1, ground, x, y, z, npc;
-	private ObjShape lazergunS, prize1S, linxS, linyS, linzS, terrS, lazerS;
-	private TextureImage avatartx, avatartxBlue, avatartxRed, lazerguntx, p1tx, groundtx, river, lazerT;
+	private GameObject lazergun, avatar, prize1, ground, x, y, z, npc, riverWater;
+	private ObjShape lazergunS, prize1S, linxS, linyS, linzS, terrS, lazerS, waterS;
+	private TextureImage avatartx, avatartxBlue, avatartxRed, lazerguntx, p1tx, groundtx, river, lazerT, waterT;
 	private PhysicsObject prize1P, npcP;// lazerGroundP, avatarP;
 	private ArrayList<GameObject> lazers;
 	private ArrayList<GameObject> ghosts;
@@ -143,6 +143,7 @@ public class MyGame extends VariableFrameRateGame {
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 50f, 0f));
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 50f));
 		terrS = new TerrainPlane(1000);
+		waterS = new TerrainPlane(1000);
 	}
 
 	@Override
@@ -156,6 +157,7 @@ public class MyGame extends VariableFrameRateGame {
 		p1tx = new TextureImage("tex_Water.jpg");
 		groundtx = new TextureImage("brown_mud_leaves_01_diff_2k.jpg");
 		river = new TextureImage("river.jpg");
+		waterT = new TextureImage("brushwalker437.png");
 	}
 
 	@Override
@@ -166,9 +168,14 @@ public class MyGame extends VariableFrameRateGame {
 		// build the ground
 		ground = new GameObject(GameObject.root(), terrS, groundtx);
 		ground.setLocalTranslation(new Matrix4f().translation(0f, 0, 0f));
-		ground.setLocalScale((new Matrix4f()).scaling(500.0f, 50.0f, 500.0f));
+		ground.setLocalScale((new Matrix4f()).scaling(500.0f, 40.0f, 500.0f));
 		ground.getRenderStates().setTiling(1);
 		ground.setHeightMap(river);
+
+		// build water
+		riverWater = new GameObject(GameObject.root(), waterS, waterT);
+		riverWater.setLocalTranslation(new Matrix4f().translation(0f, 2.0f, 0f));
+		riverWater.setLocalScale(new Matrix4f().scaling(500.0f, 0.0f, 500.0f));
 
 		// NPC setup
 		npc = new GameObject(GameObject.root(), avatarS, avatartx);
