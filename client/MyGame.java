@@ -90,10 +90,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	// object variables
 	private AnimatedShape avatarS, npcS;
-	private GameObject lazergun, avatar, prize1, prize2, prize3, prize4, ground, x, y, z, npc;
-	private ObjShape lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS, lazerS;
+	private GameObject lazergun, avatar, prize1, ground, x, y, z, npc;
+	private ObjShape lazergunS, prize1S, linxS, linyS, linzS, terrS, lazerS;
 	private TextureImage avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river, lazerT;
-	private PhysicsObject prize1P, prize2P, npcP;// lazerGroundP, avatarP;
+	private PhysicsObject prize1P, npcP;// lazerGroundP, avatarP;
 	private ArrayList<GameObject> lazers;
 	private ArrayList<GameObject> ghosts;
 	private ArrayList<GameObject> npcs;
@@ -139,9 +139,6 @@ public class MyGame extends VariableFrameRateGame {
 		lazergunS = new ImportedModel("lazergun.obj");
 		lazerS = new Sphere();
 		prize1S = new Torus();
-		prize2S = new Cube();
-		prize3S = new Sphere();
-		prize4S = new HexBlock();
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(50f, 0f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 50f, 0f));
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 50f));
@@ -153,10 +150,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatartx = new TextureImage("man4.png");
 		lazerT = new TextureImage("lazerbeam.png");
 		lazerguntx = new TextureImage("lazergun.png");
-		p2tx = new TextureImage("gold_energy.jpg");
 		p1tx = new TextureImage("tex_Water.jpg");
-		p4tx = new TextureImage("rooffrance.jpg");
-		johntx = new TextureImage("galt_cow.jpg");
 		groundtx = new TextureImage("brown_mud_leaves_01_diff_2k.jpg");
 		river = new TextureImage("river.jpg");
 	}
@@ -201,24 +195,6 @@ public class MyGame extends VariableFrameRateGame {
 		this.runScript(scriptFile1);
 		prize1.setLocalScale((new Matrix4f()).scaling(3.0f));
 		prize1.getRenderStates().setTiling(1);
-
-		// build prize 2
-		prize2 = new GameObject(GameObject.root(), prize2S, p2tx);
-		jsEngine.put("object", prize2);
-		this.runScript(scriptFile1);
-		prize2.setLocalScale((new Matrix4f()).scaling(2.0f));
-
-		// build prize 3
-		prize3 = new GameObject(GameObject.root(), prize3S, johntx);
-		jsEngine.put("object", prize3);
-		this.runScript(scriptFile1);
-		prize3.setLocalScale((new Matrix4f()).scaling(3.5f, 2.0f, 3.5f));
-
-		// build prize 4
-		prize4 = new GameObject(GameObject.root(), prize4S, p4tx);
-		jsEngine.put("object", prize4);
-		this.runScript(scriptFile1);
-		prize4.setLocalScale((new Matrix4f()).scaling(4.0f, 2.0f, 4.0f));
 
 		// build world axes
 		x = new GameObject(GameObject.root(), linxS);
@@ -301,7 +277,6 @@ public class MyGame extends VariableFrameRateGame {
 		// AimAction aimAction = new AimAction(this);
 		MoveAction moveAction = new MoveAction(this);
 		PauseAction pauseAction = new PauseAction(this);
-		ZoomCameraAction zoomAction = new ZoomCameraAction(this);
 		ToggleMouseAction mouseAction = new ToggleMouseAction(this);
 
 		// Keyboard Actions ---------------------------------------------------
@@ -315,10 +290,6 @@ public class MyGame extends VariableFrameRateGame {
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.D, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.COMMA, zoomAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.PERIOD, zoomAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.LALT, mouseAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.TAB, pauseAction,
@@ -330,8 +301,6 @@ public class MyGame extends VariableFrameRateGame {
 		im.associateActionWithAllGamepads(Component.Identifier.Axis.X, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Axis.Y, moveAction,
-				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllGamepads(Component.Identifier.Axis.Z, zoomAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(Component.Identifier.Button._6, mouseAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -358,13 +327,6 @@ public class MyGame extends VariableFrameRateGame {
 		prize1P = ps.addSphereObject(ps.nextUID(), mass, tempTransform, 3.0f);
 		prize1P.setBounciness(0.5f);
 		prize1.setPhysicsObject(prize1P);
-
-		translation = new Matrix4f(prize2.getLocalTranslation());
-		tempTransform = toDoubleArray(translation.get(vals));
-		prize2P = ps.addBoxObject(ps.nextUID(), mass, tempTransform, psize);
-		prize2P.setFriction(0.5f);
-		prize2P.setBounciness(1.0f);
-		prize2.setPhysicsObject(prize2P);
 
 		buildNpc();
 
@@ -477,7 +439,6 @@ public class MyGame extends VariableFrameRateGame {
 				}
 			}
 			// update static objects
-			mapHeight(prize2);
 			mapHeight(prize1);
 
 			// } If condition for running physics with scripts
@@ -492,13 +453,10 @@ public class MyGame extends VariableFrameRateGame {
 		Vector3f scoreColor = new Vector3f(0, 1, 0);
 		String winStr = "You Have Beaten The Blob";
 		Vector3f winColor = new Vector3f(0, 1, 0);
-		if (prize1.isCollected() && prize2.isCollected() && prize3.isCollected() && prize4.isCollected()) {
-			(engine.getHUDmanager()).setHUD1(winStr, winColor, (int) (width * 0.75f), 15);
-			endGame = true;
-		} else {
-			(engine.getHUDmanager()).setHUD1(dolLocStr, dolLocColor, (int) (width * 0.75f), 15);
-			(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
-		} // END Update
+
+		(engine.getHUDmanager()).setHUD1(dolLocStr, dolLocColor, (int) (width * 0.75f), 15);
+		(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
+		// END Update
 	}// END VariableFrameRate Game Overrides
 
 	// --------------- COLLISION DETECTION AND HANDLING --------------- //
