@@ -10,6 +10,7 @@ import com.bulletphysics.dynamics.DynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
 
 import tage.*;
+import tage.Light.LightType;
 import tage.input.*;
 import tage.shapes.*;
 import tage.audio.Sound;
@@ -51,10 +52,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	// Tage Class Variables
 	private Robot robot;
-	private Light light1;
+	private Light blueSpawn, redSpawn;
 	private InputManager im;
 	private GhostManager gm;
-	private File scriptFile1;
+	private File scriptFile1, scriptFile2;
 	private String startupStr;
 	private String serverAddress;
 	private Vector3f lastCamLocation;
@@ -98,6 +99,7 @@ public class MyGame extends VariableFrameRateGame {
 	private ArrayList<GameObject> lazers;
 	private ArrayList<GameObject> ghosts;
 	private ArrayList<GameObject> npcs;
+	private boolean viewAxis = false;
 
 	// ----------------------------------------------------------------------------
 
@@ -139,9 +141,9 @@ public class MyGame extends VariableFrameRateGame {
 		lazergunS = new ImportedModel("lazergun.obj");
 		lazerS = new Sphere();
 		prize1S = new Torus();
-		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(50f, 0f, 0f));
-		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 50f, 0f));
-		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 50f));
+		linxS = new Line(new Vector3f(0f, 40f, 0f), new Vector3f(500f, 40f, 0f));
+		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 80f, 0f));
+		linzS = new Line(new Vector3f(0f, 40f, 0f), new Vector3f(0f, 40f, 500f));
 		terrS = new TerrainPlane(1000);
 		waterS = new TerrainPlane(1000);
 	}
@@ -163,7 +165,7 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void buildObjects() {
 		jsEngine.put("rand", rand);
-		scriptFile1 = new File("assets/scripts/RandomTranslation.js");
+		scriptFile2 = new File("assets/scripts/BlueSpawn.js");
 
 		// build the ground
 		ground = new GameObject(GameObject.root(), terrS, groundtx);
@@ -185,8 +187,11 @@ public class MyGame extends VariableFrameRateGame {
 
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
-		avatar.setLocalTranslation((new Matrix4f()).translation(80f, 0f, 12.0f));
+		//avatar.setLocalTranslation((new Matrix4f()).translation(0f, 0f, 0f));
+		jsEngine.put("object", avatar);
+		this.runScript(scriptFile2);
 		avatar.setLocalScale((new Matrix4f()).scaling(.43f));
+		avatar.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(270f))); // red 90f
 		avatar.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
 
@@ -201,8 +206,9 @@ public class MyGame extends VariableFrameRateGame {
 
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
-		jsEngine.put("object", prize1);
-		this.runScript(scriptFile1);
+		// jsEngine.put("object", prize1);
+		// this.runScript(scriptFile1);
+		prize1.setLocalTranslation(new Matrix4f().translation(0.0f, 0.0f, 0.0f));
 		prize1.setLocalScale((new Matrix4f()).scaling(3.0f));
 		prize1.getRenderStates().setTiling(1);
 
@@ -213,6 +219,9 @@ public class MyGame extends VariableFrameRateGame {
 		(x.getRenderStates()).setColor(new Vector3f(1f, 0f, 0f));
 		(y.getRenderStates()).setColor(new Vector3f(0f, 1f, 0f));
 		(z.getRenderStates()).setColor(new Vector3f(0f, 0f, 1f));
+		(x.getRenderStates()).disableRendering();
+		(y.getRenderStates()).disableRendering();
+		(z.getRenderStates()).disableRendering();
 
 		// add objects to vector
 		lazers = new ArrayList<>();
@@ -224,9 +233,20 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void initializeLights() {
 		Light.setGlobalAmbient(0.5f, 0.5f, 0.5f);
-		light1 = new Light();
-		light1.setLocation(new Vector3f(0.0f, 100.0f, 0.0f));
-		(engine.getSceneGraph()).addLight(light1);
+		blueSpawn = new Light();
+		redSpawn = new Light();
+		blueSpawn.setLocation(new Vector3f(250.0f, 200.0f, 0.0f));
+		blueSpawn.setType(LightType.SPOTLIGHT);
+		blueSpawn.setDirection(new Vector3f(0.0f, -1.0f, 0.0f));
+		blueSpawn.setDiffuse(0.0f, 0.0f, 1.0f);
+		blueSpawn.setAmbient(0.0f, 0.0f, 0.5f);
+		(engine.getSceneGraph()).addLight(blueSpawn);
+		redSpawn.setLocation(new Vector3f(-250.0f, 200.0f, 0.0f));
+		redSpawn.setType(LightType.SPOTLIGHT);
+		redSpawn.setDirection(new Vector3f(0.0f, -1.0f, 0.0f));
+		redSpawn.setDiffuse(0.75f, 0.0f, 0.0f);
+		//redSpawn.setAmbient(1.0f, 0.0f, 0.0f);
+		(engine.getSceneGraph()).addLight(redSpawn);
 	}
 
 	@Override
@@ -353,6 +373,8 @@ public class MyGame extends VariableFrameRateGame {
 
 		if (paused) {
 			im.update((float) elapsTime);
+			mapHeight(avatar);
+			positionCameraBehindAvatar();
 		}
 		if (!paused && !endGame) {
 
@@ -363,7 +385,6 @@ public class MyGame extends VariableFrameRateGame {
 			// update player location
 			mapHeight(avatar);
 			positionCameraBehindAvatar();
-
 			// update all sounds
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
@@ -462,9 +483,9 @@ public class MyGame extends VariableFrameRateGame {
 			Vector3f startupColor = new Vector3f(1, 0, 1);
 			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, 660, 540);// half of 1920, 1080
 		} else {
-			startupStr = "";
-			Vector3f startupColor = new Vector3f(1, 0, 1);
-			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, 660, 540);// half of 1920, 1080
+			startupStr = "X: " + getPlayerPosition().x() + "Z: " + getPlayerPosition().z();
+			Vector3f startupColor = new Vector3f(1, 1, 1);
+			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, 1500, 15);// half of 1920, 1080
 		}
 
 		String scoreStr = "Score: " + Integer.toString(score);
@@ -526,8 +547,9 @@ public class MyGame extends VariableFrameRateGame {
 				voiceline1.play();
 				break;
 			}
-			case KeyEvent.VK_R: {
-				System.out.println("reload");
+			case KeyEvent.VK_0: {
+				viewAxis = !viewAxis;
+				toggleAxies();
 				break;
 			}
 			case KeyEvent.VK_1: {
@@ -981,6 +1003,18 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void toggleAim() {
 		lazergunAimed = !lazergunAimed;
+	}
+
+	public void toggleAxies() {
+		if (viewAxis) {
+			(x.getRenderStates()).enableRendering();
+			(y.getRenderStates()).enableRendering();
+			(z.getRenderStates()).enableRendering();
+		} else {
+			(x.getRenderStates()).disableRendering();
+			(y.getRenderStates()).disableRendering();
+			(z.getRenderStates()).disableRendering();
+		}
 	}
 
 	public void setLazergunAim(boolean newValue) {
