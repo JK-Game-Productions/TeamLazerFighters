@@ -91,11 +91,13 @@ public class MyGame extends VariableFrameRateGame {
 
 	// object variables
 	private AnimatedShape avatarS, npcS;
-	private GameObject lazergun, avatar, lazergun1, prize1, prize2, prize3, prize4, ground, x, y, z, npc, lazer1;
+	private GameObject lazergun, avatar, prize1, prize2, prize3, prize4, ground, x, y, z, npc;
 	private ObjShape lazergunS, prize1S, prize2S, prize3S, prize4S, linxS, linyS, linzS, terrS, lazerS;
 	private TextureImage avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river, lazerT;
-	private PhysicsObject groundP, prize1P, prize2P, prize1GroundP, avatarGroundP, prize2GroundP, npcP,
-			npcGroundP, lazerP;// lazerGroundP, avatarP;
+	private PhysicsObject prize1P, prize2P, npcP;// lazerGroundP, avatarP;
+	private ArrayList<GameObject> lazers;
+	private ArrayList<GameObject> ghosts;
+	private ArrayList<GameObject> npcs;
 
 	// ----------------------------------------------------------------------------
 
@@ -156,7 +158,7 @@ public class MyGame extends VariableFrameRateGame {
 		p1tx = new TextureImage("tex_Water.jpg");
 		p4tx = new TextureImage("rooffrance.jpg");
 		johntx = new TextureImage("galt_cow.jpg");
-		groundtx = new TextureImage("brown_mud_leaves_01_diff_1k.jpg");
+		groundtx = new TextureImage("brown_mud_leaves_01_diff_2k.jpg");
 		river = new TextureImage("river.jpg");
 	}
 
@@ -192,15 +194,7 @@ public class MyGame extends VariableFrameRateGame {
 		lazergun.setParent(avatar);
 		lazergun.propagateRotation(true);
 		lazergun.propagateTranslation(true);
-
-		lazer1 = new GameObject(GameObject.root(), lazerS, lazerT);
-		lazer1.setLocalTranslation(new Matrix4f().translation(80.67f, 40.955f, 15.18f));
-		lazer1.setLocalScale(new Matrix4f().scale(0.02f, 0.02f, 0.30f));
-		lazer1.setParent(lazergun);
-		lazer1.propagateRotation(true);
-		lazer1.propagateScale(false);
-		lazer1.propagateTranslation(true);
-		// lazer1.setLocalTranslation(new Matrix4f().translation(.67f, -.045f, .18f));
+		lazergun.applyParentRotationToPosition(true);
 
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
@@ -236,19 +230,17 @@ public class MyGame extends VariableFrameRateGame {
 		(z.getRenderStates()).setColor(new Vector3f(0f, 0f, 1f));
 
 		// add objects to vector
-		objects = new Vector<>();
-		objects.add(avatar);
-		objects.add(prize1);
-		objects.add(prize2);
-		objects.add(prize3);
-		objects.add(prize4);
+		lazers = new ArrayList<>();
+		npcs = new ArrayList<>();
+		ghosts = new ArrayList<>();
+
 	}
 
 	@Override
 	public void initializeLights() {
 		Light.setGlobalAmbient(0.5f, 0.5f, 0.5f);
 		light1 = new Light();
-		light1.setLocation(new Vector3f(0.0f, 50.0f, 0.0f));
+		light1.setLocation(new Vector3f(0.0f, 100.0f, 0.0f));
 		(engine.getSceneGraph()).addLight(light1);
 	}
 
@@ -308,15 +300,15 @@ public class MyGame extends VariableFrameRateGame {
 
 		// ------------------- Input Setup ------------------- //
 
-		AimAction aimAction = new AimAction(this);
+		// AimAction aimAction = new AimAction(this);
 		MoveAction moveAction = new MoveAction(this);
 		PauseAction pauseAction = new PauseAction(this);
 		ZoomCameraAction zoomAction = new ZoomCameraAction(this);
 		ToggleMouseAction mouseAction = new ToggleMouseAction(this);
 
 		// Keyboard Actions ---------------------------------------------------
-		im.associateActionWithAllKeyboards(Component.Identifier.Key.R, aimAction,
-				InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		// im.associateActionWithAllKeyboards(Component.Identifier.Key.R, aimAction,
+		// InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.W, moveAction,
 				InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(Component.Identifier.Key.S, moveAction,
@@ -351,77 +343,33 @@ public class MyGame extends VariableFrameRateGame {
 		// --------------------- Physics Engine --------------------- //
 
 		// init physics engine
-		String engine = "tage.physics.JBullet.JBulletPhysicsEngine";
-		float[] gravity = { 0f, -10f, 0f };
-		ps = PhysicsEngineFactory.createPhysicsEngine(engine);
+		String eng = "tage.physics.JBullet.JBulletPhysicsEngine";
+		float[] gravity = { 0f, -5f, 0f };
+		ps = PhysicsEngineFactory.createPhysicsEngine(eng);
 		ps.initSystem();
 		ps.setGravity(gravity);
+
 		// creating physics world
 		float mass = 1.0f;
-		float massless = 0.0f;
-		float up[] = { 0, 1, 0 };
-		float gsize[] = { 1f, 0.1f, 1f };
-		// float asize[] = { .33f, .33f, .33f };
 		float psize[] = { 4.0f, 4.0f, 4.0f };
-		float nsize[] = { 1.0f, 1.0f, 1.0f };
 		double[] tempTransform;
 
 		// --------------------- Physics Objects --------------------- //
 		Matrix4f translation = new Matrix4f(prize1.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
-		prize1P = ps.addSphereObject(ps.nextUID(), massless, tempTransform, 3.0f);
+		prize1P = ps.addSphereObject(ps.nextUID(), mass, tempTransform, 3.0f);
 		prize1P.setBounciness(0.5f);
 		prize1.setPhysicsObject(prize1P);
 
-		translation = new Matrix4f().translation(0, 0, 0);
-		tempTransform = toDoubleArray(translation.get(vals));
-		prize1GroundP = ps.addBoxObject(ps.nextUID(), massless, tempTransform, gsize);
-		prize1GroundP.setFriction(0.5f);
-		prize1GroundP.setBounciness(0.1f);
-
-		/*
-		 * translation = new Matrix4f(avatar.getLocalTranslation());
-		 * tempTransform = toDoubleArray(translation.get(vals));
-		 * avatarP = ps.addBoxObject(ps.nextUID(), mass, tempTransform, asize);
-		 * //avatarP.setFriction(0f);
-		 * avatar.setPhysicsObject(avatarP);
-		 * 
-		 */
-		translation = new Matrix4f().translation(0, 0, 0);
-		tempTransform = toDoubleArray(translation.get(vals));
-		avatarGroundP = ps.addBoxObject(ps.nextUID(), massless, tempTransform, gsize);
-
 		translation = new Matrix4f(prize2.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
-		prize2P = ps.addBoxObject(ps.nextUID(), massless, tempTransform, psize);
+		prize2P = ps.addBoxObject(ps.nextUID(), mass, tempTransform, psize);
 		prize2P.setFriction(0.5f);
 		prize2P.setBounciness(1.0f);
 		prize2.setPhysicsObject(prize2P);
 
-		translation = new Matrix4f().translation(0, 0, 0);
-		tempTransform = toDoubleArray(translation.get(vals));
-		prize2GroundP = ps.addBoxObject(ps.nextUID(), massless, tempTransform, gsize);
+		buildNpc();
 
-		translation = new Matrix4f(npc.getLocalTranslation());
-		tempTransform = toDoubleArray(translation.get(vals));
-		npcP = ps.addBoxObject(ps.nextUID(), mass, tempTransform, nsize);
-		npcP.setDamping(0f, 1f);
-		npc.setPhysicsObject(npcP);
-
-		translation = new Matrix4f().translation(0, 0, 0);
-		tempTransform = toDoubleArray(translation.get(vals));
-		npcGroundP = ps.addBoxObject(ps.nextUID(), massless, tempTransform, gsize);
-
-		translation = new Matrix4f(lazer1.getLocalTranslation());
-		tempTransform = toDoubleArray(translation.get(vals));
-		lazerP = ps.addCapsuleObject(ps.nextUID(), mass - .99f, tempTransform, 0.30f, 0.02f);
-
-		translation = new Matrix4f(ground.getLocalTranslation());
-		tempTransform = toDoubleArray(translation.get(vals));
-		groundP = ps.addStaticPlaneObject(ps.nextUID(), tempTransform, up, 0.0f);
-		groundP.setBounciness(0.1f);
-		groundP.setFriction(1.0f);
-		ground.setPhysicsObject(groundP);
 	}
 
 	// -------------------------- UPDATE -------------------------- //
@@ -442,6 +390,10 @@ public class MyGame extends VariableFrameRateGame {
 			elapsTime += frameDiff;
 			im.update((float) elapsTime);
 
+			// update player location
+			mapHeight(avatar);
+			positionCameraBehindAvatar();
+
 			// update all sounds
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
@@ -452,7 +404,6 @@ public class MyGame extends VariableFrameRateGame {
 
 			// update lazergun position and aim
 			lazergun.applyParentRotationToPosition(true);
-			// lazer1.applyParentRotationToPosition(true);
 			if (lazergunAimed) { // -0.217f, 0.8f, 0.9f
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.23f, 1.06f, 0.85f));
 			} else {
@@ -483,8 +434,11 @@ public class MyGame extends VariableFrameRateGame {
 			setAvatarWalking(false);
 			setAvatarRunning(false);
 
-			// orbitCam.updateCameraPosition();
-			positionCameraBehindAvatar();
+			// update all sounds
+			laserSound.setLocation(lazergun.getWorldLocation());
+			walkingSound.setLocation(avatar.getWorldLocation());
+			voiceline1.setLocation(npc.getWorldLocation());
+			setEarParameters();
 
 			// process the networking functions
 			processNetworking((float) elapsTime);
@@ -498,12 +452,19 @@ public class MyGame extends VariableFrameRateGame {
 
 			// ---------------------PHYSICS LOGIC--------------------------//
 
+			// update npc physics objects
+			ps.removeObject(npcP.getUID());
+			// move graphic objects
+			mapHeight(npc);
+			buildNpc();
+
 			// if(running){
 			Matrix4f matrix = new Matrix4f();
 			Matrix4f rotMatrix = new Matrix4f();
 			AxisAngle4f aAngle = new AxisAngle4f();
 			Matrix4f identityMatrix = new Matrix4f().identity();
 			checkCollisions();
+			checkBulletDistances();
 			ps.update((float) elapsTime);
 			for (GameObject go : engine.getSceneGraph().getGameObjects()) {
 				if (go.getPhysicsObject() != null) {
@@ -517,11 +478,10 @@ public class MyGame extends VariableFrameRateGame {
 					go.setLocalTranslation(identityMatrix);
 				}
 			}
+			// update static objects
+			mapHeight(prize2);
+			mapHeight(prize1);
 
-			mapHeight(avatar, avatarGroundP);
-			mapHeight(prize2, prize2GroundP);
-			mapHeight(prize1, prize1GroundP);
-			mapHeight(npc, npcGroundP);
 			// } If condition for running physics with scripts
 		}
 		// END if statement for game not paused
@@ -543,6 +503,8 @@ public class MyGame extends VariableFrameRateGame {
 		} // END Update
 	}// END VariableFrameRate Game Overrides
 
+	// ------------------COLLISION DETECTION AND HANDLING---------------------------
+	// //
 	private void checkCollisions() {
 		DynamicsWorld dw;
 		Dispatcher dist;
@@ -562,20 +524,27 @@ public class MyGame extends VariableFrameRateGame {
 			for (int j = 0; j < pm.getNumContacts(); j++) {
 				contactPoint = pm.getContactPoint(j);
 				if (contactPoint.getDistance() < 0.0f) {
-					// handle collision?
-					if (npcP.getUID() == obj1.getUID()
-							|| npcP.getUID() == obj2.getUID() && lazerP.getUID() == obj1.getUID()
-							|| lazerP.getUID() == obj2.getUID()) {
-						// System.out.println("");
-						// System.out.println("hit between: " + obj1 + " and " + obj2);
-						break;
-					} else {
-						// System.out.println("No Collision");
-					}
+					// handle collison it litterally detects nothing to handle
+					System.out.println("Hit");
+					break;
 				}
 			}
 		}
 	}
+
+	private void checkBulletDistances() {
+		for (int i = 0; i < lazers.size(); i++) {
+			GameObject laz = lazers.get(i);
+			if (distanceTo(laz, npc) <= 1.0f) {
+				ps.removeObject(laz.getPhysicsObject().getUID());
+				engine.getSceneGraph().removeGameObject(laz);
+				lazers.remove(i);
+				score++;
+				System.out.println("Hit");
+			}
+		}
+	}
+
 	// ------------------------- KEY PRESSED ------------------------ //
 
 	@Override
@@ -585,6 +554,10 @@ public class MyGame extends VariableFrameRateGame {
 				voiceline1.setLocation(avatar.getWorldLocation());
 				setEarParameters();
 				voiceline1.play();
+				break;
+			}
+			case KeyEvent.VK_R: {
+				System.out.println("reload");
 				break;
 			}
 		}
@@ -677,8 +650,7 @@ public class MyGame extends VariableFrameRateGame {
 			return;
 		} else if (e.getButton() == 3) {
 			setLazergunAim(false);
-		} else
-			System.out.println(e.getButton());
+		} // else System.out.println(e.getButton());
 	}
 
 	@Override
@@ -714,7 +686,26 @@ public class MyGame extends VariableFrameRateGame {
 			prevMouseX = centerX;
 			prevMouseY = centerY;
 		}
-		System.out.println(e.getButton());
+		// System.out.println(e.getButton());
+	}
+
+	// checks if mouse is hidden or shown and sets the cursor icon
+	private void checkMouse() {
+		RenderSystem rs = engine.getRenderSystem();
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		Canvas canvas = rs.getGLCanvas();
+
+		// Cursor clear = tk.createCustomCursor(tk.getImage(""), new Point(),
+		// "ClearCursor");
+		Cursor crosshair = tk.createCustomCursor(tk.getImage("./assets/textures/Blue-Crosshair-1.png"), new Point(),
+				"Crosshair");
+
+		if (!mouseVisible) {
+			canvas.setCursor(crosshair);
+		} else {
+			// set mouse back to default
+			canvas.setCursor(null);
+		}
 	}
 	// END Mouse Management
 
@@ -882,67 +873,49 @@ public class MyGame extends VariableFrameRateGame {
 		return true;
 	}
 
-	private void mapHeight(GameObject object, PhysicsObject objGround) {
+	private void mapHeight(GameObject object) {
 		Vector3f loc = object.getWorldLocation();
 		float height = ground.getHeight(loc.x(), loc.z());
-		object.setLocalLocation(new Vector3f(loc.x(), (height + 1.0f), loc.z()));
-		Matrix4f translation = new Matrix4f().translation(loc.x(), height - .05f, loc.z());
-		double[] tempTransform = toDoubleArray(translation.get(vals));
-		objGround.setTransform(tempTransform);
+		float[] gsize = { 2.0f, 1.0f, 2.0f };
+		object.setLocalLocation(new Vector3f(loc.x(), (height + 1.5f), loc.z()));
 	}
 
 	private void fireLazer() {
+		GameObject newLazer = new GameObject(GameObject.root(), lazerS, lazerT);
+		Vector3f loc = getPlayerPosition();
+		Vector3f fwd = avatar.getLocalForwardVector();
+		newLazer.setLocalTranslation(new Matrix4f().translation(loc.x() - .1f, loc.y() + 1f, loc.z()));
+		newLazer.setLocalScale(new Matrix4f().scaling(0.02f, 0.02f, 0.02f));
 
+		Matrix4f translation = new Matrix4f(newLazer.getLocalTranslation());
+		double[] tempTransform = toDoubleArray(translation.get(vals));
+		PhysicsObject newLazerP = ps.addSphereObject(ps.nextUID(), 1f, tempTransform, .02f);
+		// System.out.println("fwdvec: "+fwd.x()+","+fwd.y()+","+fwd.z());
+		newLazerP.setBounciness(.01f);
+		newLazerP.setLinearVelocity(new float[] { fwd.x() * 100, fwd.y() * 100, fwd.z() * 100 });
+		newLazer.setPhysicsObject(newLazerP);
+		// newLazerP.applyForce(1000.0f, 0f, 0, 0, 0, 0);
+		lazers.add(newLazer);
+	}
+
+	private void buildNpc() {
+		float[] psize = { 1f, 2f, 1f };
+		Matrix4f translation = new Matrix4f(npc.getLocalTranslation());
+		double[] tempTransform = toDoubleArray(translation.get(vals));
+		npcP = ps.addBoxObject(ps.nextUID(), 1.0f, tempTransform, psize);
+		npcP.setDamping(.5f, .8f);
+		npcP.setBounciness(1.0f);
+		npc.setPhysicsObject(npcP);
 	}
 
 	private void positionCameraBehindAvatar() {
-		// Matrix4f w = avatar.getWorldTranslation();
-		Vector4f u = new Vector4f(-1f, 0f, 0f, 1f);
-		Vector4f v = new Vector4f(0f, 1f, 0f, 1f);
-		Vector4f n = new Vector4f(0f, 0f, 1f, 1f);
-		// Vector3f position = new Vector3f(w.m30(), w.m31(), w.m32());
 		Vector3f location = avatar.getWorldLocation();
-		// System.out.println("position:" + position);
-		// System.out.println("location" + location);
-		/*
-		 * u.mul(avatar.getWorldRotation());
-		 * v.mul(avatar.getWorldRotation());
-		 * n.mul(avatar.getWorldRotation());
-		 */
 		camMain.setU(avatar.getWorldRightVector());
 		camMain.setV(avatar.getWorldUpVector());
 		camMain.setN(avatar.getWorldForwardVector());
-		// location.add(n.x() * 0.3f, n.y() * 0.3f, n.z() * 0.3f);
-		// location.add(v.x() * .95f, v.y() * .95f, v.z() * .95f);
 		location.add(camMain.getV().mul(1.2f));
 		location.add(camMain.getN().mul(.3f));
-		cameraSetUp = true;
-		if (!cameraSetUp) {
-			camMain.setU(new Vector3f(u.x(), u.y(), u.z()));
-			camMain.setV(new Vector3f(v.x(), v.y(), v.z()));
-			camMain.setN(new Vector3f(n.x(), n.y(), n.z()));
-			cameraSetUp = true;
-		}
 		camMain.setLocation(location);
-	}
-
-	// checks if mouse is hidden or shown and sets the cursor icon
-	private void checkMouse() {
-		RenderSystem rs = engine.getRenderSystem();
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		Canvas canvas = rs.getGLCanvas();
-
-		// Cursor clear = tk.createCustomCursor(tk.getImage(""), new Point(),
-		// "ClearCursor");
-		Cursor crosshair = tk.createCustomCursor(tk.getImage("./assets/textures/Blue-Crosshair-1.png"), new Point(),
-				"Crosshair");
-
-		if (!mouseVisible) {
-			canvas.setCursor(crosshair);
-		} else {
-			// set mouse back to default
-			canvas.setCursor(null);
-		}
 	}
 
 	private float[] toFloatArray(double[] arr) {
