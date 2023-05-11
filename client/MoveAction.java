@@ -33,6 +33,9 @@ public class MoveAction extends AbstractInputAction {
         String currentComponent = e.getComponent().toString();
         // System.out.println(currentComponent);
 
+        // if (game.paused())
+        // return;
+
         // controller dead zones
         if (keyValue > -.2 && keyValue < .2)
             return;

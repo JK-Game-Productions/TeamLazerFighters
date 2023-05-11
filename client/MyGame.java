@@ -55,6 +55,7 @@ public class MyGame extends VariableFrameRateGame {
 	private InputManager im;
 	private GhostManager gm;
 	private File scriptFile1;
+	private String startupStr;
 	private String serverAddress;
 	private Vector3f lastCamLocation;
 	private ProtocolClient protClient;
@@ -71,9 +72,10 @@ public class MyGame extends VariableFrameRateGame {
 	private int width;
 	private int score = 0;
 	private int serverPort;
+	private int forest;
 	private boolean isRecentering;
 	private float moveSpeed = 3.0f;
-	private boolean paused = false;
+	private boolean paused = true; // pause game on startup
 	private boolean endGame = false;
 	private boolean isRunning = false;
 	private boolean isWalking = false;
@@ -86,13 +88,12 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean isClientConnected = false;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
 	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
-	private int forest;
 
 	// object variables
 	private AnimatedShape avatarS, npcS;
 	private GameObject lazergun, avatar, prize1, ground, x, y, z, npc;
 	private ObjShape lazergunS, prize1S, linxS, linyS, linzS, terrS, lazerS;
-	private TextureImage avatartx, lazerguntx, johntx, p1tx, p2tx, p4tx, groundtx, river, lazerT;
+	private TextureImage avatartx, avatartxBlue, avatartxRed, lazerguntx, p1tx, groundtx, river, lazerT;
 	private PhysicsObject prize1P, npcP;// lazerGroundP, avatarP;
 	private ArrayList<GameObject> lazers;
 	private ArrayList<GameObject> ghosts;
@@ -131,11 +132,10 @@ public class MyGame extends VariableFrameRateGame {
 	// VariableFrameRate Game Overrides
 	@Override
 	public void loadShapes() {
-		// avatarS = new ImportedModel("man4.obj");
-		avatarS = new AnimatedShape("man4.rkm", "man4.rks");
-		avatarS.loadAnimation("WALK", "man4.rka");
-		npcS = new AnimatedShape("man4.rkm", "man4.rks");
-		npcS.loadAnimation("WALK", "man4.rka");
+		avatarS = new AnimatedShape("man5.rkm", "man5.rks");
+		avatarS.loadAnimation("WALK", "man5.rka");
+		npcS = new AnimatedShape("man5.rkm", "man5.rks");
+		npcS.loadAnimation("WALK", "man5.rka");
 		lazergunS = new ImportedModel("lazergun.obj");
 		lazerS = new Sphere();
 		prize1S = new Torus();
@@ -147,7 +147,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void loadTextures() {
-		avatartx = new TextureImage("man4.png");
+		// default texture is blue
+		avatartx = new TextureImage("man5.png");
+		avatartxBlue = new TextureImage("man5.png");
+		avatartxRed = new TextureImage("man6.png");
 		lazerT = new TextureImage("lazerbeam.png");
 		lazerguntx = new TextureImage("lazergun.png");
 		p1tx = new TextureImage("tex_Water.jpg");
@@ -410,7 +413,7 @@ public class MyGame extends VariableFrameRateGame {
 			// update animation
 			avatarS.updateAnimation();
 
-			// ---------------------PHYSICS LOGIC--------------------------//
+			// --------------------- PHYSICS LOGIC --------------------------//
 
 			// update npc physics objects
 			ps.removeObject(npcP.getUID());
@@ -445,17 +448,22 @@ public class MyGame extends VariableFrameRateGame {
 		}
 		// END if statement for game not paused
 
-		// update HUD variables
-		String scoreStr = "Score: " + Integer.toString(score);
-		String dolLocStr = "X: " + avatar.getWorldLocation().x() + " Y: " + avatar.getWorldLocation().y() + "  Z: "
-				+ avatar.getWorldLocation().z();
-		Vector3f dolLocColor = new Vector3f(1, 1, 1);
-		Vector3f scoreColor = new Vector3f(0, 1, 0);
-		String winStr = "You Have Beaten The Blob";
-		Vector3f winColor = new Vector3f(0, 1, 0);
+		// ----------------------------- HUD ----------------------------- //
 
-		(engine.getHUDmanager()).setHUD1(dolLocStr, dolLocColor, (int) (width * 0.75f), 15);
+		if (paused) {
+			startupStr = "CHOOSE YOUR TEAM: Blue (1) OR Red (2)";
+			Vector3f startupColor = new Vector3f(1, 0, 1);
+			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, 660, 540);// half of 1920, 1080
+		} else {
+			startupStr = "";
+			Vector3f startupColor = new Vector3f(1, 0, 1);
+			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, 660, 540);// half of 1920, 1080
+		}
+
+		String scoreStr = "Score: " + Integer.toString(score);
+		Vector3f scoreColor = new Vector3f(0, 1, 0);
 		(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
+
 		// END Update
 	}// END VariableFrameRate Game Overrides
 
@@ -515,6 +523,19 @@ public class MyGame extends VariableFrameRateGame {
 				System.out.println("reload");
 				break;
 			}
+			case KeyEvent.VK_1: {
+				System.out.println("Blue team chosen");
+				avatartx = avatartxBlue;
+				paused = !paused;
+				break;
+			}
+			case KeyEvent.VK_2: {
+				System.out.println("Red team chosen");
+				avatartx = avatartxRed;
+				buildObjects();// rebuild objects for red team
+				paused = !paused;
+				break;
+			}
 		}
 
 		super.keyPressed(e);
@@ -523,31 +544,27 @@ public class MyGame extends VariableFrameRateGame {
 	// ------------------------- MOUSE MANAGEMENT ------------------------ //
 
 	private void initMouseMode() {
-		if (paused) {
-			return;
-		} else {
-			RenderSystem rs = engine.getRenderSystem();
-			Viewport vw = rs.getViewport("LEFT");
-			float left = vw.getActualLeft();
-			float bottom = vw.getActualBottom();
-			float width = vw.getActualWidth();
-			float height = vw.getActualHeight();
+		RenderSystem rs = engine.getRenderSystem();
+		Viewport vw = rs.getViewport("LEFT");
+		float left = vw.getActualLeft();
+		float bottom = vw.getActualBottom();
+		float width = vw.getActualWidth();
+		float height = vw.getActualHeight();
 
-			centerX = (int) (left + width / 2);
-			centerY = (int) (bottom - height / 2);
+		centerX = (int) (left + width / 2);
+		centerY = (int) (bottom - height / 2);
 
-			isRecentering = false;
+		isRecentering = false;
 
-			try {
-				robot = new Robot();
-			} catch (AWTException ex) {
-				throw new RuntimeException("couldn't create robot");
-			}
-
-			recenterMouse();
-			prevMouseX = centerX;
-			prevMouseY = centerY;
+		try {
+			robot = new Robot();
+		} catch (AWTException ex) {
+			throw new RuntimeException("couldn't create robot");
 		}
+
+		recenterMouse();
+		prevMouseX = centerX;
+		prevMouseY = centerY;
 
 		// rs.imageUpdate(ch, 1, (int)centerX, (int)centerY, ch.getWidth(null),
 		// ch.getHeight(null));
@@ -892,6 +909,10 @@ public class MyGame extends VariableFrameRateGame {
 	// END Custom Functions
 
 	// -------------------------- GETTERS & SETTERS -------------------------- //
+
+	public boolean paused() {
+		return paused;
+	}
 
 	public GameObject getAvatar() {
 		return avatar;

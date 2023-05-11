@@ -24,6 +24,9 @@ public class StrafeAction extends AbstractInputAction {
         float keyValue = e.getValue();
         String componentValue = e.getComponent().toString();
 
+        if (game.paused())
+            return;
+
         // dead zones
         if (keyValue > -.2 && keyValue < .2)
             return;

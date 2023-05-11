@@ -12,6 +12,9 @@ public class AimAction extends AbstractInputAction {
 
     @Override
     public void performAction(float time, Event evt) {
+        if (game.paused())
+            return;
+
         game.toggleAim();
     }
 }
