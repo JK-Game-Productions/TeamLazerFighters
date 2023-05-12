@@ -218,7 +218,6 @@ public class MyGame extends VariableFrameRateGame {
 		lazers = new ArrayList<>();
 		npcs = new ArrayList<>();
 		ghosts = new ArrayList<>();
-
 	}
 
 	@Override
@@ -1023,5 +1022,14 @@ public class MyGame extends VariableFrameRateGame {
 		} catch (NullPointerException e4) {
 			System.out.println("Null ptr exception reading " + scriptFile + e4);
 		}
+	}
+
+	// -------------------------- SHUTDOWN PROTOCOL -------------------------- //
+
+	@Override
+	public void shutdown() {
+		super.shutdown();
+		setIsConnected(false);
+		protClient.sendByeMessage();
 	}
 }// END

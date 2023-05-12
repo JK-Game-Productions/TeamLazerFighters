@@ -154,6 +154,7 @@ public class ProtocolClient extends GameConnectionClient {
 				try {
 					System.out.println("npc is near");
 					createGhostNPC(ghostPosition);
+					// call method that checks if avatar is near to npc??
 				} catch (IOException e) {
 					System.out.println("error with isnear check");
 				}

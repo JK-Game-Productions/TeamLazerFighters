@@ -1,7 +1,5 @@
 import java.util.Random;
 
-import javax.vecmath.Vector3f;
-
 import tage.ai.behaviortrees.BTCompositeType;
 import tage.ai.behaviortrees.BTSequence;
 import tage.ai.behaviortrees.BehaviorTree;

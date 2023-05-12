@@ -97,7 +97,8 @@ public abstract class VariableFrameRateGame implements KeyListener, MouseListene
 	* If overridden, the first line of the overridden function should be super.shutdown().
 	*/
 	public void shutdown()
-	{	System.out.println("shutting down");
+	{	
+		System.out.println("shutting down");
 	}
 
 	/**
