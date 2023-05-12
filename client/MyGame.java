@@ -55,7 +55,7 @@ public class MyGame extends VariableFrameRateGame {
 	private Light blueSpawn, redSpawn;
 	private InputManager im;
 	private GhostManager gm;
-	private File scriptFile1, scriptFile2;
+	private File scriptFile1, scriptFile2, scriptFile3;
 	private String startupStr;
 	private String serverAddress;
 	private Vector3f lastCamLocation;
@@ -100,6 +100,8 @@ public class MyGame extends VariableFrameRateGame {
 	private ArrayList<GameObject> ghosts;
 	private ArrayList<GameObject> npcs;
 	private boolean viewAxis = false;
+	private int height;
+	private String team;
 
 	// ----------------------------------------------------------------------------
 
@@ -187,23 +189,20 @@ public class MyGame extends VariableFrameRateGame {
 
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
-		//avatar.setLocalTranslation((new Matrix4f()).translation(0f, 0f, 0f));
-		jsEngine.put("object", avatar);
-		this.runScript(scriptFile2);
+		avatar.setLocalTranslation((new Matrix4f()).translation(0f, 0f, 0f));
 		avatar.setLocalScale((new Matrix4f()).scaling(.43f));
-		avatar.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(270f))); // red 90f
+		// avatar.setLocalRotation(new Matrix4f().rotateY((float)
+		// Math.toRadians(270f))); // red 90f
 		avatar.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
-
 		// build lazergun object
 		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
-		lazergun.setLocalTranslation((new Matrix4f()).translation(4f, 4f, 4f));
+		lazergun.setLocalTranslation((new Matrix4f()).translation(0f, 0f, 0f));
 		lazergun.setLocalScale((new Matrix4f()).scaling(0.15f));
 		lazergun.setParent(avatar);
 		lazergun.propagateRotation(true);
 		lazergun.propagateTranslation(true);
 		lazergun.applyParentRotationToPosition(true);
-
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
 		// jsEngine.put("object", prize1);
@@ -245,7 +244,7 @@ public class MyGame extends VariableFrameRateGame {
 		redSpawn.setType(LightType.SPOTLIGHT);
 		redSpawn.setDirection(new Vector3f(0.0f, -1.0f, 0.0f));
 		redSpawn.setDiffuse(0.75f, 0.0f, 0.0f);
-		//redSpawn.setAmbient(1.0f, 0.0f, 0.0f);
+		// redSpawn.setAmbient(1.0f, 0.0f, 0.0f);
 		(engine.getSceneGraph()).addLight(redSpawn);
 	}
 
@@ -289,7 +288,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// ---------------- initialize camera ---------------- //
 		camMain = (engine.getRenderSystem().getViewport("LEFT").getCamera());
-		positionCameraBehindAvatar();
+		// positionCameraBehindAvatar();
 
 		// ------------------- orbit camera ------------------ //
 		// String gpName = im.getFirstGamepadName();
@@ -370,11 +369,12 @@ public class MyGame extends VariableFrameRateGame {
 		currFrameTime = System.currentTimeMillis();
 		frameDiff = (currFrameTime - lastFrameTime) / 1000.0;
 		width = (engine.getRenderSystem()).getWidth();
+		height = (engine.getRenderSystem()).getHeight();
 
 		if (paused) {
 			im.update((float) elapsTime);
-			mapHeight(avatar);
-			positionCameraBehindAvatar();
+			// mapHeight(avatar);
+			positionCameraAboveMap();
 		}
 		if (!paused && !endGame) {
 
@@ -481,7 +481,10 @@ public class MyGame extends VariableFrameRateGame {
 		if (paused) {
 			startupStr = "CHOOSE YOUR TEAM: Blue (1) OR Red (2)";
 			Vector3f startupColor = new Vector3f(1, 0, 1);
-			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, 660, 540);// half of 1920, 1080
+			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.375f), (int) (height * 0.5f));// half
+																														// of
+																														// 1920,
+																														// 1080
 		} else {
 			startupStr = "X: " + getPlayerPosition().x() + "Z: " + getPlayerPosition().z();
 			Vector3f startupColor = new Vector3f(1, 1, 1);
@@ -555,14 +558,17 @@ public class MyGame extends VariableFrameRateGame {
 			case KeyEvent.VK_1: {
 				System.out.println("Blue team chosen");
 				avatartx = avatartxBlue;
+				team = "BLUE";
 				paused = !paused;
+				joinTeam();
 				break;
 			}
 			case KeyEvent.VK_2: {
 				System.out.println("Red team chosen");
 				avatartx = avatartxRed;
-				buildObjects();// rebuild objects for red team
+				team = "RED";
 				paused = !paused;
+				joinTeam();
 				break;
 			}
 		}
@@ -904,6 +910,24 @@ public class MyGame extends VariableFrameRateGame {
 		npc.setPhysicsObject(npcP);
 	}
 
+	private void joinTeam() {
+		if (team.equals("BLUE")) {
+			scriptFile2 = new File("assets/scripts/BlueSpawn.js");
+			jsEngine.put("rand", rand);
+			avatar.setTextureImage(avatartxBlue);
+			jsEngine.put("object", avatar);
+			this.runScript(scriptFile2);
+			avatar.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(270f)));
+		} else {
+			scriptFile3 = new File("assets/scripts/RedSpawn.js");
+			jsEngine.put("rand", rand);
+			avatar.setTextureImage(avatartxRed);
+			jsEngine.put("object", avatar);
+			this.runScript(scriptFile3);
+			avatar.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(90f)));
+		}
+	}
+
 	private void positionCameraBehindAvatar() {
 		Vector3f location = avatar.getWorldLocation();
 		camMain.setU(avatar.getWorldRightVector());
@@ -912,6 +936,13 @@ public class MyGame extends VariableFrameRateGame {
 		location.add(camMain.getV().mul(1.2f));
 		location.add(camMain.getN().mul(.3f));
 		camMain.setLocation(location);
+	}
+
+	private void positionCameraAboveMap() {
+		camMain.setU(new Vector3f(-1f, 0f, 0f));
+		camMain.setV(new Vector3f(0f, 0f, 1f));
+		camMain.setN(new Vector3f(0f, -1f, 0f));
+		camMain.setLocation(new Vector3f(0.0f, 400.0f, 0.0f));
 	}
 
 	private float[] toFloatArray(double[] arr) {

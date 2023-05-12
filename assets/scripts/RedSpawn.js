@@ -4,5 +4,5 @@ var JavaPackages = new JavaImporter(
     Packages.tage.GameObject
     );
     with(JavaPackages) {
-    object.setLocalTranslation((new Matrix4f()).translation((rand.nextInt(100) + (-350)), 50.0, (rand.nextInt(200) + (-100))));
+    object.setLocalTranslation((new Matrix4f()).translation((rand.nextInt(200) + (-350)), 50.0, (rand.nextInt(200) + (-100))));
     }
