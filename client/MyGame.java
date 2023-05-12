@@ -52,56 +52,51 @@ public class MyGame extends VariableFrameRateGame {
 
 	// Tage Class Variables
 	private Robot robot;
-	private Light blueSpawn, redSpawn;
 	private InputManager im;
 	private GhostManager gm;
-	private File scriptFile1, scriptFile2, scriptFile3;
 	private String startupStr;
 	private String serverAddress;
 	private Vector3f lastCamLocation;
 	private ProtocolClient protClient;
-	private Vector<GameObject> objects;
+	private Light blueSpawn, redSpawn;
+	private File scriptFile1, scriptFile2, scriptFile3;
 	private Sound laserSound, walkingSound, runningSound, voiceline1, riverSound;
 
 	// network & script variables
+	private int serverPort;
 	private PhysicsEngine ps;
 	private ScriptEngine jsEngine;
 	private IAudioManager audioMgr;
 	private ProtocolType serverProtocol;
 
 	// Basic Variables
-	private int width;
-	private int score = 0;
-	private int serverPort;
-	private int forest;
+	private String team;
+	private int score;
 	private boolean isRecentering;
-	private float moveSpeed = 3.0f;
 	private boolean paused = true; // pause game on startup
-	private boolean endGame = false;
-	private boolean isRunning = false;
-	private boolean isWalking = false;
-	// private boolean placedOnMap = false;
-	private boolean cameraSetUp = false;
-	private boolean mouseVisible = true;
+	private float moveSpeed;
+	private boolean endGame;
+	private boolean viewAxis;
+	private int width, height, forest;
+	private boolean isRunning;
+	private boolean isWalking;
+	private boolean mouseVisible;
 	private float vals[] = new float[16];
 	private boolean NPCisWalking = false;
-	private boolean lazergunAimed = false;
-	private boolean isClientConnected = false;
+	private boolean lazergunAimed;
+	private boolean isClientConnected;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
 	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
 
 	// object variables
+	private ArrayList<GameObject> npcs;
 	private AnimatedShape avatarS, npcS;
-	private GameObject lazergun, avatar, prize1, ground, x, y, z, npc, riverWater;
-	private ObjShape lazergunS, prize1S, linxS, linyS, linzS, terrS, lazerS, waterS;
-	private TextureImage avatartx, avatartxBlue, avatartxRed, lazerguntx, p1tx, groundtx, river, lazerT, waterT;
 	private PhysicsObject prize1P, npcP;// lazerGroundP, avatarP;
 	private ArrayList<GameObject> lazers;
 	private ArrayList<GameObject> ghosts;
-	private ArrayList<GameObject> npcs;
-	private boolean viewAxis = false;
-	private int height;
-	private String team;
+	private GameObject lazergun, avatar, prize1, ground, x, y, z, npc, riverWater;
+	private ObjShape lazergunS, prize1S, linxS, linyS, linzS, terrS, lazerS, waterS;
+	private TextureImage avatartx, avatartxBlue, avatartxRed, lazerguntx, p1tx, groundtx, river, lazerT, waterT;
 
 	// ----------------------------------------------------------------------------
 
@@ -270,15 +265,24 @@ public class MyGame extends VariableFrameRateGame {
 
 	@Override
 	public void initializeGame() {
-
-		// elapsTime = ((Double)(jsEngine.get("time")));
+		scriptFile1 = new File("assets/scripts/GameParams.js");
+		this.runScript(scriptFile1);
+		moveSpeed = Float.parseFloat(jsEngine.get("moveSpeed").toString());
+		score = ((int)jsEngine.get("score"));
+		elapsTime = ((double)jsEngine.get("elapsTime"));
+		paused = ((boolean)jsEngine.get("paused"));
+		endGame = ((boolean)jsEngine.get("endGame"));
+		viewAxis = ((boolean)jsEngine.get("viewAxis"));
+		isRunning = ((boolean)jsEngine.get("isRunning"));
+		isWalking = ((boolean)jsEngine.get("isWalking"));
+		mouseVisible = ((boolean)jsEngine.get("mouseVisible"));
+		lazergunAimed = ((boolean)jsEngine.get("lazergunAimed"));
+		isClientConnected = ((boolean)jsEngine.get("isClientConnected"));
 
 		// ----------------- set window size ----------------- //
 		(engine.getRenderSystem()).setWindowDimensions(1920, 1080);
 
 		// -------------------- variables -------------------- //
-		score = 0;
-		elapsTime = 0.0;
 		im = engine.getInputManager();
 		lastFrameTime = System.currentTimeMillis();
 		currFrameTime = System.currentTimeMillis();
@@ -436,7 +440,7 @@ public class MyGame extends VariableFrameRateGame {
 
 			// show/hide mouse logic
 			checkMouse();
-			setMouseVisible(false);
+			//setMouseVisible(false);
 
 			// update animation
 			avatarS.updateAnimation();
@@ -787,7 +791,7 @@ public class MyGame extends VariableFrameRateGame {
 	// -------------------------- NETWORKING SECTION -------------------------- //
 
 	private void setupNetworking() {
-		isClientConnected = false;
+		//isClientConnected = false;
 		try {
 			protClient = new ProtocolClient(InetAddress.getByName(serverAddress), serverPort, serverProtocol, this);
 		} catch (UnknownHostException e) {
