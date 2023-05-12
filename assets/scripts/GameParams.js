@@ -1,5 +1,7 @@
 var moveSpeed = 3.0;
 var score = 0;
+var blueScore = 0;
+var redScore = 0;
 var elapsTime = 0.0;
 var paused = true;
 var endGame = false;

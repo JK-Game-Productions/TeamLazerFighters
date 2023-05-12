@@ -91,8 +91,10 @@ public class MoveAction extends AbstractInputAction {
         }
 
         lastComponent = currentComponent;
-
+       // game.getPhysicsEngine().removeObject(avatar.getPhysicsObject().getUID());
+       // game.mapHeight(avatar);
         avatar.setLocalLocation(newPos);
+        //game.buildAvatar();
         game.getProtocolClient().sendMoveMessage(newPos);
     }
 }

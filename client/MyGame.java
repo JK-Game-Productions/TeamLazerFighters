@@ -71,29 +71,29 @@ public class MyGame extends VariableFrameRateGame {
 
 	// Basic Variables
 	private String team;
-	private int score;
-	private boolean isRecentering;
-	private boolean paused = true; // pause game on startup
-	private float moveSpeed;
+	private boolean paused; // pause game on startup
 	private boolean endGame;
+	private float moveSpeed;
 	private boolean viewAxis;
-	private int width, height, forest;
 	private boolean isRunning;
 	private boolean isWalking;
 	private boolean mouseVisible;
+	private boolean isRecentering;
+	private boolean lazergunAimed;
+	private int width, height, forest;
+	private boolean isClientConnected;
 	private float vals[] = new float[16];
 	private boolean NPCisWalking = false;
-	private boolean lazergunAimed;
-	private boolean isClientConnected;
+	private int score, blueScore, redScore;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
 	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
 
 	// object variables
 	private ArrayList<GameObject> npcs;
 	private AnimatedShape avatarS, npcS;
-	private PhysicsObject prize1P, npcP;// lazerGroundP, avatarP;
 	private ArrayList<GameObject> lazers;
 	private ArrayList<GameObject> ghosts;
+	private PhysicsObject prize1P, npcP, avatarP;// lazerGroundP;
 	private GameObject lazergun, avatar, prize1, ground, x, y, z, npc, riverWater;
 	private ObjShape lazergunS, prize1S, linxS, linyS, linzS, terrS, lazerS, waterS;
 	private TextureImage avatartx, avatartxBlue, avatartxRed, lazerguntx, p1tx, groundtx, river, lazerT, waterT;
@@ -269,6 +269,8 @@ public class MyGame extends VariableFrameRateGame {
 		this.runScript(scriptFile1);
 		moveSpeed = Float.parseFloat(jsEngine.get("moveSpeed").toString());
 		score = ((int)jsEngine.get("score"));
+		blueScore = ((int)jsEngine.get("blueScore"));
+		redScore = ((int)jsEngine.get("redScore"));
 		elapsTime = ((double)jsEngine.get("elapsTime"));
 		paused = ((boolean)jsEngine.get("paused"));
 		endGame = ((boolean)jsEngine.get("endGame"));
@@ -362,11 +364,11 @@ public class MyGame extends VariableFrameRateGame {
 		prize1.setPhysicsObject(prize1P);
 
 		buildNpc();
-
+		//buildAvatar();
 	}
-
+	
 	// -------------------------- UPDATE -------------------------- //
-
+	
 	@Override
 	public void update() {
 		lastFrameTime = currFrameTime;
@@ -374,10 +376,11 @@ public class MyGame extends VariableFrameRateGame {
 		frameDiff = (currFrameTime - lastFrameTime) / 1000.0;
 		width = (engine.getRenderSystem()).getWidth();
 		height = (engine.getRenderSystem()).getHeight();
-
+		
 		if (paused) {
 			im.update((float) elapsTime);
-			// mapHeight(avatar);
+			mapHeight(avatar);
+			//buildAvatar();
 			positionCameraAboveMap();
 		}
 		if (!paused && !endGame) {
@@ -387,7 +390,9 @@ public class MyGame extends VariableFrameRateGame {
 			im.update((float) elapsTime);
 
 			// update player location
+			//ps.removeObject(avatarP.getUID());
 			mapHeight(avatar);
+			//buildAvatar();
 			positionCameraBehindAvatar();
 			// update all sounds
 			laserSound.setLocation(lazergun.getWorldLocation());
@@ -490,9 +495,9 @@ public class MyGame extends VariableFrameRateGame {
 																														// 1920,
 																														// 1080
 		} else {
-			startupStr = "X: " + getPlayerPosition().x() + "Z: " + getPlayerPosition().z();
-			Vector3f startupColor = new Vector3f(1, 1, 1);
-			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, 1500, 15);// half of 1920, 1080
+			startupStr = "Blue Team: " + blueScore + " || " + "Red Team: "+ redScore;
+			Vector3f startupColor = new Vector3f(1, .25f, 1);
+			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.45f), (int) (height * 0.9f));// half of 1920, 1080
 		}
 
 		String scoreStr = "Score: " + Integer.toString(score);
@@ -523,7 +528,7 @@ public class MyGame extends VariableFrameRateGame {
 				contactPoint = pm.getContactPoint(j);
 				if (contactPoint.getDistance() < 0.0f) {
 					// handle collison it litterally detects nothing to handle
-					System.out.println("Hit");
+					System.out.println("Physics Hit");
 					break;
 				}
 			}
@@ -537,6 +542,12 @@ public class MyGame extends VariableFrameRateGame {
 				ps.removeObject(laz.getPhysicsObject().getUID());
 				engine.getSceneGraph().removeGameObject(laz);
 				lazers.remove(i);
+				if(team.equals("BLUE")){
+					blueScore++;
+				}
+				if(team.equals("RED")){
+					redScore++;
+				}
 				score++;
 				System.out.println("Hit");
 			}
@@ -640,10 +651,11 @@ public class MyGame extends VariableFrameRateGame {
 				curMouseY = e.getYOnScreen();
 				float mouseDeltaX = prevMouseX - curMouseX;
 				float mouseDeltaY = prevMouseY - curMouseY;
-
+				//ps.removeObject(avatarP.getUID());
 				avatar.gyaw(getFrameDiff(), mouseDeltaX);
 				// camMain.yaw(mouseDeltaX);
 				avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
+				//buildAvatar();
 				prevMouseX = curMouseX;
 				prevMouseY = curMouseY;
 
@@ -879,7 +891,7 @@ public class MyGame extends VariableFrameRateGame {
 		return true;
 	}
 
-	private void mapHeight(GameObject object) {
+	protected void mapHeight(GameObject object) {
 		Vector3f loc = object.getWorldLocation();
 		float height = ground.getHeight(loc.x(), loc.z());
 		float[] gsize = { 2.0f, 1.0f, 2.0f };
@@ -912,6 +924,15 @@ public class MyGame extends VariableFrameRateGame {
 		npcP.setDamping(.5f, .8f);
 		npcP.setBounciness(1.0f);
 		npc.setPhysicsObject(npcP);
+	}
+	protected void buildAvatar() {
+		float[] psize = { 1f, 2f, 1f };
+		Matrix4f translation = new Matrix4f(avatar.getLocalTranslation());
+		double[] tempTransform = toDoubleArray(translation.get(vals));
+		avatarP = ps.addBoxObject(ps.nextUID(), 1.0f, tempTransform, psize);
+		avatarP.setDamping(.5f, .8f);
+		avatarP.setBounciness(1.0f);
+		avatar.setPhysicsObject(avatarP);
 	}
 
 	private void joinTeam() {
@@ -984,6 +1005,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	public Engine getEngine() {
 		return engine;
+	}
+
+	public PhysicsEngine getPhysicsEngine(){
+		return ps;
 	}
 
 	public static Camera getMainCamera() {
