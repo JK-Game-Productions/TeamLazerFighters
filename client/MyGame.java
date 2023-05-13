@@ -1027,11 +1027,15 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public ObjShape getGhostShape() {
-		return avatarS;
+		return avatar.getShape();
 	}
 
 	public TextureImage getGhostTexture() {
-		return avatartx;
+		return avatar.getTextureImage(); 
+	}
+
+	public Matrix4f getGhostRotation() {
+		return avatar.getLocalRotation();
 	}
 
 	public GhostManager getGhostManager() {

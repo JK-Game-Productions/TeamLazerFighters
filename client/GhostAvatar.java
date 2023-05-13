@@ -28,6 +28,10 @@ public class GhostAvatar extends GameObject {
 		setLocalLocation(m);
 	}
 
+	public void setRotation(Matrix4f r) {
+		setLocalRotation(r);
+	}
+
 	public Vector3f getPosition() {
 		return getWorldLocation();
 	}
