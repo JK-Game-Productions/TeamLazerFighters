@@ -60,7 +60,7 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private Light blueSpawn, redSpawn;
 	private File scriptFile1, scriptFile2, scriptFile3;
-	private Sound laserSound, walkingSound, runningSound, voiceline1, riverSound;
+	private Sound laserSound, walkingSound, runningSound, riverSound, birdSounds, song1, song2;
 
 	// network & script variables
 	private int serverPort;
@@ -190,6 +190,7 @@ public class MyGame extends VariableFrameRateGame {
 		// Math.toRadians(270f))); // red 90f
 		avatar.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
+
 		// build lazergun object
 		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
 		lazergun.setLocalTranslation((new Matrix4f()).translation(0f, 0f, 0f));
@@ -198,6 +199,7 @@ public class MyGame extends VariableFrameRateGame {
 		lazergun.propagateRotation(true);
 		lazergun.propagateTranslation(true);
 		lazergun.applyParentRotationToPosition(true);
+
 		// build prize 1
 		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
 		// jsEngine.put("object", prize1);
@@ -268,18 +270,18 @@ public class MyGame extends VariableFrameRateGame {
 		scriptFile1 = new File("assets/scripts/GameParams.js");
 		this.runScript(scriptFile1);
 		moveSpeed = Float.parseFloat(jsEngine.get("moveSpeed").toString());
-		score = ((int) jsEngine.get("score"));
-		blueScore = ((int) jsEngine.get("blueScore"));
-		redScore = ((int) jsEngine.get("redScore"));
-		elapsTime = ((double) jsEngine.get("elapsTime"));
-		paused = ((boolean) jsEngine.get("paused"));
-		endGame = ((boolean) jsEngine.get("endGame"));
-		viewAxis = ((boolean) jsEngine.get("viewAxis"));
-		isRunning = ((boolean) jsEngine.get("isRunning"));
-		isWalking = ((boolean) jsEngine.get("isWalking"));
-		mouseVisible = ((boolean) jsEngine.get("mouseVisible"));
-		lazergunAimed = ((boolean) jsEngine.get("lazergunAimed"));
-		isClientConnected = ((boolean) jsEngine.get("isClientConnected"));
+		score = ((int)  jsEngine.get("score"));
+		blueScore = ((int)  jsEngine.get("blueScore"));
+		redScore = ((int)  jsEngine.get("redScore"));
+		elapsTime = ((double)  jsEngine.get("elapsTime"));
+		paused = ((boolean)  jsEngine.get("paused"));
+		endGame = ((boolean)  jsEngine.get("endGame"));
+		viewAxis = ((boolean)  jsEngine.get("viewAxis"));
+		isRunning = ((boolean)  jsEngine.get("isRunning"));
+		isWalking = ((boolean)  jsEngine.get("isWalking"));
+		mouseVisible = ((boolean)  jsEngine.get("mouseVisible"));
+		lazergunAimed = ((boolean)  jsEngine.get("lazergunAimed"));
+		isClientConnected = ((boolean)  jsEngine.get("isClientConnected"));
 
 		// ----------------- set window size ----------------- //
 		(engine.getRenderSystem()).setWindowDimensions(1920, 1080);
@@ -304,8 +306,6 @@ public class MyGame extends VariableFrameRateGame {
 		setupNetworking();
 		initMouseMode();
 		initAudio();
-
-		// -------------------- game logic ------------------- //
 
 		// ------------------- Input Setup ------------------- //
 
@@ -402,7 +402,6 @@ public class MyGame extends VariableFrameRateGame {
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
 			runningSound.setLocation(avatar.getWorldLocation());
-			voiceline1.setLocation(avatar.getWorldLocation());
 			riverSound.setLocation(prize1.getWorldLocation());
 			setEarParameters();
 			
@@ -441,7 +440,6 @@ public class MyGame extends VariableFrameRateGame {
 			// update all sounds
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
-			voiceline1.setLocation(npc.getWorldLocation());
 			setEarParameters();
 
 			// process the networking functions
@@ -449,10 +447,19 @@ public class MyGame extends VariableFrameRateGame {
 			
 			// show/hide mouse logic
 			checkMouse();
-			// setMouseVisible(false);
+			//  setMouseVisible(false);
 			
 			// update animation
 			avatarS.updateAnimation();
+
+			if (song1.getProgress() > 182.4) {
+				song2.play();
+			}
+			if (song2.getProgress() > 84.6) {
+				song1.play();
+			}
+
+			// -------------------- game logic ------------------- //
 
 			// --------------------- PHYSICS LOGIC --------------------------//
 			
@@ -579,12 +586,6 @@ public class MyGame extends VariableFrameRateGame {
 	@Override
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
-			case KeyEvent.VK_F: {
-				voiceline1.setLocation(avatar.getWorldLocation());
-				setEarParameters();
-				voiceline1.play();
-				break;
-			}
 			case KeyEvent.VK_0: {
 				viewAxis = !viewAxis;
 				toggleAxies();
@@ -755,7 +756,7 @@ public class MyGame extends VariableFrameRateGame {
 	// ------------------------- AUDIO SECTION ------------------------ //
 
 	public void initAudio() {
-		AudioResource resource1, resource2, resource3, resource4, resource5;
+		AudioResource resource1, resource2, resource3, resource4, resource5, resource6, resource7;
 		audioMgr = AudioManagerFactory.createAudioManager(
 				"tage.audio.joal.JOALAudioManager");
 		if (!audioMgr.initialize()) {
@@ -765,7 +766,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		resource1 = audioMgr.createAudioResource("assets/sounds/grassWalking.wav",
 				AudioResourceType.AUDIO_SAMPLE);
-		walkingSound = new Sound(resource1, SoundType.SOUND_EFFECT, 10, true);
+		walkingSound = new Sound(resource1, SoundType.SOUND_EFFECT, 17, true);
 		walkingSound.initialize(audioMgr);
 		walkingSound.setMaxDistance(10.0f);
 		walkingSound.setMinDistance(0.5f);
@@ -774,7 +775,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		resource2 = audioMgr.createAudioResource("assets/sounds/grassRunning.wav",
 				AudioResourceType.AUDIO_SAMPLE);
-		runningSound = new Sound(resource2, SoundType.SOUND_EFFECT, 5, true);
+		runningSound = new Sound(resource2, SoundType.SOUND_EFFECT, 10, true);
 		runningSound.initialize(audioMgr);
 		runningSound.setMaxDistance(10.0f);
 		runningSound.setMinDistance(0.5f);
@@ -790,27 +791,50 @@ public class MyGame extends VariableFrameRateGame {
 		laserSound.setRollOff(2.0f);
 		laserSound.setLocation(lazergun.getWorldLocation());
 
-		resource4 = audioMgr.createAudioResource("assets/sounds/teatimeVoiceline.wav",
+		resource4 = audioMgr.createAudioResource("assets/sounds/birdsInForest.wav",
 				AudioResourceType.AUDIO_SAMPLE);
-		voiceline1 = new Sound(resource4, SoundType.SOUND_EFFECT, 70, false);
-		voiceline1.initialize(audioMgr);
-		voiceline1.setMaxDistance(10.0f);
-		voiceline1.setMinDistance(0.5f);
-		voiceline1.setRollOff(5.0f);
-		voiceline1.setLocation(avatar.getWorldLocation());
+		birdSounds = new Sound(resource4, SoundType.SOUND_EFFECT, 100, true);
+		birdSounds.initialize(audioMgr);
+		birdSounds.setMaxDistance(10.0f);
+		birdSounds.setMinDistance(0.5f);
+		birdSounds.setRollOff(1.0f);
+		birdSounds.setLocation(avatar.getWorldLocation());
 
 		resource5 = audioMgr.createAudioResource(
 				"assets/sounds/river.wav", AudioResourceType.AUDIO_SAMPLE);
 		riverSound = new Sound(resource5,
-				SoundType.SOUND_EFFECT, 90, true);
+				SoundType.SOUND_EFFECT, 80, true);
 		riverSound.initialize(audioMgr);
 		riverSound.setMaxDistance(10.0f);
 		riverSound.setMinDistance(0.5f);
-		riverSound.setRollOff(0.5f);
+		riverSound.setRollOff(1.5f);
 		riverSound.setLocation(prize1.getWorldLocation());
+
+		// ---- music
+		resource6 = audioMgr.createAudioResource(
+				"assets/sounds/80's synth 1.wav", AudioResourceType.AUDIO_SAMPLE);
+		song1 = new Sound(resource6,
+				SoundType.SOUND_EFFECT, 10, false);
+		song1.initialize(audioMgr);
+		song1.setMaxDistance(10.0f);
+		song1.setMinDistance(0.5f);
+		song1.setRollOff(2.0f);
+		song1.setLocation(avatar.getWorldLocation());
+
+		resource7 = audioMgr.createAudioResource(
+				"assets/sounds/80's synth 2.wav", AudioResourceType.AUDIO_SAMPLE);
+		song2 = new Sound(resource7,
+				SoundType.SOUND_EFFECT, 10, false);
+		song2.initialize(audioMgr);
+		song2.setMaxDistance(10.0f);
+		song2.setMinDistance(0.5f);
+		song2.setRollOff(2.0f);
+		song2.setLocation(avatar.getWorldLocation());
 
 		setEarParameters();
 		riverSound.play();
+		birdSounds.play();
+		song2.play();
 	}
 
 	public void setEarParameters() {
@@ -823,7 +847,6 @@ public class MyGame extends VariableFrameRateGame {
 	// -------------------------- NETWORKING SECTION -------------------------- //
 
 	private void setupNetworking() {
-		// isClientConnected = false;
 		try {
 			protClient = new ProtocolClient(InetAddress.getByName(serverAddress), serverPort, serverProtocol, this);
 		} catch (UnknownHostException e) {
@@ -873,6 +896,16 @@ public class MyGame extends VariableFrameRateGame {
 
 	// --------------------------- CUSTOM FUNCTIONS --------------------------- //
 
+	public void checkNPCNear() {
+		float distance;
+		distance = distanceTo(npc, avatar);
+
+		if (distance < 4) {
+			// System.out.println("NPC near");
+			getProtocolClient().sendNPCNearMessage();
+		}
+	}
+
 	/**
 	 * returns distance of any inputted GameObject to the current/main camera
 	 * 
@@ -882,11 +915,6 @@ public class MyGame extends VariableFrameRateGame {
 	@Deprecated
 	public float distanceToObject(GameObject obj) {
 		return camMain.getLocation().distance(obj.getWorldLocation());
-	}
-
-	/** Returns distance of a GameObject to the dolphin player */
-	public float distanceToDolphin(GameObject obj) {
-		return avatar.getWorldLocation().distance(obj.getWorldLocation());
 	}
 
 	/** returns distance from a vector3f point to a GameObject */
@@ -936,7 +964,7 @@ public class MyGame extends VariableFrameRateGame {
 		lazers.add(newLazer);
 	}
 
-	private void buildNpc() {
+	public void buildNpc() {
 		float[] psize = { 1f, 2f, 1f };
 		Matrix4f translation = new Matrix4f(npc.getLocalTranslation());
 		double[] tempTransform = toDoubleArray(translation.get(vals));
