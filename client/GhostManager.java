@@ -11,6 +11,7 @@ import tage.*;
 public class GhostManager {
 	private MyGame game;
 	private Vector<GhostAvatar> ghostAvatars = new Vector<GhostAvatar>();
+	private Vector<GhostNPC> ghostNPCs = new Vector<GhostNPC>();
 
 	public GhostManager(VariableFrameRateGame vfrg) {
 		game = (MyGame) vfrg;
@@ -26,6 +27,15 @@ public class GhostManager {
 		ghostAvatars.add(newAvatar);
 	}
 
+	public void createGhostNPC(UUID id, Vector3f pos) throws IOException {
+		System.out.println("adding npc ghost with ID --> " + id);
+		ObjShape s = game.getNPCshape();
+		TextureImage t = game.getGhostTexture();
+		GhostNPC newNPC = new GhostNPC(id, s, t, pos);
+		newNPC.setLocalScale(new Matrix4f().scaling(.43f));
+		ghostNPCs.add(newNPC);
+	}
+
 	public void removeGhostAvatar(UUID id) {
 		GhostAvatar ghostAvatar = findAvatar(id);
 		if (ghostAvatar != null) {
@@ -33,6 +43,16 @@ public class GhostManager {
 			ghostAvatars.remove(ghostAvatar);
 		} else {
 			System.out.println("tried to remove, but unable to find ghost in list");
+		}
+	}
+
+	private void removeGhostNPC(UUID id) {
+		GhostNPC ghostNPC = findNPC(id);
+		if(ghostNPC != null) {
+			game.getEngine().getSceneGraph().removeGameObject(ghostNPC);
+			ghostNPCs.remove(ghostNPC);
+		} else {
+			System.out.println("tried to remove, unable to find ghost in list");
 		}
 	}
 
@@ -48,6 +68,18 @@ public class GhostManager {
 		return null;
 	}
 
+	private GhostNPC findNPC(UUID id) {
+		GhostNPC ghostNPC;
+		Iterator<GhostNPC> it = ghostNPCs.iterator();
+		while(it.hasNext()) {
+			ghostNPC = it.next();
+			if(ghostNPC.getNPCid().compareTo(id) == 0) {
+				return ghostNPC;
+			}
+		}
+		return null;
+	}
+
 	public void updateGhostAvatar(UUID id, Vector3f position) {
 		GhostAvatar ghostAvatar = findAvatar(id);
 		if (ghostAvatar != null) {
@@ -57,7 +89,20 @@ public class GhostManager {
 		}
 	}
 
+	public void updateGhostNPC(UUID id, Vector3f pos) {
+		GhostNPC ghostNPC = findNPC(id);
+		if(ghostNPC != null) {
+			ghostNPC.setPosition(pos);
+		} else {
+			System.out.println("tried to update ghost avatar position, but unable to find ghost in list");
+		}
+	}
+
 	public Vector<GhostAvatar> getGhostAvatars() {
 		return ghostAvatars;
+	}
+
+	public Vector<GhostNPC> getGhostNPCs() {
+		return ghostNPCs;
 	}
 }
