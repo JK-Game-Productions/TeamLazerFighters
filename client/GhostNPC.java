@@ -25,6 +25,10 @@ public class GhostNPC extends GameObject {
         this.setLocalLocation(p);
     }
 
+    public void getLocation() {
+        this.getLocalLocation();
+    }
+
     public int getNPCid() {
         return id;
     }

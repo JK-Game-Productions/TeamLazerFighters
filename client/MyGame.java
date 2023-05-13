@@ -878,13 +878,17 @@ public class MyGame extends VariableFrameRateGame {
 
 	// --------------------------- CUSTOM FUNCTIONS --------------------------- //
 
-	public void checkNPCNear() {
+	public void checkNPCNear(GhostNPC gNPC) {
 		float distance;
-		distance = distanceTo(npc, avatar);
 
-		if (distance < 4) {
-			// System.out.println("NPC near");
-			getProtocolClient().sendNPCNearMessage();
+		if (gNPC != null) {
+			distance = distanceTo(gNPC.getLocalLocation(), avatar);
+
+			if (distance < 4) {
+				System.out.println("NPC near");
+				getProtocolClient().sendNPCNearMessage();
+
+			}
 		}
 	}
 

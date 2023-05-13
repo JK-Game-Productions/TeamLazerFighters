@@ -1,6 +1,8 @@
 import javax.vecmath.Vector3f;
 
-public class NPC {
+import tage.GameObject;
+
+public class NPC extends GameObject {
     double locationX, locationY, locationZ;
     double dir = 0.1;
     double size = 1.0;
@@ -15,6 +17,12 @@ public class NPC {
         locationX = ((double) seedX) / 4.0 - 5.0;
         locationY = 0;
         locationZ = -2;
+    }
+
+    public void setLocation(Vector3f newLocation) {
+        locationX = newLocation.getX();
+        locationY = newLocation.getY();
+        locationZ = newLocation.getZ();
     }
 
     public double getX() {

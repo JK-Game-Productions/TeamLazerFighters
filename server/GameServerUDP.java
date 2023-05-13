@@ -30,7 +30,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 
 	public void sendNPCinfo() {
 		try {
-			String message = new String("mnpc");
+			String message = new String("");
 			message += "," + (npcCtrl.getNPC()).getX();
 			message += "," + (npcCtrl.getNPC()).getY();
 			message += "," + (npcCtrl.getNPC()).getZ();
