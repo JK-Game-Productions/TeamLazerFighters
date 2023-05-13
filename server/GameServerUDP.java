@@ -15,23 +15,31 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 
 	// ------------- Additional protocols for NPCs ------------- //
 	public void sendCheckForAvatarNear() {
-		/*
-		 * try {
-		 * String message = new String("isnr");
-		 * message += "," + (npcCtrl.getNPC()).getX();
-		 * message += "," + (npcCtrl.getNPC()).getY();
-		 * message += "," + (npcCtrl.getNPC()).getZ();
-		 * message += "," + (npcCtrl.getCriteria());
-		 * sendPacketToAll(message);
-		 * } catch (IOException e) {
-		 * System.out.println("couldn't send msg");
-		 * e.printStackTrace();
-		 * }
-		 */
+		try {
+			String message = new String("isnear");
+			message += "," + (npcCtrl.getNPC()).getX();
+			message += "," + (npcCtrl.getNPC()).getY();
+			message += "," + (npcCtrl.getNPC()).getZ();
+			message += "," + (npcCtrl.getCriteria());
+			sendPacketToAll(message);
+		} catch (IOException e) {
+			System.out.println("couldn't send msg");
+			e.printStackTrace();
+		}
 	}
 
 	public void sendNPCinfo() {
-
+		try {
+			String message = new String("mnpc");
+			message += "," + (npcCtrl.getNPC()).getX();
+			message += "," + (npcCtrl.getNPC()).getY();
+			message += "," + (npcCtrl.getNPC()).getZ();
+			message += "," + (npcCtrl.getCriteria());
+			sendPacketToAll(message);
+		} catch (IOException e) {
+			System.out.println("couldn't send msg");
+			e.printStackTrace();
+		}
 	}
 
 	public void sendNPCstart(UUID clientID) {
@@ -126,6 +134,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			// Received Message Format: (isnear,id)
 			if (messageTokens[0].compareTo("isnear") == 0) {
 				UUID clientID = UUID.fromString(messageTokens[1]);
+				System.out.println("isnear = true");
 				handleNearTiming(clientID);
 			}
 		}

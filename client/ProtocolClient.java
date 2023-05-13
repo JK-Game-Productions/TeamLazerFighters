@@ -151,13 +151,9 @@ public class ProtocolClient extends GameConnectionClient {
 						Float.parseFloat(messageTokens[1]),
 						Float.parseFloat(messageTokens[2]),
 						Float.parseFloat(messageTokens[3]));
-				try {
-					System.out.println("npc is near");
-					createGhostNPC(ghostPosition);
-					// call method that checks if avatar is near to npc??
-				} catch (IOException e) {
-					System.out.println("error with isnear check");
-				}
+				game.checkNPCNear();
+				System.out.println("sending check for isnear");
+				// call method that checks if avatar is near to npc??
 			}
 
 			if (messageTokens[0].compareTo("mnpc") == 0) { // move npc??
@@ -173,6 +169,16 @@ public class ProtocolClient extends GameConnectionClient {
 
 	}
 
+	// send npc near message
+	public void sendNPCNearMessage() {
+		try {
+			sendPacket(new String("isnear," + id.toString()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// send need NPC message
 	public void sendNeedNPCmsg(UUID clientID, Vector3f position) {
 		try {
 			System.out.println("client telling server it needs NPC");
