@@ -44,11 +44,11 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 
 	public void sendNPCstart(UUID clientID) {
 		try {
-			String message = new String("createNPC");
+			String message = new String("createNPC"+ clientID.toString());
 			message += "," + (npcCtrl.getNPC()).getX();
 			message += "," + (npcCtrl.getNPC()).getY();
 			message += "," + (npcCtrl.getNPC()).getZ();
-			message += "," + (npcCtrl.getCriteria());
+			//message += "," + (npcCtrl.getCriteria());
 			sendPacketToAll(message);
 		} catch (IOException e) {
 			System.out.println("couldn't send msg");
@@ -146,14 +146,22 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 		try {
 			System.out.println("server telling clients about an NPC");
 			String message = new String("createNPC," + clientID.toString());
-			// message += "," + position[0];
-			// message += "," + position[1];
-			// message += "," + position[2];
+			//message += "," + position[0];
+			//message += "," + position[1];
+			//message += "," + position[2];
 			forwardPacketToAll(message, clientID);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+	/*
+	 * UUID clientID = UUID.fromString(messageTokens[1]);
+				String[] pos = { messageTokens[2], messageTokens[3], messageTokens[4] };
+				sendCreateMessages(clientID, pos);
+				sendWantsDetailsMessages(clientID);
+
+				sendNPCstart(clientID);
+	 */
 
 	// Informs the client who just requested to join the server if their if their
 	// request was able to be granted.

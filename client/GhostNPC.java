@@ -1,12 +1,14 @@
 package client;
 
+import java.util.UUID;
+
 import org.joml.*;
 import tage.*;
 
 public class GhostNPC extends GameObject {
-    private int id;
+    private UUID id;
 
-    public GhostNPC(int id, ObjShape s, TextureImage t, Vector3f p) {
+    public GhostNPC(UUID id, ObjShape s, TextureImage t, Vector3f p) {
         super(GameObject.root(), s, t);
         this.setLocalScale((new Matrix4f()).scaling(0.45f));
         this.id = id;
@@ -29,7 +31,7 @@ public class GhostNPC extends GameObject {
         this.getLocalLocation();
     }
 
-    public int getNPCid() {
+    public UUID getNPCid() {
         return id;
     }
 }

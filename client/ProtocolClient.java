@@ -27,6 +27,7 @@ public class ProtocolClient extends GameConnectionClient {
 	}
 
 	// --------------- GHOST NPC SECTION --------------- //
+	/* 
 	private void createGhostNPC(Vector3f position) throws IOException {
 		if (ghostNPC == null) {
 			ghostNPC = new GhostNPC(0, game.getNPCshape(), game.getNPCtexture(), position);
@@ -50,7 +51,7 @@ public class ProtocolClient extends GameConnectionClient {
 			gs = true;
 		ghostNPC.setSize(gs);
 	}
-
+	*/
 	@Override
 	protected void processPacket(Object message) {
 		String strMessage = (String) message;
@@ -133,19 +134,21 @@ public class ProtocolClient extends GameConnectionClient {
 			if (messageTokens[0].compareTo("createNPC") == 0) {
 				// create a new ghost NPC
 				// Parse out the position
-				// Vector3f ghostPosition = new Vector3f(
-				// Float.parseFloat(messageTokens[2]),
-				// Float.parseFloat(messageTokens[3]),
-				// Float.parseFloat(messageTokens[4]));
-				Vector3f ghostPosition = new Vector3f(game.getPlayerPosition());
+				UUID ghostID = UUID.fromString(messageTokens[1]);
+				Vector3f ghostPosition = new Vector3f(
+				Float.parseFloat(messageTokens[2]),
+				Float.parseFloat(messageTokens[3]),
+				Float.parseFloat(messageTokens[4]));
+				//Vector3f ghostPosition = new Vector3f(game.getPlayerPosition());
 				try {
-					createGhostNPC(ghostPosition);
+					ghostManager.createGhostNPC(ghostID, ghostPosition);
 				} catch (IOException e) {
 					System.out.println("error creating ghost npc");
 				}
 			}
 
 			if (messageTokens[0].compareTo("isnear") == 0) {
+				UUID ghostID = UUID.fromString(messageTokens[1]);
 				// Parse out the position
 				Vector3f ghostPosition = new Vector3f(
 						Float.parseFloat(messageTokens[1]),
@@ -158,12 +161,13 @@ public class ProtocolClient extends GameConnectionClient {
 
 			if (messageTokens[0].compareTo("mnpc") == 0) { // move npc??
 				// Parse out the position
+				UUID ghostID = UUID.fromString(messageTokens[1]);
 				Vector3f ghostPosition = new Vector3f(
-						Float.parseFloat(messageTokens[1]),
 						Float.parseFloat(messageTokens[2]),
-						Float.parseFloat(messageTokens[3]));
+						Float.parseFloat(messageTokens[3]),
+						Float.parseFloat(messageTokens[4]));
 				System.out.println("moving npc");
-				updateGhostNPC(ghostPosition, 1.0);
+				ghostManager.updateGhostNPC(ghostID, ghostPosition);
 			}
 		}
 
