@@ -2,10 +2,11 @@ import javax.vecmath.Vector3f;
 
 import tage.GameObject;
 
-public class NPC extends GameObject {
+public class NPC {
     double locationX, locationY, locationZ;
     double dir = 0.1;
     double size = 1.0;
+
 
     public NPC() {
         locationX = 0.0;
