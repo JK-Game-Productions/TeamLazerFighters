@@ -1,4 +1,7 @@
 import java.util.Random;
+import java.util.UUID;
+
+import javax.vecmath.Vector3f;
 
 import tage.ai.behaviortrees.BTCompositeType;
 import tage.ai.behaviortrees.BTSequence;
@@ -13,6 +16,8 @@ public class NPCcontroller {
     long lastThinkUpdateTime, lastTickUpdateTime;
     GameServerUDP server;
     double criteria = 2.0;
+    UUID clientID;
+    Vector3f location;
 
     public void updateNPCs() {
         npc.updateLocation();
@@ -42,7 +47,7 @@ public class NPCcontroller {
             if (elapsedTickMilliSecs >= 25.0f) {
                 lastTickUpdateTime = currentTime;
                 npc.updateLocation();
-                //server.sendNPCinfo();
+                // server.sendNPCinfo();
             }
             if (elapsedThinkMilliSecs >= 250.0f) {
                 lastThinkUpdateTime = currentTime;
@@ -75,6 +80,19 @@ public class NPCcontroller {
 
     public void setNearFlag(boolean newValue) {
         nearFlag = newValue;
+    }
+
+    public void clientID(UUID id, Vector3f pos) {
+        clientID = id;
+        location = pos;
+    }
+
+    public UUID getClientID() {
+        return clientID;
+    }
+
+    public Vector3f getPos() {
+        return location;
     }
 
 }
