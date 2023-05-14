@@ -119,7 +119,6 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				UUID remoteID = UUID.fromString(messageTokens[2]);
 				String[] pos = { messageTokens[3], messageTokens[4], messageTokens[5] };
 				sendDetailsForMessage(clientID, remoteID, pos);
-				npcCtrl.clientID(clientID);
 			}
 
 			// MOVE --- Case where server receives a move message
@@ -146,13 +145,6 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				UUID clientID = UUID.fromString(messageTokens[1]);
 				System.out.println("isnear = true");
 				handleNearTiming(clientID);
-			}
-
-			// get client ID
-			if (messageTokens[0].compareTo("getID") == 0) {
-				UUID clientID = UUID.fromString(messageTokens[1]);
-				System.out.println("fetching client ID");
-				npcCtrl.clientID(clientID, messageTokens[2]);
 			}
 
 		}

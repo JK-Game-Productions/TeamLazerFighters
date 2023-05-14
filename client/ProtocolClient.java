@@ -22,10 +22,6 @@ public class ProtocolClient extends GameConnectionClient {
 		System.out.println("Server address: " + remoteAddr + " | Port: " + remotePort + " | Protocol: " + protocolType);
 	}
 
-	public UUID getID() {
-		return id;
-	}
-
 	// --------------- GHOST NPC SECTION --------------- //
 	/*
 	 * private void createGhostNPC(Vector3f position) throws IOException {
@@ -177,19 +173,6 @@ public class ProtocolClient extends GameConnectionClient {
 	public void sendNPCNearMessage(UUID ghostID) {
 		try {
 			sendPacket(new String("isnear," + ghostID.toString()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	// send npc near message
-	public void sendClientID() {
-		try {
-			System.out.println("client telling server client details");
-			String message = new String("getID," + getID().toString());
-			message += "," + ghostNPC.getLocalLocation();
-
-			sendPacket(message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -13,11 +13,6 @@ public class Move extends BTCondition {
     public Move(NPC n) {
         super(false);
         npc = n;
-
-        UUID id = npcc.getClientID();
-        Vector3f location = npcc.getPos();
-
-        n.setLocation(location);
     }
 
     protected boolean check() {
