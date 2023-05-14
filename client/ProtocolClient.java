@@ -154,7 +154,7 @@ public class ProtocolClient extends GameConnectionClient {
 						//Float.parseFloat(messageTokens[1]),
 						//Float.parseFloat(messageTokens[2]),
 						//Float.parseFloat(messageTokens[3]));
-				game.checkNPCNear();
+				game.checkNPCNear(ghostNPC);
 				System.out.println("sending check for isnear");
 				// call method that checks if avatar is near to npc??
 			}
@@ -275,5 +275,9 @@ public class ProtocolClient extends GameConnectionClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public Vector3f getAvLocation() {
+		return game.getPlayerPosition();
 	}
 }
