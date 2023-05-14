@@ -60,7 +60,7 @@ public class MyGame extends VariableFrameRateGame {
 	private ProtocolClient protClient;
 	private Light blueSpawn, redSpawn;
 	private File scriptFile1, scriptFile2, scriptFile3;
-	private Sound laserSound, walkingSound, runningSound, riverSound, birdSounds, song1, song2;
+	private Sound laserSound, walkingSound, runningSound, riverSound, birdSounds, song;
 
 	// network & script variables
 	private int serverPort;
@@ -179,7 +179,8 @@ public class MyGame extends VariableFrameRateGame {
 		// NPC setup
 		npc = new GameObject(GameObject.root(), avatarS, avatartx);
 		npc.setLocalTranslation(new Matrix4f().translation(80.0f, 0.0f, 20.0f));
-		npc.setLocalRotation(new Matrix4f().rotateY((float) Math.PI));
+		npc.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(270.0f)));
 		npc.setLocalScale(new Matrix4f().scale(.45f));
 
 		// build avatar in the center of the window
@@ -189,7 +190,7 @@ public class MyGame extends VariableFrameRateGame {
 		// avatar.setLocalRotation(new Matrix4f().rotateY((float)
 		// Math.toRadians(270f))); // red 90f
 		avatar.getRenderStates().setModelOrientationCorrection(
-				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(90.0f)));
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(270.0f)));
 
 		// build lazergun object
 		lazergun = new GameObject(GameObject.root(), lazergunS, lazerguntx);
@@ -445,6 +446,7 @@ public class MyGame extends VariableFrameRateGame {
 
 			// update animation
 			avatarS.updateAnimation();
+			npcS.updateAnimation();
 
 			// -------------------- game logic ------------------- //
 
@@ -480,7 +482,9 @@ public class MyGame extends VariableFrameRateGame {
 			// update static objects
 			mapHeight(water);
 
-			// } If condition for running physics with scripts
+			// trying to get npc to move
+			npc.lookAt(avatar.getLocalLocation());
+			npc.move((float) frameDiff);
 		}
 		// END if statement for game not paused
 
@@ -827,18 +831,18 @@ public class MyGame extends VariableFrameRateGame {
 
 		resource7 = audioMgr.createAudioResource(
 				"assets/sounds/80's synth 2.wav", AudioResourceType.AUDIO_SAMPLE);
-		song2 = new Sound(resource7,
+		song = new Sound(resource7,
 				SoundType.SOUND_EFFECT, 10, true);
-		song2.initialize(audioMgr);
-		song2.setMaxDistance(10.0f);
-		song2.setMinDistance(0.5f);
-		song2.setRollOff(2.0f);
-		song2.setLocation(avatar.getWorldLocation());
+		song.initialize(audioMgr);
+		song.setMaxDistance(10.0f);
+		song.setMinDistance(0.5f);
+		song.setRollOff(2.0f);
+		song.setLocation(avatar.getWorldLocation());
 
 		setEarParameters();
 		riverSound.play();
 		birdSounds.play();
-		song2.play();
+		// song.play();
 	}
 
 	public void setEarParameters() {
