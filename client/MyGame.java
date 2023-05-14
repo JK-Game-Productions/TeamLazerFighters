@@ -206,7 +206,6 @@ public class MyGame extends VariableFrameRateGame {
 		// this.runScript(scriptFile1);
 		water.setLocalTranslation(new Matrix4f().translation(-60f, 0.0f, 0.0f));
 		water.setLocalScale((new Matrix4f()).scaling(.5f));
-		
 
 		// build world axes
 		x = new GameObject(GameObject.root(), linxS);
@@ -240,7 +239,7 @@ public class MyGame extends VariableFrameRateGame {
 		redSpawn.setType(LightType.SPOTLIGHT);
 		redSpawn.setDirection(new Vector3f(0.0f, -1.0f, 0.0f));
 		redSpawn.setDiffuse(0.75f, 0.0f, 0.0f);
-		//redSpawn.setAmbient(0.25f, 0.0f, 0.0f);
+		// redSpawn.setAmbient(0.25f, 0.0f, 0.0f);
 		(engine.getSceneGraph()).addLight(redSpawn);
 	}
 
@@ -270,18 +269,18 @@ public class MyGame extends VariableFrameRateGame {
 		scriptFile1 = new File("assets/scripts/GameParams.js");
 		this.runScript(scriptFile1);
 		moveSpeed = Float.parseFloat(jsEngine.get("moveSpeed").toString());
-		score = ((int)  jsEngine.get("score"));
-		blueScore = ((int)  jsEngine.get("blueScore"));
-		redScore = ((int)  jsEngine.get("redScore"));
-		elapsTime = ((double)  jsEngine.get("elapsTime"));
-		paused = ((boolean)  jsEngine.get("paused"));
-		endGame = ((boolean)  jsEngine.get("endGame"));
-		viewAxis = ((boolean)  jsEngine.get("viewAxis"));
-		isRunning = ((boolean)  jsEngine.get("isRunning"));
-		isWalking = ((boolean)  jsEngine.get("isWalking"));
-		mouseVisible = ((boolean)  jsEngine.get("mouseVisible"));
-		lazergunAimed = ((boolean)  jsEngine.get("lazergunAimed"));
-		isClientConnected = ((boolean)  jsEngine.get("isClientConnected"));
+		score = ((int) jsEngine.get("score"));
+		blueScore = ((int) jsEngine.get("blueScore"));
+		redScore = ((int) jsEngine.get("redScore"));
+		elapsTime = ((double) jsEngine.get("elapsTime"));
+		paused = ((boolean) jsEngine.get("paused"));
+		endGame = ((boolean) jsEngine.get("endGame"));
+		viewAxis = ((boolean) jsEngine.get("viewAxis"));
+		isRunning = ((boolean) jsEngine.get("isRunning"));
+		isWalking = ((boolean) jsEngine.get("isWalking"));
+		mouseVisible = ((boolean) jsEngine.get("mouseVisible"));
+		lazergunAimed = ((boolean) jsEngine.get("lazergunAimed"));
+		isClientConnected = ((boolean) jsEngine.get("isClientConnected"));
 
 		// ----------------- set window size ----------------- //
 		(engine.getRenderSystem()).setWindowDimensions(1920, 1080);
@@ -399,7 +398,7 @@ public class MyGame extends VariableFrameRateGame {
 			runningSound.setLocation(avatar.getWorldLocation());
 			riverSound.setLocation(water.getWorldLocation());
 			setEarParameters();
-			
+
 			// update lazergun position and aim
 			lazergun.applyParentRotationToPosition(true);
 			if (lazergunAimed) { // -0.217f, 0.8f, 0.9f
@@ -431,7 +430,7 @@ public class MyGame extends VariableFrameRateGame {
 			}
 			setAvatarWalking(false);
 			setAvatarRunning(false);
-			
+
 			// update all sounds
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
@@ -439,26 +438,24 @@ public class MyGame extends VariableFrameRateGame {
 
 			// process the networking functions
 			processNetworking((float) elapsTime);
-			
+
 			// show/hide mouse logic
 			checkMouse();
-			//  setMouseVisible(false);
-			
+			// setMouseVisible(false);
+
 			// update animation
 			avatarS.updateAnimation();
-
-	
 
 			// -------------------- game logic ------------------- //
 
 			// --------------------- PHYSICS LOGIC --------------------------//
-			
+
 			// update npc physics objects
 			ps.removeObject(npcP.getUID());
 			// move graphic objects
 			mapHeight(npc);
 			buildNpc();
-			
+
 			// if(running){
 			Matrix4f matrix = new Matrix4f();
 			Matrix4f rotMatrix = new Matrix4f();
@@ -466,7 +463,7 @@ public class MyGame extends VariableFrameRateGame {
 			Matrix4f identityMatrix = new Matrix4f().identity();
 			checkCollisions();
 			updateGhostPhysics(ghosts);
-			//checkBulletDistances();
+			// checkBulletDistances();
 			ps.update((float) elapsTime);
 			for (GameObject go : engine.getSceneGraph().getGameObjects()) {
 				if (go.getPhysicsObject() != null) {
@@ -496,7 +493,7 @@ public class MyGame extends VariableFrameRateGame {
 		} else {
 			startupStr = "Blue Team: " + blueScore + " || " + "Red Team: " + redScore;
 			Vector3f startupColor = new Vector3f(1, .25f, 1);
-			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.45f), (int) (height * 0.9f));																					// 1080
+			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.45f), (int) (height * 0.9f)); // 1080
 		}
 
 		String scoreStr = "Score: " + Integer.toString(score);
@@ -547,16 +544,16 @@ public class MyGame extends VariableFrameRateGame {
 					// handle collison
 					GameObject laz;
 					Iterator<GameObject> it1 = lazers.iterator();
-					while(it1.hasNext()){
+					while (it1.hasNext()) {
 						laz = it1.next();
 						PhysicsObject lazP = laz.getPhysicsObject();
-						if(lazP.getUID() == obj1.getUID() || lazP.getUID() == obj2.getUID()) {
+						if (lazP.getUID() == obj1.getUID() || lazP.getUID() == obj2.getUID()) {
 							GhostAvatar ga;
 							Iterator<GhostAvatar> it2 = ghosts.iterator();
-							while(it2.hasNext()){
+							while (it2.hasNext()) {
 								ga = it2.next();
 								PhysicsObject gaP = ga.getPhysicsObject();
-								if(gaP.getUID() == obj1.getUID() || gaP.getUID() == obj2.getUID()){
+								if (gaP.getUID() == obj1.getUID() || gaP.getUID() == obj2.getUID()) {
 									ps.removeObject(lazP.getUID());
 									engine.getSceneGraph().removeGameObject(laz);
 									it1.remove();
@@ -911,7 +908,7 @@ public class MyGame extends VariableFrameRateGame {
 
 			if (distance < 4) {
 				System.out.println("NPC near");
-				getProtocolClient().sendNPCNearMessage();
+				getProtocolClient().sendNPCNearMessage(gNPC.getNPCid());
 
 			}
 		}

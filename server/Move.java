@@ -1,4 +1,8 @@
 
+import java.util.UUID;
+
+import javax.vecmath.Vector3f;
+
 import tage.ai.behaviortrees.BTCondition;
 
 public class Move extends BTCondition {
@@ -10,13 +14,14 @@ public class Move extends BTCondition {
         super(false);
         npc = n;
 
-        // n.lookAt();
-        // n.setLocation(null);
+        UUID id = npcc.getClientID();
+        Vector3f location = npcc.getPos();
+
+        n.setLocation(location);
     }
 
     protected boolean check() {
-        server.sendWantsDetailsMessages(null);
-        // server.sendNPCinfo();
+
         return false;
     }
 }

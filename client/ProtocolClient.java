@@ -27,31 +27,32 @@ public class ProtocolClient extends GameConnectionClient {
 	}
 
 	// --------------- GHOST NPC SECTION --------------- //
-	/* 
-	private void createGhostNPC(Vector3f position) throws IOException {
-		if (ghostNPC == null) {
-			ghostNPC = new GhostNPC(0, game.getNPCshape(), game.getNPCtexture(), position);
-			System.out.println("adding ghost npc at position --> " + position);
-		}
-	}
-
-	private void updateGhostNPC(Vector3f position, double gsize) {
-		boolean gs;
-		if (ghostNPC == null) {
-			try {
-				createGhostNPC(position);
-			} catch (IOException e) {
-				System.out.println("error creating npc");
-			}
-		}
-		ghostNPC.setPosition(position);
-		if (gsize == 1.0)
-			gs = false;
-		else
-			gs = true;
-		ghostNPC.setSize(gs);
-	}
-	*/
+	/*
+	 * private void createGhostNPC(Vector3f position) throws IOException {
+	 * if (ghostNPC == null) {
+	 * ghostNPC = new GhostNPC(0, game.getNPCshape(), game.getNPCtexture(),
+	 * position);
+	 * System.out.println("adding ghost npc at position --> " + position);
+	 * }
+	 * }
+	 * 
+	 * private void updateGhostNPC(Vector3f position, double gsize) {
+	 * boolean gs;
+	 * if (ghostNPC == null) {
+	 * try {
+	 * createGhostNPC(position);
+	 * } catch (IOException e) {
+	 * System.out.println("error creating npc");
+	 * }
+	 * }
+	 * ghostNPC.setPosition(position);
+	 * if (gsize == 1.0)
+	 * gs = false;
+	 * else
+	 * gs = true;
+	 * ghostNPC.setSize(gs);
+	 * }
+	 */
 	@Override
 	protected void processPacket(Object message) {
 		String strMessage = (String) message;
@@ -136,10 +137,10 @@ public class ProtocolClient extends GameConnectionClient {
 				// Parse out the position
 				UUID ghostID = UUID.fromString(messageTokens[1]);
 				Vector3f ghostPosition = new Vector3f(
-				Float.parseFloat(messageTokens[2]),
-				Float.parseFloat(messageTokens[3]),
-				Float.parseFloat(messageTokens[4]));
-				//Vector3f ghostPosition = new Vector3f(game.getPlayerPosition());
+						Float.parseFloat(messageTokens[2]),
+						Float.parseFloat(messageTokens[3]),
+						Float.parseFloat(messageTokens[4]));
+				// Vector3f ghostPosition = new Vector3f(game.getPlayerPosition());
 				try {
 					ghostManager.createGhostNPC(ghostID, ghostPosition);
 				} catch (IOException e) {
@@ -148,12 +149,12 @@ public class ProtocolClient extends GameConnectionClient {
 			}
 
 			if (messageTokens[0].compareTo("isnear") == 0) {
-				//UUID ghostID = UUID.fromString(messageTokens[1]);
+				// UUID ghostID = UUID.fromString(messageTokens[1]);
 				// Parse out the position
-				//Vector3f ghostPosition = new Vector3f(
-						//Float.parseFloat(messageTokens[1]),
-						//Float.parseFloat(messageTokens[2]),
-						//Float.parseFloat(messageTokens[3]));
+				// Vector3f ghostPosition = new Vector3f(
+				// Float.parseFloat(messageTokens[1]),
+				// Float.parseFloat(messageTokens[2]),
+				// Float.parseFloat(messageTokens[3]));
 				game.checkNPCNear(ghostNPC);
 				System.out.println("sending check for isnear");
 				// call method that checks if avatar is near to npc??
@@ -170,13 +171,25 @@ public class ProtocolClient extends GameConnectionClient {
 				ghostManager.updateGhostNPC(ghostID, ghostPosition);
 			}
 		}
-
 	}
 
 	// send npc near message
-	public void sendNPCNearMessage() {
+	public void sendNPCNearMessage(UUID ghostID) {
 		try {
-			sendPacket(new String("isnear," + id.toString()));
+			sendPacket(new String("isnear," + ghostID.toString()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// send npc near message
+	public void sendClientID() {
+		try {
+			System.out.println("client telling server client details");
+			String message = new String("getID," + getID().toString());
+			message += "," + ghostNPC.getLocalLocation();
+
+			sendPacket(message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
