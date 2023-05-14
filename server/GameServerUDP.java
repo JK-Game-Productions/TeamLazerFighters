@@ -28,13 +28,13 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 		}
 	}
 
-	public void sendNPCinfo() {
+	public void sendNPCinfo(UUID clientID) {
 		try {
-			String message = new String("mnpc");
+			String message = new String("mnpc"+ clientID.toString());
 			message += "," + (npcCtrl.getNPC()).getX();
 			message += "," + (npcCtrl.getNPC()).getY();
 			message += "," + (npcCtrl.getNPC()).getZ();
-			message += "," + (npcCtrl.getCriteria());
+			//message += "," + (npcCtrl.getCriteria());
 			sendPacketToAll(message);
 		} catch (IOException e) {
 			System.out.println("couldn't send msg");

@@ -148,12 +148,12 @@ public class ProtocolClient extends GameConnectionClient {
 			}
 
 			if (messageTokens[0].compareTo("isnear") == 0) {
-				UUID ghostID = UUID.fromString(messageTokens[1]);
+				//UUID ghostID = UUID.fromString(messageTokens[1]);
 				// Parse out the position
-				Vector3f ghostPosition = new Vector3f(
-						Float.parseFloat(messageTokens[1]),
-						Float.parseFloat(messageTokens[2]),
-						Float.parseFloat(messageTokens[3]));
+				//Vector3f ghostPosition = new Vector3f(
+						//Float.parseFloat(messageTokens[1]),
+						//Float.parseFloat(messageTokens[2]),
+						//Float.parseFloat(messageTokens[3]));
 				game.checkNPCNear();
 				System.out.println("sending check for isnear");
 				// call method that checks if avatar is near to npc??

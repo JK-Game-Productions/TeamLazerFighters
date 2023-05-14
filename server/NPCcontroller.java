@@ -42,7 +42,7 @@ public class NPCcontroller {
             if (elapsedTickMilliSecs >= 25.0f) {
                 lastTickUpdateTime = currentTime;
                 npc.updateLocation();
-                server.sendNPCinfo();
+                //server.sendNPCinfo();
             }
             if (elapsedThinkMilliSecs >= 250.0f) {
                 lastThinkUpdateTime = currentTime;

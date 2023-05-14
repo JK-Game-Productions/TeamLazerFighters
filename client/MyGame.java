@@ -91,12 +91,12 @@ public class MyGame extends VariableFrameRateGame {
 	// object variables
 	private Vector<GhostNPC> npcs;
 	private AnimatedShape avatarS, npcS;
-	private ArrayList<GameObject> lazers;
+	private Vector<GameObject> lazers;
 	private Vector<GhostAvatar> ghosts;
-	private PhysicsObject prize1P, npcP, avatarP;// lazerGroundP;
-	private GameObject lazergun, avatar, prize1, ground, x, y, z, npc, riverWater;
-	private ObjShape lazergunS, prize1S, linxS, linyS, linzS, terrS, lazerS, waterS;
-	private TextureImage avatartx, avatartxBlue, avatartxRed, lazerguntx, p1tx, groundtx, river, lazerT, waterT;
+	private PhysicsObject npcP, avatarP;// lazerGroundP;
+	private GameObject lazergun, avatar, water, ground, x, y, z, npc, riverWater;
+	private ObjShape lazergunS, riverS, linxS, linyS, linzS, terrS, lazerS, waterS;
+	private TextureImage avatartx, avatartxBlue, avatartxRed, lazerguntx, riverT, groundtx, river, lazerT, waterT;
 
 	// ----------------------------------------------------------------------------
 
@@ -137,7 +137,7 @@ public class MyGame extends VariableFrameRateGame {
 		npcS.loadAnimation("WALK", "man5.rka");
 		lazergunS = new ImportedModel("lazergun.obj");
 		lazerS = new Sphere();
-		prize1S = new Torus();
+		riverS = new Cube();
 		linxS = new Line(new Vector3f(0f, 40f, 0f), new Vector3f(500f, 40f, 0f));
 		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 80f, 0f));
 		linzS = new Line(new Vector3f(0f, 40f, 0f), new Vector3f(0f, 40f, 500f));
@@ -153,7 +153,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatartxRed = new TextureImage("man6.png");
 		lazerT = new TextureImage("lazerbeam.png");
 		lazerguntx = new TextureImage("lazergun.png");
-		p1tx = new TextureImage("tex_Water.jpg");
+		riverT = new TextureImage("brushwalker437.png");
 		groundtx = new TextureImage("brown_mud_leaves_01_diff_2k.jpg");
 		river = new TextureImage("river.jpg");
 		waterT = new TextureImage("brushwalker437.png");
@@ -184,7 +184,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
-		avatar.setLocalTranslation((new Matrix4f()).translation(0f, 0f, 0f));
+		avatar.setLocalTranslation((new Matrix4f()).translation(500f, 500f, 500f));
 		avatar.setLocalScale((new Matrix4f()).scaling(.43f));
 		// avatar.setLocalRotation(new Matrix4f().rotateY((float)
 		// Math.toRadians(270f))); // red 90f
@@ -201,12 +201,12 @@ public class MyGame extends VariableFrameRateGame {
 		lazergun.applyParentRotationToPosition(true);
 
 		// build prize 1
-		prize1 = new GameObject(GameObject.root(), prize1S, p1tx);
+		water = new GameObject(GameObject.root(), riverS, riverT);
 		// jsEngine.put("object", prize1);
 		// this.runScript(scriptFile1);
-		prize1.setLocalTranslation(new Matrix4f().translation(0.0f, 0.0f, 0.0f));
-		prize1.setLocalScale((new Matrix4f()).scaling(3.0f));
-		prize1.getRenderStates().setTiling(1);
+		water.setLocalTranslation(new Matrix4f().translation(-60f, 0.0f, 0.0f));
+		water.setLocalScale((new Matrix4f()).scaling(.5f));
+		
 
 		// build world axes
 		x = new GameObject(GameObject.root(), linxS);
@@ -220,7 +220,7 @@ public class MyGame extends VariableFrameRateGame {
 		(z.getRenderStates()).disableRendering();
 
 		// add objects to vector
-		lazers = new ArrayList<>();
+		lazers = new Vector<GameObject>();
 		npcs = new Vector<GhostNPC>();
 		ghosts = new Vector<GhostAvatar>();
 	}
@@ -240,7 +240,7 @@ public class MyGame extends VariableFrameRateGame {
 		redSpawn.setType(LightType.SPOTLIGHT);
 		redSpawn.setDirection(new Vector3f(0.0f, -1.0f, 0.0f));
 		redSpawn.setDiffuse(0.75f, 0.0f, 0.0f);
-		redSpawn.setAmbient(0.5f, 0.0f, 0.0f);
+		//redSpawn.setAmbient(0.25f, 0.0f, 0.0f);
 		(engine.getSceneGraph()).addLight(redSpawn);
 	}
 
@@ -349,7 +349,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// init physics engine
 		String eng = "tage.physics.JBullet.JBulletPhysicsEngine";
-		float[] gravity = { 0f, -5f, 0f };
+		float[] gravity = { 0f, -10f, 0f };
 		ps = PhysicsEngineFactory.createPhysicsEngine(eng);
 		ps.initSystem();
 		ps.setGravity(gravity);
@@ -360,11 +360,6 @@ public class MyGame extends VariableFrameRateGame {
 		double[] tempTransform;
 
 		// --------------------- Physics Objects --------------------- //
-		Matrix4f translation = new Matrix4f(prize1.getLocalTranslation());
-		tempTransform = toDoubleArray(translation.get(vals));
-		prize1P = ps.addSphereObject(ps.nextUID(), mass, tempTransform, 3.0f);
-		prize1P.setBounciness(0.5f);
-		prize1.setPhysicsObject(prize1P);
 
 		buildNpc();
 		// buildAvatar();
@@ -402,7 +397,7 @@ public class MyGame extends VariableFrameRateGame {
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
 			runningSound.setLocation(avatar.getWorldLocation());
-			riverSound.setLocation(prize1.getWorldLocation());
+			riverSound.setLocation(water.getWorldLocation());
 			setEarParameters();
 			
 			// update lazergun position and aim
@@ -452,12 +447,7 @@ public class MyGame extends VariableFrameRateGame {
 			// update animation
 			avatarS.updateAnimation();
 
-			if (song1.getProgress() > 182.4) {
-				song2.play();
-			}
-			if (song2.getProgress() > 84.6) {
-				song1.play();
-			}
+	
 
 			// -------------------- game logic ------------------- //
 
@@ -476,7 +466,7 @@ public class MyGame extends VariableFrameRateGame {
 			Matrix4f identityMatrix = new Matrix4f().identity();
 			checkCollisions();
 			updateGhostPhysics(ghosts);
-			checkBulletDistances();
+			//checkBulletDistances();
 			ps.update((float) elapsTime);
 			for (GameObject go : engine.getSceneGraph().getGameObjects()) {
 				if (go.getPhysicsObject() != null) {
@@ -491,7 +481,7 @@ public class MyGame extends VariableFrameRateGame {
 				}
 			}
 			// update static objects
-			mapHeight(prize1);
+			mapHeight(water);
 
 			// } If condition for running physics with scripts
 		}
@@ -525,7 +515,7 @@ public class MyGame extends VariableFrameRateGame {
 			if (ghostP != null) {
 				ps.removeObject(ghostP.getUID());
 			}
-			float[] psize = { 1f, 2f, 1f };
+			float[] psize = { 1.5f, 3f, 1.5f };
 			Matrix4f translation = new Matrix4f(ghostAvatar.getLocalTranslation());
 			double[] tempTransform = toDoubleArray(translation.get(vals));
 			ghostP = ps.addBoxObject(ps.nextUID(), 0.0f, tempTransform, psize);
@@ -554,7 +544,33 @@ public class MyGame extends VariableFrameRateGame {
 			for (int j = 0; j < pm.getNumContacts(); j++) {
 				contactPoint = pm.getContactPoint(j);
 				if (contactPoint.getDistance() < 0.0f) {
-					// handle collison it litterally detects nothing to handle
+					// handle collison
+					GameObject laz;
+					Iterator<GameObject> it1 = lazers.iterator();
+					while(it1.hasNext()){
+						laz = it1.next();
+						PhysicsObject lazP = laz.getPhysicsObject();
+						if(lazP.getUID() == obj1.getUID() || lazP.getUID() == obj2.getUID()) {
+							GhostAvatar ga;
+							Iterator<GhostAvatar> it2 = ghosts.iterator();
+							while(it2.hasNext()){
+								ga = it2.next();
+								PhysicsObject gaP = ga.getPhysicsObject();
+								if(gaP.getUID() == obj1.getUID() || gaP.getUID() == obj2.getUID()){
+									ps.removeObject(lazP.getUID());
+									engine.getSceneGraph().removeGameObject(laz);
+									it1.remove();
+									if (team.equals("BLUE")) {
+										blueScore++;
+									}
+									if (team.equals("RED")) {
+										redScore++;
+									}
+									score++;
+								}
+							}
+						}
+					}
 					System.out.println("Physics Hit");
 					break;
 				}
@@ -808,23 +824,14 @@ public class MyGame extends VariableFrameRateGame {
 		riverSound.setMaxDistance(10.0f);
 		riverSound.setMinDistance(0.5f);
 		riverSound.setRollOff(1.5f);
-		riverSound.setLocation(prize1.getWorldLocation());
+		riverSound.setLocation(water.getWorldLocation());
 
 		// ---- music
-		resource6 = audioMgr.createAudioResource(
-				"assets/sounds/80's synth 1.wav", AudioResourceType.AUDIO_SAMPLE);
-		song1 = new Sound(resource6,
-				SoundType.SOUND_EFFECT, 10, false);
-		song1.initialize(audioMgr);
-		song1.setMaxDistance(10.0f);
-		song1.setMinDistance(0.5f);
-		song1.setRollOff(2.0f);
-		song1.setLocation(avatar.getWorldLocation());
 
 		resource7 = audioMgr.createAudioResource(
 				"assets/sounds/80's synth 2.wav", AudioResourceType.AUDIO_SAMPLE);
 		song2 = new Sound(resource7,
-				SoundType.SOUND_EFFECT, 10, false);
+				SoundType.SOUND_EFFECT, 10, true);
 		song2.initialize(audioMgr);
 		song2.setMaxDistance(10.0f);
 		song2.setMinDistance(0.5f);
@@ -956,11 +963,9 @@ public class MyGame extends VariableFrameRateGame {
 		Matrix4f translation = new Matrix4f(newLazer.getLocalTranslation());
 		double[] tempTransform = toDoubleArray(translation.get(vals));
 		PhysicsObject newLazerP = ps.addSphereObject(ps.nextUID(), 1f, tempTransform, .02f);
-		// System.out.println("fwdvec: "+fwd.x()+","+fwd.y()+","+fwd.z());
 		newLazerP.setBounciness(.01f);
 		newLazerP.setLinearVelocity(new float[] { fwd.x() * 100, fwd.y() * 100, fwd.z() * 100 });
 		newLazer.setPhysicsObject(newLazerP);
-		// newLazerP.applyForce(1000.0f, 0f, 0, 0, 0, 0);
 		lazers.add(newLazer);
 	}
 
@@ -1073,7 +1078,7 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public TextureImage getNPCtexture() {
-		return p1tx;
+		return npc.getTextureImage();
 	}
 
 	public ObjShape getGhostShape() {
@@ -1174,10 +1179,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	// -------------------------- SHUTDOWN PROTOCOL -------------------------- //
 
-	//@Override
-	//public void shutdown() {
-	//	super.shutdown();
-	//	setIsConnected(false);
-	//	protClient.sendByeMessage();
-	//}
+	@Override
+	public void shutdown() {
+		super.shutdown();
+		setIsConnected(false);
+		protClient.sendByeMessage();
+	}
 }// END
