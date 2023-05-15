@@ -133,8 +133,8 @@ public class MyGame extends VariableFrameRateGame {
 	public void loadShapes() {
 		avatarS = new AnimatedShape("man5.rkm", "man5.rks");
 		avatarS.loadAnimation("WALK", "man5.rka");
-		npcS = new AnimatedShape("man5.rkm", "man5.rks");
-		npcS.loadAnimation("WALK", "man5.rka");
+		npcS = new AnimatedShape("man6.rkm", "man6.rks");
+		npcS.loadAnimation("WALKnpc", "man6.rka");
 		lazergunS = new ImportedModel("lazergun.obj");
 		lazerS = new Sphere();
 		riverS = new Cube();
@@ -153,10 +153,10 @@ public class MyGame extends VariableFrameRateGame {
 		avatartxRed = new TextureImage("man6.png");
 		lazerT = new TextureImage("lazerbeam.png");
 		lazerguntx = new TextureImage("lazergun.png");
-		riverT = new TextureImage("brushwalker437.png");
+		riverT = new TextureImage("water.jpg");
 		groundtx = new TextureImage("brown_mud_leaves_01_diff_2k.jpg");
 		river = new TextureImage("river.jpg");
-		waterT = new TextureImage("brushwalker437.png");
+		waterT = new TextureImage("water.jpg");
 	}
 
 	@Override
@@ -206,7 +206,7 @@ public class MyGame extends VariableFrameRateGame {
 		// jsEngine.put("object", prize1);
 		// this.runScript(scriptFile1);
 		water.setLocalTranslation(new Matrix4f().translation(-60f, 0.0f, 0.0f));
-		water.setLocalScale((new Matrix4f()).scaling(.5f));
+		water.setLocalScale((new Matrix4f()).scaling(.1f));
 
 		// build world axes
 		x = new GameObject(GameObject.root(), linxS);
@@ -402,8 +402,9 @@ public class MyGame extends VariableFrameRateGame {
 
 			// update lazergun position and aim
 			lazergun.applyParentRotationToPosition(true);
-			if (lazergunAimed) { // -0.217f, 0.8f, 0.9f
-				lazergun.setLocalTranslation(new Matrix4f().translation(-0.23f, 1.06f, 0.85f));
+			if (lazergunAimed) { // -0.217f, 1.06f, 0.85f
+				lazergun.setLocalTranslation(new Matrix4f().translation(-0.217f, 1.1f, 1.58f));
+				scopeCam();
 			} else {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 1.06f, 0.9f));
 			}
@@ -437,28 +438,32 @@ public class MyGame extends VariableFrameRateGame {
 			walkingSound.setLocation(avatar.getWorldLocation());
 			setEarParameters();
 
-			// process the networking functions
-			processNetworking((float) elapsTime);
-
 			// show/hide mouse logic
 			checkMouse();
-			// setMouseVisible(false);
 
 			// update animation
 			avatarS.updateAnimation();
-			npcS.updateAnimation();
 
 			// --------------------- PHYSICS LOGIC --------------------------//
 
 			// update npc physics objects
 			ps.removeObject(npcP.getUID());
+
+			// npc movement and animation
 			npc.lookAt(avatar.getLocalLocation());
-			npc.move((float) frameDiff * 3.0f);
+			Vector3f oldPos = npc.getWorldLocation();
+			Vector4f mov = new Vector4f(0f, 0f, 1f, 1f);
+			mov.mul(npc.getWorldRotation());
+			mov.mul((float) (3.0f * frameDiff));
+			Vector3f newPos = oldPos.add(mov.x(), mov.y(), mov.z());
+			npc.setLocalLocation(newPos);
+			npcS.playAnimation("WALKnpc", 0.5f, AnimatedShape.EndType.LOOP, 0);
+
+			// set npc to map height and rebuild physics object
 			mapHeight(npc);
 			buildNpc();
 			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
 
-			// if(running){
 			Matrix4f matrix = new Matrix4f();
 			Matrix4f rotMatrix = new Matrix4f();
 			AxisAngle4f aAngle = new AxisAngle4f();
@@ -482,7 +487,11 @@ public class MyGame extends VariableFrameRateGame {
 			// update static objects
 			mapHeight(water);
 
-			// trying to get npc to move
+			// npc look at avatar
+			npc.lookAt(avatar.getLocalLocation());
+
+			// process the networking functions
+			processNetworking((float) elapsTime);
 		}
 		// END if statement for game not paused
 
@@ -496,12 +505,11 @@ public class MyGame extends VariableFrameRateGame {
 			startupStr = "Blue Team: " + blueScore + " || " + "Red Team: " + redScore;
 			Vector3f startupColor = new Vector3f(1, .25f, 1);
 			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.45f), (int) (height * 0.9f)); // 1080
+
+			String scoreStr = "Score: " + Integer.toString(score);
+			Vector3f scoreColor = new Vector3f(0, 1, 0);
+			(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
 		}
-
-		String scoreStr = "Score: " + Integer.toString(score);
-		Vector3f scoreColor = new Vector3f(0, 1, 0);
-		(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
-
 		// END Update
 	}// END VariableFrameRate Game Overrides
 
@@ -676,11 +684,8 @@ public class MyGame extends VariableFrameRateGame {
 				curMouseY = e.getYOnScreen();
 				float mouseDeltaX = prevMouseX - curMouseX;
 				float mouseDeltaY = prevMouseY - curMouseY;
-				// ps.removeObject(avatarP.getUID());
 				avatar.gyaw(getFrameDiff(), mouseDeltaX);
-				// camMain.yaw(mouseDeltaX);
 				avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
-				// buildAvatar();
 				prevMouseX = curMouseX;
 				prevMouseY = curMouseY;
 
@@ -698,7 +703,7 @@ public class MyGame extends VariableFrameRateGame {
 			return;
 		} else if (e.getButton() == 3) {
 			setLazergunAim(false);
-		} // else System.out.println(e.getButton());
+		}
 	}
 
 	@Override
@@ -726,7 +731,6 @@ public class MyGame extends VariableFrameRateGame {
 			float mouseDeltaY = prevMouseY - curMouseY;
 
 			avatar.gyaw(getFrameDiff() / 2, mouseDeltaX);
-			// camMain.yaw(mouseDeltaX);
 			avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
 			protClient.sendMoveMessage(avatar.getWorldLocation(), avatar.getWorldRotation(), team);
 			prevMouseX = curMouseX;
@@ -735,7 +739,6 @@ public class MyGame extends VariableFrameRateGame {
 			prevMouseX = centerX;
 			prevMouseY = centerY;
 		}
-		// System.out.println(e.getButton());
 	}
 
 	// checks if mouse is hidden or shown and sets the cursor icon
@@ -761,7 +764,7 @@ public class MyGame extends VariableFrameRateGame {
 	// ------------------------- AUDIO SECTION ------------------------ //
 
 	public void initAudio() {
-		AudioResource resource1, resource2, resource3, resource4, resource5, resource6, resource7;
+		AudioResource resource1, resource2, resource3, resource4, resource5, resource7;
 		audioMgr = AudioManagerFactory.createAudioManager(
 				"tage.audio.joal.JOALAudioManager");
 		if (!audioMgr.initialize()) {
@@ -798,7 +801,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		resource4 = audioMgr.createAudioResource("assets/sounds/birdsInForest.wav",
 				AudioResourceType.AUDIO_SAMPLE);
-		birdSounds = new Sound(resource4, SoundType.SOUND_EFFECT, 100, true);
+		birdSounds = new Sound(resource4, SoundType.SOUND_EFFECT, 80, true);
 		birdSounds.initialize(audioMgr);
 		birdSounds.setMaxDistance(10.0f);
 		birdSounds.setMinDistance(0.5f);
@@ -808,11 +811,11 @@ public class MyGame extends VariableFrameRateGame {
 		resource5 = audioMgr.createAudioResource(
 				"assets/sounds/river.wav", AudioResourceType.AUDIO_SAMPLE);
 		riverSound = new Sound(resource5,
-				SoundType.SOUND_EFFECT, 80, true);
+				SoundType.SOUND_EFFECT, 90, true);
 		riverSound.initialize(audioMgr);
-		riverSound.setMaxDistance(10.0f);
+		riverSound.setMaxDistance(50.0f);
 		riverSound.setMinDistance(0.5f);
-		riverSound.setRollOff(1.5f);
+		riverSound.setRollOff(0.2f);
 		riverSound.setLocation(water.getWorldLocation());
 
 		// ---- music
@@ -828,9 +831,9 @@ public class MyGame extends VariableFrameRateGame {
 		song.setLocation(avatar.getWorldLocation());
 
 		setEarParameters();
-		riverSound.play();
-		birdSounds.play();
 		song.play();
+		birdSounds.play();
+		riverSound.play();
 	}
 
 	public void setEarParameters() {
@@ -1031,6 +1034,16 @@ public class MyGame extends VariableFrameRateGame {
 		camMain.setN(avatar.getWorldForwardVector());
 		location.add(camMain.getV().mul(1.2f));
 		location.add(camMain.getN().mul(.3f));
+		camMain.setLocation(location);
+	}
+
+	private void scopeCam() {
+		Vector3f location = avatar.getWorldLocation();
+		camMain.setU(avatar.getWorldRightVector());
+		camMain.setV(avatar.getWorldUpVector());
+		camMain.setN(avatar.getWorldForwardVector());
+		location.add(camMain.getV().mul(1.2f));
+		location.add(camMain.getN().mul(1.6f));
 		camMain.setLocation(location);
 	}
 

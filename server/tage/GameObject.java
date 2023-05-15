@@ -113,6 +113,7 @@ public class GameObject {
 	private PhysicsObject physicsObject;
 	private boolean isTerrain = false;
 	private boolean collected = false;
+	private boolean moving = false;
 	private float movFactor;
 
 	// ------------------ CONSTRUCTORS -----------------
