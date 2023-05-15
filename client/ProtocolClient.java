@@ -80,6 +80,7 @@ public class ProtocolClient extends GameConnectionClient {
 				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
 				ghostManager.removeGhostAvatar(ghostID);
+				ghostManager.removeGhostNPC(ghostID);
 			}
 
 			// Handle CREATE message
@@ -159,6 +160,8 @@ public class ProtocolClient extends GameConnectionClient {
 						Float.parseFloat(messageTokens[19]),
 						Float.parseFloat(messageTokens[20]));
 				String team = messageTokens[21];
+
+				game.setGhostWalking(true);
 				ghostManager.updateGhostAvatar(ghostID, ghostPosition, ghostRotation, team);
 			}
 

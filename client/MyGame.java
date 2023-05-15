@@ -85,6 +85,7 @@ public class MyGame extends VariableFrameRateGame {
 	private float vals[] = new float[16];
 	private boolean gameWon = false;
 	private boolean NPCisWalking = false;
+	private boolean ghostIsWalking = false;
 	private int blueScore, redScore, life;
 	private int npcLife = 5;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
@@ -179,7 +180,7 @@ public class MyGame extends VariableFrameRateGame {
 		riverWater.setLocalScale(new Matrix4f().scaling(500.0f, 0.0f, 500.0f));
 
 		// NPC setup
-		npc = new GameObject(GameObject.root(), avatarS, avatartx);
+		npc = new GameObject(GameObject.root(), npcS, avatartx);
 		npc.setLocalTranslation(new Matrix4f().translation(-500.0f, 0.0f, -500.0f));
 		npc.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(270.0f)));
@@ -467,6 +468,7 @@ public class MyGame extends VariableFrameRateGame {
 			Vector3f newPos = oldPos.add(mov.x(), mov.y(), mov.z());
 			npc.setLocalLocation(newPos);
 			npcS.playAnimation("WALKnpc", 0.5f, AnimatedShape.EndType.LOOP, 0);
+			npcS.updateAnimation();
 
 			// set npc to map height and rebuild physics object
 			mapHeight(npc);
@@ -524,7 +526,7 @@ public class MyGame extends VariableFrameRateGame {
 			Vector3f scoreColor = new Vector3f(0, 1, 0);
 			(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
 		}
-		if (blueScore >= 30) {
+		if (blueScore >= 5) {
 			walkingSound.pause();
 			runningSound.pause();
 			gameWon = true;
@@ -533,7 +535,7 @@ public class MyGame extends VariableFrameRateGame {
 			Vector3f startupColor = new Vector3f(0, 0, 1);
 			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.275f), (int) (height * 0.5f));
 		}
-		if (redScore >= 30) {
+		if (redScore >= 5) {
 			walkingSound.pause();
 			runningSound.pause();
 			gameWon = true;
@@ -1282,6 +1284,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void setNPCWalking(boolean newValue) {
 		NPCisWalking = newValue;
+	}
+
+	public void setGhostWalking(boolean newValue) {
+		ghostIsWalking = newValue;
 	}
 
 	public void setAvatarWalking(boolean newValue) {

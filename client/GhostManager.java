@@ -50,7 +50,7 @@ public class GhostManager {
 		}
 	}
 
-	private void removeGhostNPC(UUID id) {
+	public void removeGhostNPC(UUID id) {
 		GhostNPC ghostNPC = findNPC(id);
 		if (ghostNPC != null) {
 			game.getEngine().getSceneGraph().removeGameObject(ghostNPC);
