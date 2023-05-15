@@ -86,6 +86,7 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean gameWon = false;
 	private boolean NPCisWalking = false;
 	private int blueScore, redScore, life;
+	private int npcLife = 5;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
 	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
 
@@ -360,7 +361,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// --------------------- Physics Objects --------------------- //
 
-		buildNpc();
+		//buildNpc();
 		// buildAvatar();
 	}
 
@@ -383,8 +384,12 @@ public class MyGame extends VariableFrameRateGame {
 		}
 		if (!paused && !endGame) {
 
-			if(life == 0){
+			if (life == 0) {
 				respawnPlayer();
+			}
+
+			if (npcLife == 0){
+				respawnNPC();
 			}
 
 			// update time
@@ -451,7 +456,7 @@ public class MyGame extends VariableFrameRateGame {
 			// --------------------- PHYSICS LOGIC --------------------------//
 
 			// update npc physics objects
-			ps.removeObject(npcP.getUID());
+			//ps.removeObject(npcP.getUID());
 
 			// npc movement and animation
 			npc.lookAt(avatar.getLocalLocation());
@@ -465,8 +470,12 @@ public class MyGame extends VariableFrameRateGame {
 
 			// set npc to map height and rebuild physics object
 			mapHeight(npc);
-			buildNpc();
+			//buildNpc();
 			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
+
+			if(distanceTo(npc, avatar) <= npc.getScale()){
+				minusLife();
+			}
 
 			Matrix4f matrix = new Matrix4f();
 			Matrix4f rotMatrix = new Matrix4f();
@@ -474,6 +483,7 @@ public class MyGame extends VariableFrameRateGame {
 			Matrix4f identityMatrix = new Matrix4f().identity();
 			checkCollisions();
 			updateGhostPhysics(ghosts);
+			updateNPCphysics(npc);
 			// checkBulletDistances();
 			ps.update((float) elapsTime);
 			for (GameObject go : engine.getSceneGraph().getGameObjects()) {
@@ -535,8 +545,20 @@ public class MyGame extends VariableFrameRateGame {
 		// END Update
 	}// END VariableFrameRate Game Overrides
 
+	private void updateNPCphysics(GameObject n) {
+		if (npcP != null) {
+			ps.removeObject(npcP.getUID());
+		}
+		float[] psize = { 1.5f, 3f, 1.5f };
+		Matrix4f translation = new Matrix4f(npc.getLocalTranslation());
+		double[] tempTransform = toDoubleArray(translation.get(vals));
+		npcP = ps.addBoxObject(ps.nextUID(), 0.0f, tempTransform, psize);
+		npcP.setDamping(0f, 1f);
+		npc.setPhysicsObject(npcP);
+	}
+
 	private void respawnPlayer() {
-		if(team.compareTo("BLUE") == 0){
+		if (team.compareTo("BLUE") == 0) {
 			scriptFile2 = new File("assets/scripts/BlueSpawn.js");
 			jsEngine.put("rand", rand);
 			jsEngine.put("object", avatar);
@@ -555,6 +577,28 @@ public class MyGame extends VariableFrameRateGame {
 			updateBlueScore();
 		}
 		life = 5;
+	}
+
+	private void respawnNPC() {
+		if (team.compareTo("BLUE") == 0) {
+			scriptFile3 = new File("assets/scripts/RedSpawn.js");
+			jsEngine.put("rand", rand);
+			jsEngine.put("object", npc);
+			this.runScript(scriptFile3);
+			npc.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(90f)));
+			blueScore++;
+			updateBlueScore();
+			
+		} else {
+			scriptFile2 = new File("assets/scripts/BlueSpawn.js");
+			jsEngine.put("rand", rand);
+			jsEngine.put("object", npc);
+			this.runScript(scriptFile2);
+			npc.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(270f)));
+			redScore++;
+			updateRedScore();
+		}
+		npcLife = 5;
 	}
 
 	private void updateGhostPhysics(Vector<GhostAvatar> ga) {
@@ -602,6 +646,13 @@ public class MyGame extends VariableFrameRateGame {
 						laz = it1.next();
 						PhysicsObject lazP = laz.getPhysicsObject();
 						if (lazP.getUID() == obj1.getUID() || lazP.getUID() == obj2.getUID()) {
+							if (npcP.getUID() == obj1.getUID() || npcP.getUID() == obj2.getUID()){
+								System.out.println("npc hit");
+								ps.removeObject(lazP.getUID());
+								engine.getSceneGraph().removeGameObject(laz);
+								it1.remove();
+								minusNPCLife();
+							}
 							GhostAvatar ga;
 							Iterator<GhostAvatar> it2 = ghosts.iterator();
 							while (it2.hasNext()) {
@@ -634,6 +685,10 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	// ------------------------- KEY PRESSED ------------------------- //
+
+	private void minusNPCLife() {
+		npcLife--;
+	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -1022,10 +1077,10 @@ public class MyGame extends VariableFrameRateGame {
 	}
 
 	public void buildNpc() {
-		float[] psize = { 1f, 2f, 1f };
+		float[] psize = { 1.5f, 3f, 1.5f };
 		Matrix4f translation = new Matrix4f(npc.getLocalTranslation());
 		double[] tempTransform = toDoubleArray(translation.get(vals));
-		npcP = ps.addBoxObject(ps.nextUID(), 1.0f, tempTransform, psize);
+		npcP = ps.addBoxObject(ps.nextUID(), 0.0f, tempTransform, psize);
 		npcP.setDamping(0f, 1f);
 		npcP.setBounciness(1.0f);
 		npc.setPhysicsObject(npcP);
@@ -1251,6 +1306,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void setRedScore(String rs) {
 		redScore = Integer.parseInt(rs);
+	}
+
+	public void minusLife() {
+		life--;
 	}// END Getters & Setters
 
 	// -------------------------- SCRIPTING SECTION -------------------------- //
@@ -1278,9 +1337,5 @@ public class MyGame extends VariableFrameRateGame {
 		super.shutdown();
 		setIsConnected(false);
 		protClient.sendByeMessage();
-	}
-
-	public void minusLife() {
-		life--;
 	}
 }// END
