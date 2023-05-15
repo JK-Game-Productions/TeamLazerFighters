@@ -48,7 +48,7 @@ public class GhostManager {
 
 	private void removeGhostNPC(UUID id) {
 		GhostNPC ghostNPC = findNPC(id);
-		if(ghostNPC != null) {
+		if (ghostNPC != null) {
 			game.getEngine().getSceneGraph().removeGameObject(ghostNPC);
 			ghostNPCs.remove(ghostNPC);
 		} else {
@@ -71,20 +71,24 @@ public class GhostManager {
 	private GhostNPC findNPC(UUID id) {
 		GhostNPC ghostNPC;
 		Iterator<GhostNPC> it = ghostNPCs.iterator();
-		while(it.hasNext()) {
+		while (it.hasNext()) {
 			ghostNPC = it.next();
-			if(ghostNPC.getNPCid().compareTo(id) == 0) {
+			if (ghostNPC.getNPCid().compareTo(id) == 0) {
 				return ghostNPC;
 			}
 		}
 		return null;
 	}
 
-	public void updateGhostAvatar(UUID id, Vector3f position, Matrix4f rotation) {
+	public void updateGhostAvatar(UUID id, Vector3f position, Matrix4f rotation, String team) {
 		GhostAvatar ghostAvatar = findAvatar(id);
 		if (ghostAvatar != null) {
 			ghostAvatar.setPosition(position);
 			ghostAvatar.setRotation(rotation);
+			if (team.compareTo("BLUE") == 0)
+				ghostAvatar.setTeam(game.getBlueTeam());
+			else
+				ghostAvatar.setTeam(game.getRedTeam());
 		} else {
 			System.out.println("tried to update ghost avatar position, but unable to find ghost in list");
 		}
@@ -92,7 +96,7 @@ public class GhostManager {
 
 	public void updateGhostNPC(UUID id, Vector3f pos) {
 		GhostNPC ghostNPC = findNPC(id);
-		if(ghostNPC != null) {
+		if (ghostNPC != null) {
 			ghostNPC.setPosition(pos);
 		} else {
 			System.out.println("tried to update ghost NPC position, but unable to find ghost in list");
@@ -106,4 +110,5 @@ public class GhostManager {
 	public Vector<GhostNPC> getGhostNPCs() {
 		return ghostNPCs;
 	}
+
 }

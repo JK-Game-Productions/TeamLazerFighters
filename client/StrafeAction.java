@@ -45,6 +45,6 @@ public class StrafeAction extends AbstractInputAction {
             newPos = oldPos.sub(mov.x(), mov.y(), mov.z());
         }
         avatar.setLocalLocation(newPos);
-        game.getProtocolClient().sendMoveMessage(newPos, avatar.getLocalRotation());
+        game.getProtocolClient().sendMoveMessage(newPos, avatar.getLocalRotation(), game.getTeam());
     }
 }

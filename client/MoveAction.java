@@ -95,6 +95,6 @@ public class MoveAction extends AbstractInputAction {
        // game.mapHeight(avatar);
         avatar.setLocalLocation(newPos);
         //game.buildAvatar();
-        game.getProtocolClient().sendMoveMessage(newPos, avatar.getWorldRotation());
+        game.getProtocolClient().sendMoveMessage(newPos, avatar.getWorldRotation(), game.getTeam());
     }
 }

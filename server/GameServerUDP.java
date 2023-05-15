@@ -128,7 +128,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 					messageTokens[5], messageTokens[6], messageTokens[7], messageTokens[8],
 					messageTokens[9], messageTokens[10], messageTokens[11], messageTokens[12],
 					messageTokens[13], messageTokens[14], messageTokens[15], messageTokens[16],
-					messageTokens[17], messageTokens[18], messageTokens[19], messageTokens[20] };
+					messageTokens[17], messageTokens[18], messageTokens[19], messageTokens[20], messageTokens[21] };
 				sendMoveMessages(clientID, posRot);
 			}
 
@@ -365,6 +365,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			message += "," + position[16];
 			message += "," + position[17];
 			message += "," + position[18];
+			message += "," + position[19];
 			forwardPacketToAll(message, clientID);
 		} catch (IOException e) {
 			e.printStackTrace();

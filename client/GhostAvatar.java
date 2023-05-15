@@ -36,4 +36,12 @@ public class GhostAvatar extends GameObject {
 	public Vector3f getPosition() {
 		return getWorldLocation();
 	}
+
+    public void setTeam(TextureImage Team) {
+		setTextureImage(Team);
+    }
+
+	public TextureImage getTeam() {
+		return getTextureImage();
+	}
 }

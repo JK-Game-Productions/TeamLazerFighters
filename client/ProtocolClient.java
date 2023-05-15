@@ -158,7 +158,8 @@ public class ProtocolClient extends GameConnectionClient {
 						Float.parseFloat(messageTokens[18]),
 						Float.parseFloat(messageTokens[19]),
 						Float.parseFloat(messageTokens[20]));
-				ghostManager.updateGhostAvatar(ghostID, ghostPosition, ghostRotation);
+				String team = messageTokens[21];
+				ghostManager.updateGhostAvatar(ghostID, ghostPosition, ghostRotation, team);
 			}
 
 			// more additions to the network protocol to handle ghosts:
@@ -355,7 +356,7 @@ public class ProtocolClient extends GameConnectionClient {
 	// Message Format: (move,localId,x,y,z) where x, y, and z represent the
 	// position.
 
-	public void sendMoveMessage(Vector3f position, Matrix4f rotation) {
+	public void sendMoveMessage(Vector3f position, Matrix4f rotation, String team) {
 		try {
 			String message = new String("move," + id.toString());
 			message += "," + position.x();
@@ -377,6 +378,7 @@ public class ProtocolClient extends GameConnectionClient {
 			message += "," + rotation.m31();
 			message += "," + rotation.m32();
 			message += "," + rotation.m33();
+			message += "," + team;
 
 			sendPacket(message);
 		} catch (IOException e) {

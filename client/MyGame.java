@@ -447,9 +447,9 @@ public class MyGame extends VariableFrameRateGame {
 			// update animation
 			avatarS.updateAnimation();
 			npcS.updateAnimation();
-			
+
 			// --------------------- PHYSICS LOGIC --------------------------//
-			
+
 			// update npc physics objects
 			ps.removeObject(npcP.getUID());
 			npc.lookAt(avatar.getLocalLocation());
@@ -457,7 +457,7 @@ public class MyGame extends VariableFrameRateGame {
 			mapHeight(npc);
 			buildNpc();
 			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
-			
+
 			// if(running){
 			Matrix4f matrix = new Matrix4f();
 			Matrix4f rotMatrix = new Matrix4f();
@@ -560,14 +560,20 @@ public class MyGame extends VariableFrameRateGame {
 									engine.getSceneGraph().removeGameObject(laz);
 									it1.remove();
 									if (team.equals("BLUE")) {
-										blueScore++;
-										updateBlueScore();
+										if (ga.getTeam().equals(getRedTeam())) {
+											blueScore++;
+											updateBlueScore();
+											score++;
+										}
 									}
 									if (team.equals("RED")) {
-										redScore++;
-										updateRedScore();
+										if (ga.getTeam().equals(getBlueTeam())) {
+											redScore++;
+											updateRedScore();
+											score++;
+										}
 									}
-									score++;
+
 								}
 							}
 						}
@@ -578,7 +584,6 @@ public class MyGame extends VariableFrameRateGame {
 			}
 		}
 	}
-
 
 	// ------------------------- KEY PRESSED ------------------------- //
 
@@ -720,10 +725,10 @@ public class MyGame extends VariableFrameRateGame {
 			float mouseDeltaX = prevMouseX - curMouseX;
 			float mouseDeltaY = prevMouseY - curMouseY;
 
-			avatar.gyaw(getFrameDiff()/2, mouseDeltaX);
+			avatar.gyaw(getFrameDiff() / 2, mouseDeltaX);
 			// camMain.yaw(mouseDeltaX);
 			avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
-			protClient.sendMoveMessage(avatar.getWorldLocation(), avatar.getWorldRotation());
+			protClient.sendMoveMessage(avatar.getWorldLocation(), avatar.getWorldRotation(), team);
 			prevMouseX = curMouseX;
 			prevMouseY = curMouseY;
 			recenterMouse();
@@ -869,7 +874,6 @@ public class MyGame extends VariableFrameRateGame {
 	public Matrix4f getPlayerRotation() {
 		return avatar.getWorldRotation();
 	}
-
 
 	public ProtocolClient getProtocolClient() {
 		return protClient;
@@ -1205,5 +1209,17 @@ public class MyGame extends VariableFrameRateGame {
 		super.shutdown();
 		setIsConnected(false);
 		protClient.sendByeMessage();
+	}
+
+	public TextureImage getBlueTeam() {
+		return avatartxBlue;
+	}
+
+	public TextureImage getRedTeam() {
+		return avatartxRed;
+	}
+
+	public String getTeam() {
+		return team;
 	}
 }// END
