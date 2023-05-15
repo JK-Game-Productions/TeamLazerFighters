@@ -85,6 +85,7 @@ public class MyGame extends VariableFrameRateGame {
 	private float vals[] = new float[16];
 	private boolean gameWon = false;
 	private boolean NPCisWalking = false;
+	private boolean ghostIsWalking = false;
 	private int score, blueScore, redScore;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
 	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
@@ -178,7 +179,7 @@ public class MyGame extends VariableFrameRateGame {
 		riverWater.setLocalScale(new Matrix4f().scaling(500.0f, 0.0f, 500.0f));
 
 		// NPC setup
-		npc = new GameObject(GameObject.root(), avatarS, avatartx);
+		npc = new GameObject(GameObject.root(), npcS, avatartx);
 		npc.setLocalTranslation(new Matrix4f().translation(-500.0f, 0.0f, -500.0f));
 		npc.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(270.0f)));
@@ -458,6 +459,7 @@ public class MyGame extends VariableFrameRateGame {
 			Vector3f newPos = oldPos.add(mov.x(), mov.y(), mov.z());
 			npc.setLocalLocation(newPos);
 			npcS.playAnimation("WALKnpc", 0.5f, AnimatedShape.EndType.LOOP, 0);
+			npcS.updateAnimation();
 
 			// set npc to map height and rebuild physics object
 			mapHeight(npc);
@@ -1201,6 +1203,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void setNPCWalking(boolean newValue) {
 		NPCisWalking = newValue;
+	}
+
+	public void setGhostWalking(boolean newValue) {
+		ghostIsWalking = newValue;
 	}
 
 	public void setAvatarWalking(boolean newValue) {

@@ -112,11 +112,11 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			if (messageTokens[0].compareTo("dsfr") == 0) {
 				UUID clientID = UUID.fromString(messageTokens[1]);
 				UUID remoteID = UUID.fromString(messageTokens[2]);
-				String[] posRot = { messageTokens[3], messageTokens[4], messageTokens[5], 
-					messageTokens[6], messageTokens[7], messageTokens[8],messageTokens[9], 
-					messageTokens[10], messageTokens[11], messageTokens[12],messageTokens[13], 
-					messageTokens[14], messageTokens[15], messageTokens[16],messageTokens[17], 
-					messageTokens[18], messageTokens[19], messageTokens[20], messageTokens[21] };
+				String[] posRot = { messageTokens[3], messageTokens[4], messageTokens[5],
+						messageTokens[6], messageTokens[7], messageTokens[8], messageTokens[9],
+						messageTokens[10], messageTokens[11], messageTokens[12], messageTokens[13],
+						messageTokens[14], messageTokens[15], messageTokens[16], messageTokens[17],
+						messageTokens[18], messageTokens[19], messageTokens[20], messageTokens[21] };
 				sendDetailsForMessage(clientID, remoteID, posRot);
 			}
 
@@ -125,10 +125,10 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			if (messageTokens[0].compareTo("move") == 0) {
 				UUID clientID = UUID.fromString(messageTokens[1]);
 				String[] posRot = { messageTokens[2], messageTokens[3], messageTokens[4],
-					messageTokens[5], messageTokens[6], messageTokens[7], messageTokens[8],
-					messageTokens[9], messageTokens[10], messageTokens[11], messageTokens[12],
-					messageTokens[13], messageTokens[14], messageTokens[15], messageTokens[16],
-					messageTokens[17], messageTokens[18], messageTokens[19], messageTokens[20], messageTokens[21] };
+						messageTokens[5], messageTokens[6], messageTokens[7], messageTokens[8],
+						messageTokens[9], messageTokens[10], messageTokens[11], messageTokens[12],
+						messageTokens[13], messageTokens[14], messageTokens[15], messageTokens[16],
+						messageTokens[17], messageTokens[18], messageTokens[19], messageTokens[20], messageTokens[21] };
 				sendMoveMessages(clientID, posRot);
 			}
 
