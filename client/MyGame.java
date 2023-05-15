@@ -456,11 +456,6 @@ public class MyGame extends VariableFrameRateGame {
 			mapHeight(npc);
 			buildNpc();
 
-			// trying to get npc to move
-			npc.lookAt(avatar.getLocalLocation());
-			npc.move((float) frameDiff);
-			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
-
 			// if(running){
 			Matrix4f matrix = new Matrix4f();
 			Matrix4f rotMatrix = new Matrix4f();
@@ -484,6 +479,11 @@ public class MyGame extends VariableFrameRateGame {
 			}
 			// update static objects
 			mapHeight(water);
+
+			// trying to get npc to move
+			npc.lookAt(avatar.getLocalLocation());
+			npc.move((float) frameDiff);
+			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
 		}
 		// END if statement for game not paused
 
