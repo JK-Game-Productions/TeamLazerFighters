@@ -30,7 +30,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 
 	public void sendNPCinfo(UUID clientID) {
 		try {
-			String message = new String("mnpc" + clientID.toString());
+			String message = new String("mnpc," + clientID.toString());
 			message += "," + (npcCtrl.getNPC()).getX();
 			message += "," + (npcCtrl.getNPC()).getY();
 			message += "," + (npcCtrl.getNPC()).getZ();
@@ -44,7 +44,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 
 	public void sendNPCstart(UUID clientID) {
 		try {
-			String message = new String("createNPC" + clientID.toString());
+			String message = new String("createNPC," + clientID.toString());
 			message += "," + (npcCtrl.getNPC()).getX();
 			message += "," + (npcCtrl.getNPC()).getY();
 			message += "," + (npcCtrl.getNPC()).getZ();
@@ -52,15 +52,6 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			sendPacketToAll(message);
 		} catch (IOException e) {
 			System.out.println("couldn't send msg");
-			e.printStackTrace();
-		}
-	}
-
-	public void sendWantClientIDmsg() {
-		try {
-			String message = new String("getID");
-			sendPacketToAll(message);
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -147,6 +138,14 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				handleNearTiming(clientID);
 			}
 
+			// MOVE NPC --- Case where server receives a move NPC message
+			// Received Message Format: (mnpc,localId,x,y,z)
+			if (messageTokens[0].compareTo("mnpc") == 0) {
+				UUID clientID = UUID.fromString(messageTokens[1]);
+				String[] pos = { messageTokens[2], messageTokens[3], messageTokens[4] };
+				sendMoveNPCMessages(clientID, pos);
+			}
+
 			if(messageTokens[0].compareTo("bsUpdate") == 0){
 				String blueScore = messageTokens[1];
 				sendBlueScore(blueScore);
@@ -159,6 +158,19 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 	}
 
 	// ----------------- SENDING NPC MESSAGES ----------------- //
+
+	// send client npc location
+	public void sendMoveNPCMessages(UUID clientID, String[] position) {
+		try {
+			String message = new String("mnpc," + clientID.toString());
+			message += "," + position[0];
+			message += "," + position[1];
+			message += "," + position[2];
+			forwardPacketToAll(message, clientID);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	// Informs clients of the whereabouts of the NPCs.
 	public void sendCreateNPCmsg(UUID clientID, String[] position) {

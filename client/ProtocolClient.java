@@ -156,14 +156,18 @@ public class ProtocolClient extends GameConnectionClient {
 				// call method that checks if avatar is near to npc??
 			}
 
-			if (messageTokens[0].compareTo("mnpc") == 0) { // move npc??
-				// Parse out the position
+			// Handle MOVE NPC message
+			// Format: (mnpc,remoteId,x,y,z)
+			if (messageTokens[0].compareTo("mnpc") == 0) {
+				// move a ghost avatar
+				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
+
+				// Parse out the position into a Vector3f
 				Vector3f ghostPosition = new Vector3f(
 						Float.parseFloat(messageTokens[2]),
 						Float.parseFloat(messageTokens[3]),
 						Float.parseFloat(messageTokens[4]));
-				System.out.println("moving npc");
 				ghostManager.updateGhostNPC(ghostID, ghostPosition);
 			}
 
@@ -183,6 +187,21 @@ public class ProtocolClient extends GameConnectionClient {
 	public void sendNPCNearMessage(UUID ghostID) {
 		try {
 			sendPacket(new String("isnear," + ghostID.toString()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// send npc location info
+
+	public void sendMoveNPCMessage(Vector3f position) {
+		try {
+			String message = new String("mnpc," + id.toString());
+			message += "," + position.x();
+			message += "," + position.y();
+			message += "," + position.z();
+
+			sendPacket(message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
