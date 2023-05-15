@@ -134,7 +134,7 @@ public class MyGame extends VariableFrameRateGame {
 		avatarS = new AnimatedShape("man5.rkm", "man5.rks");
 		avatarS.loadAnimation("WALK", "man5.rka");
 		npcS = new AnimatedShape("man5.rkm", "man5.rks");
-		npcS.loadAnimation("WALK", "man5.rka");
+		npcS.loadAnimation("WALKnpc", "man5.rka");
 		lazergunS = new ImportedModel("lazergun.obj");
 		lazerS = new Sphere();
 		riverS = new Cube();
@@ -437,26 +437,27 @@ public class MyGame extends VariableFrameRateGame {
 			walkingSound.setLocation(avatar.getWorldLocation());
 			setEarParameters();
 
-			// process the networking functions
-			processNetworking((float) elapsTime);
-
 			// show/hide mouse logic
 			checkMouse();
 			// setMouseVisible(false);
 
 			// update animation
 			avatarS.updateAnimation();
-			npcS.updateAnimation();
 
 			// --------------------- PHYSICS LOGIC --------------------------//
 
 			// update npc physics objects
 			ps.removeObject(npcP.getUID());
 
+			// npc movement and animation
+			npc.move((float) elapsTime * 2);
+			// npcS.updateAnimation();
+			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
+
+			// set npc to map height and rebuild physics object
 			mapHeight(npc);
 			buildNpc();
 
-			// if(running){
 			Matrix4f matrix = new Matrix4f();
 			Matrix4f rotMatrix = new Matrix4f();
 			AxisAngle4f aAngle = new AxisAngle4f();
@@ -480,10 +481,11 @@ public class MyGame extends VariableFrameRateGame {
 			// update static objects
 			mapHeight(water);
 
-			// trying to get npc to move
+			// npc look at avatar
 			npc.lookAt(avatar.getLocalLocation());
-			npc.move((float) frameDiff);
-			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
+
+			// process the networking functions
+			processNetworking((float) elapsTime);
 		}
 		// END if statement for game not paused
 
@@ -579,7 +581,6 @@ public class MyGame extends VariableFrameRateGame {
 			}
 		}
 	}
-
 
 	// ------------------------- KEY PRESSED ------------------------- //
 

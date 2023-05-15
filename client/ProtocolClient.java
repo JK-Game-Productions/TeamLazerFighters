@@ -125,6 +125,7 @@ public class ProtocolClient extends GameConnectionClient {
 						Float.parseFloat(messageTokens[3]),
 						Float.parseFloat(messageTokens[4]));
 				ghostManager.updateGhostAvatar(ghostID, ghostPosition);
+				// game.setAvatarWalking(true);
 			}
 
 			// more additions to the network protocol to handle ghosts:
