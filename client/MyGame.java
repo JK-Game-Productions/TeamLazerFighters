@@ -559,9 +559,11 @@ public class MyGame extends VariableFrameRateGame {
 									it1.remove();
 									if (team.equals("BLUE")) {
 										blueScore++;
+										updateBlueScore();
 									}
 									if (team.equals("RED")) {
 										redScore++;
+										updateRedScore();
 									}
 									score++;
 								}
@@ -575,24 +577,6 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	}
 
-	private void checkBulletDistances() {
-		for (int i = 0; i < lazers.size(); i++) {
-			GameObject laz = lazers.get(i);
-			if (distanceTo(laz, npc) <= 1.0f) {
-				ps.removeObject(laz.getPhysicsObject().getUID());
-				engine.getSceneGraph().removeGameObject(laz);
-				lazers.remove(i);
-				if (team.equals("BLUE")) {
-					blueScore++;
-				}
-				if (team.equals("RED")) {
-					redScore++;
-				}
-				score++;
-				System.out.println("Hit");
-			}
-		}
-	}
 
 	// ------------------------- KEY PRESSED ------------------------- //
 
@@ -888,6 +872,14 @@ public class MyGame extends VariableFrameRateGame {
 		this.isClientConnected = value;
 	}
 
+	private void updateBlueScore() {
+		protClient.sendBlueScore(blueScore);
+	}
+
+	private void updateRedScore() {
+		protClient.sendRedScore(redScore);
+	}
+
 	public class SendCloseConnectionPacketAction extends AbstractInputAction {
 
 		@Override
@@ -1158,6 +1150,14 @@ public class MyGame extends VariableFrameRateGame {
 
 	public void setMouseVisible(boolean newValue) {
 		mouseVisible = newValue;
+	}
+
+	public void setBlueScore(String bs) {
+		blueScore = Integer.parseInt(bs);
+	}
+
+	public void setRedScore(String rs) {
+		redScore = Integer.parseInt(rs);
 	}// END Getters & Setters
 
 	// -------------------------- SCRIPTING SECTION -------------------------- //

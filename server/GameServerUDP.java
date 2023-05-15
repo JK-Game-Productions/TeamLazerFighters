@@ -147,6 +147,14 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				handleNearTiming(clientID);
 			}
 
+			if(messageTokens[0].compareTo("bsUpdate") == 0){
+				String blueScore = messageTokens[1];
+				sendBlueScore(blueScore);
+			}
+			if(messageTokens[0].compareTo("rsUpdate") == 0) {
+				String redScore = messageTokens[1];
+				sendRedScore(redScore);
+			}
 		}
 	}
 
@@ -286,6 +294,22 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			message += "," + position[1];
 			message += "," + position[2];
 			forwardPacketToAll(message, clientID);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	public void sendBlueScore(String bs) {
+		try {
+			String message = new String("bsUpdate,"+ bs);
+			sendPacketToAll(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	private void sendRedScore(String rs) {
+		try {
+			String message = new String("rsUpdate,"+ rs);
+			sendPacketToAll(message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -166,6 +166,16 @@ public class ProtocolClient extends GameConnectionClient {
 				System.out.println("moving npc");
 				ghostManager.updateGhostNPC(ghostID, ghostPosition);
 			}
+
+			if (messageTokens[0].compareTo("bsUpdate") == 0) {
+				String blueScore = messageTokens[1];
+				game.setBlueScore(blueScore);
+			}
+
+			if (messageTokens[0].compareTo("rsUpdate") == 0) {
+				String redScore = messageTokens[1];
+				game.setRedScore(redScore);
+			}
 		}
 	}
 
@@ -275,5 +285,24 @@ public class ProtocolClient extends GameConnectionClient {
 
 	public Vector3f getAvLocation() {
 		return game.getPlayerPosition();
+	}
+
+	public void sendBlueScore(int blueScore) {
+		try {
+			String message = new String("bsUpdate," + blueScore);
+			sendPacket(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void sendRedScore(int redScore) {
+		try {
+			String message = new String("rsUpdate," + redScore);
+			sendPacket(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
