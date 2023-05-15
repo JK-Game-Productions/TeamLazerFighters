@@ -516,7 +516,7 @@ public class MyGame extends VariableFrameRateGame {
 			Vector3f scoreColor = new Vector3f(0, 1, 0);
 			(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
 		}
-		if (blueScore >= 30) {
+		if (blueScore >= 5) {
 			walkingSound.pause();
 			runningSound.pause();
 			gameWon = true;
@@ -525,7 +525,7 @@ public class MyGame extends VariableFrameRateGame {
 			Vector3f startupColor = new Vector3f(0, 0, 1);
 			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.275f), (int) (height * 0.5f));
 		}
-		if (redScore >= 30) {
+		if (redScore >= 5) {
 			walkingSound.pause();
 			runningSound.pause();
 			gameWon = true;
