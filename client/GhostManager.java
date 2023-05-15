@@ -24,6 +24,8 @@ public class GhostManager {
 		GhostAvatar newAvatar = new GhostAvatar(id, s, t, position, rotation);
 		Matrix4f initialScale = (new Matrix4f()).scaling(0.43f);// 0.25
 		newAvatar.setLocalScale(initialScale);
+		newAvatar.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(270.0f)));
 		ghostAvatars.add(newAvatar);
 	}
 
@@ -33,6 +35,8 @@ public class GhostManager {
 		TextureImage t = game.getGhostTexture();
 		GhostNPC newNPC = new GhostNPC(id, s, t, pos);
 		newNPC.setLocalScale(new Matrix4f().scaling(.43f));
+		newNPC.getRenderStates().setModelOrientationCorrection(
+				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(180.0f)));
 		ghostNPCs.add(newNPC);
 	}
 
