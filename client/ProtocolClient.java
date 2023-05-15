@@ -141,10 +141,6 @@ public class ProtocolClient extends GameConnectionClient {
 						Float.parseFloat(messageTokens[2]),
 						Float.parseFloat(messageTokens[3]),
 						Float.parseFloat(messageTokens[4]));
-<<<<<<< HEAD
-				ghostManager.updateGhostAvatar(ghostID, ghostPosition);
-				// game.setAvatarWalking(true);
-=======
 				Matrix4f ghostRotation = new Matrix4f(
 						Float.parseFloat(messageTokens[5]),
 						Float.parseFloat(messageTokens[6]),
@@ -163,7 +159,6 @@ public class ProtocolClient extends GameConnectionClient {
 						Float.parseFloat(messageTokens[19]),
 						Float.parseFloat(messageTokens[20]));
 				ghostManager.updateGhostAvatar(ghostID, ghostPosition, ghostRotation);
->>>>>>> 6ee07e4a2d278a981973d66a965ace18b31d915d
 			}
 
 			// more additions to the network protocol to handle ghosts:

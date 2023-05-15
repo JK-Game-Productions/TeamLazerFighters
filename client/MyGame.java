@@ -402,8 +402,9 @@ public class MyGame extends VariableFrameRateGame {
 
 			// update lazergun position and aim
 			lazergun.applyParentRotationToPosition(true);
-			if (lazergunAimed) { // -0.217f, 0.8f, 0.9f
-				lazergun.setLocalTranslation(new Matrix4f().translation(-0.23f, 1.06f, 0.85f));
+			if (lazergunAimed) { // -0.217f, 1.06f, 0.85f
+				lazergun.setLocalTranslation(new Matrix4f().translation(-0.217f, 1.1f, 1.58f));
+				scopeCam();
 			} else {
 				lazergun.setLocalTranslation(new Matrix4f().translation(-0.4f, 1.06f, 0.9f));
 			}
@@ -439,7 +440,6 @@ public class MyGame extends VariableFrameRateGame {
 
 			// show/hide mouse logic
 			checkMouse();
-			// setMouseVisible(false);
 
 			// update animation
 			avatarS.updateAnimation();
@@ -448,12 +448,15 @@ public class MyGame extends VariableFrameRateGame {
 
 			// update npc physics objects
 			ps.removeObject(npcP.getUID());
-			npc.lookAt(avatar.getLocalLocation());
-			npc.move((float) frameDiff * 3.0f);
+
 			// npc movement and animation
-			npc.move((float) elapsTime * 2);
-			// npcS.updateAnimation();
-			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
+			npc.lookAt(avatar.getLocalLocation());
+			Vector3f oldPos = npc.getWorldLocation();
+			Vector4f mov = new Vector4f(0f, 0f, 1f, 1f);
+			mov.mul(npc.getWorldRotation());
+			mov.mul((float) (3.0f * frameDiff));
+			Vector3f newPos = oldPos.add(mov.x(), mov.y(), mov.z());
+			npc.setLocalLocation(newPos);
 
 			// set npc to map height and rebuild physics object
 			mapHeight(npc);
@@ -483,10 +486,8 @@ public class MyGame extends VariableFrameRateGame {
 			// update static objects
 			mapHeight(water);
 
-			// trying to get npc to move
 			// npc look at avatar
 			npc.lookAt(avatar.getLocalLocation());
-
 			// process the networking functions
 			processNetworking((float) elapsTime);
 		}
@@ -502,12 +503,11 @@ public class MyGame extends VariableFrameRateGame {
 			startupStr = "Blue Team: " + blueScore + " || " + "Red Team: " + redScore;
 			Vector3f startupColor = new Vector3f(1, .25f, 1);
 			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.45f), (int) (height * 0.9f)); // 1080
+
+			String scoreStr = "Score: " + Integer.toString(score);
+			Vector3f scoreColor = new Vector3f(0, 1, 0);
+			(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
 		}
-
-		String scoreStr = "Score: " + Integer.toString(score);
-		Vector3f scoreColor = new Vector3f(0, 1, 0);
-		(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
-
 		// END Update
 	}// END VariableFrameRate Game Overrides
 
@@ -1031,6 +1031,16 @@ public class MyGame extends VariableFrameRateGame {
 		camMain.setN(avatar.getWorldForwardVector());
 		location.add(camMain.getV().mul(1.2f));
 		location.add(camMain.getN().mul(.3f));
+		camMain.setLocation(location);
+	}
+
+	private void scopeCam() {
+		Vector3f location = avatar.getWorldLocation();
+		camMain.setU(avatar.getWorldRightVector());
+		camMain.setV(avatar.getWorldUpVector());
+		camMain.setN(avatar.getWorldForwardVector());
+		location.add(camMain.getV().mul(1.2f));
+		location.add(camMain.getN().mul(1.6f));
 		camMain.setLocation(location);
 	}
 
