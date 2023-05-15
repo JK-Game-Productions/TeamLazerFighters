@@ -1,5 +1,5 @@
 var moveSpeed = 3.0;
-var score = 0;
+var life = 5;
 var blueScore = 0;
 var redScore = 0;
 var elapsTime = 0.0;

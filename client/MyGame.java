@@ -86,7 +86,7 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean gameWon = false;
 	private boolean NPCisWalking = false;
 	private boolean ghostIsWalking = false;
-	private int score, blueScore, redScore;
+	private int blueScore, redScore, life;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
 	private float curMouseX, curMouseY, prevMouseX, prevMouseY, centerX, centerY;
 
@@ -270,7 +270,7 @@ public class MyGame extends VariableFrameRateGame {
 		scriptFile1 = new File("assets/scripts/GameParams.js");
 		this.runScript(scriptFile1);
 		moveSpeed = Float.parseFloat(jsEngine.get("moveSpeed").toString());
-		score = ((int) jsEngine.get("score"));
+		life = ((int) jsEngine.get("life"));
 		blueScore = ((int) jsEngine.get("blueScore"));
 		redScore = ((int) jsEngine.get("redScore"));
 		elapsTime = ((double) jsEngine.get("elapsTime"));
@@ -383,6 +383,10 @@ public class MyGame extends VariableFrameRateGame {
 			positionCameraAboveMap();
 		}
 		if (!paused && !endGame) {
+
+			if (life == 0) {
+				respawnPlayer();
+			}
 
 			// update time
 			elapsTime += frameDiff;
@@ -508,7 +512,7 @@ public class MyGame extends VariableFrameRateGame {
 			Vector3f startupColor = new Vector3f(1, .25f, 1);
 			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.45f), (int) (height * 0.9f)); // 1080
 
-			String scoreStr = "Score: " + Integer.toString(score);
+			String scoreStr = "Life Points: " + Integer.toString(life);
 			Vector3f scoreColor = new Vector3f(0, 1, 0);
 			(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
 		}
@@ -532,6 +536,28 @@ public class MyGame extends VariableFrameRateGame {
 		}
 		// END Update
 	}// END VariableFrameRate Game Overrides
+
+	private void respawnPlayer() {
+		if (team.compareTo("BLUE") == 0) {
+			scriptFile2 = new File("assets/scripts/BlueSpawn.js");
+			jsEngine.put("rand", rand);
+			jsEngine.put("object", avatar);
+			this.runScript(scriptFile2);
+			avatar.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(270f)));
+			redScore++;
+			updateRedScore();
+
+		} else {
+			scriptFile3 = new File("assets/scripts/RedSpawn.js");
+			jsEngine.put("rand", rand);
+			jsEngine.put("object", avatar);
+			this.runScript(scriptFile3);
+			avatar.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(90f)));
+			blueScore++;
+			updateBlueScore();
+		}
+		life = 5;
+	}
 
 	private void updateGhostPhysics(Vector<GhostAvatar> ga) {
 		GhostAvatar ghostAvatar;
@@ -589,16 +615,12 @@ public class MyGame extends VariableFrameRateGame {
 									it1.remove();
 									if (team.equals("BLUE")) {
 										if (ga.getTeam().equals(getRedTeam())) {
-											blueScore++;
-											updateBlueScore();
-											score++;
+											updateLife(ga);
 										}
 									}
 									if (team.equals("RED")) {
 										if (ga.getTeam().equals(getBlueTeam())) {
-											redScore++;
-											updateRedScore();
-											score++;
+											updateLife(ga);
 										}
 									}
 
@@ -913,6 +935,10 @@ public class MyGame extends VariableFrameRateGame {
 
 	private void updateRedScore() {
 		protClient.sendRedScore(redScore);
+	}
+
+	private void updateLife(GhostAvatar ga) {
+		protClient.updateGhostLife(ga.getID());
 	}
 
 	public class SendCloseConnectionPacketAction extends AbstractInputAction {
@@ -1260,4 +1286,7 @@ public class MyGame extends VariableFrameRateGame {
 		protClient.sendByeMessage();
 	}
 
+	public void minusLife() {
+		life--;
+	}
 }// END

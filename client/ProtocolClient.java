@@ -218,6 +218,9 @@ public class ProtocolClient extends GameConnectionClient {
 				String redScore = messageTokens[1];
 				game.setRedScore(redScore);
 			}
+			if (messageTokens[0].compareTo("lifeUpdate") == 0) {
+				game.minusLife();
+			}
 		}
 	}
 
@@ -411,4 +414,13 @@ public class ProtocolClient extends GameConnectionClient {
 			e.printStackTrace();
 		}
 	}
+
+    public void updateGhostLife(UUID ghostId) {
+		try {
+			String message = new String("lifeUpdate," + ghostId.toString());
+			sendPacket(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
 }
