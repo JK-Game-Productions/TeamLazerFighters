@@ -154,7 +154,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 	// send client npc location
 	public void sendMoveNPCMessages(UUID clientID, String[] position) {
 		try {
-			String message = new String("move," + clientID.toString());
+			String message = new String("mnpc," + clientID.toString());
 			message += "," + position[0];
 			message += "," + position[1];
 			message += "," + position[2];

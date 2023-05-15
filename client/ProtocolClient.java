@@ -182,6 +182,21 @@ public class ProtocolClient extends GameConnectionClient {
 		}
 	}
 
+	// send npc location info
+
+	public void sendMoveNPCMessage(Vector3f position) {
+		try {
+			String message = new String("mnpc," + id.toString());
+			message += "," + position.x();
+			message += "," + position.y();
+			message += "," + position.z();
+
+			sendPacket(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	// send need NPC message
 	public void sendNeedNPCmsg(UUID clientID, Vector3f position) {
 		try {

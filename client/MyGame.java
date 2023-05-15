@@ -448,15 +448,18 @@ public class MyGame extends VariableFrameRateGame {
 			avatarS.updateAnimation();
 			npcS.updateAnimation();
 
-			// -------------------- game logic ------------------- //
-
 			// --------------------- PHYSICS LOGIC --------------------------//
 
 			// update npc physics objects
 			ps.removeObject(npcP.getUID());
-			// move graphic objects
+
 			mapHeight(npc);
 			buildNpc();
+
+			// trying to get npc to move
+			npc.lookAt(avatar.getLocalLocation());
+			npc.move((float) frameDiff);
+			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
 
 			// if(running){
 			Matrix4f matrix = new Matrix4f();
@@ -481,10 +484,6 @@ public class MyGame extends VariableFrameRateGame {
 			}
 			// update static objects
 			mapHeight(water);
-
-			// trying to get npc to move
-			npc.lookAt(avatar.getLocalLocation());
-			npc.move((float) frameDiff);
 		}
 		// END if statement for game not paused
 
@@ -842,7 +841,7 @@ public class MyGame extends VariableFrameRateGame {
 		setEarParameters();
 		riverSound.play();
 		birdSounds.play();
-		// song.play();
+		song.play();
 	}
 
 	public void setEarParameters() {
