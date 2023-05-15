@@ -96,8 +96,12 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			// Received Message Format: (create,localId,x,y,z)
 			if (messageTokens[0].compareTo("create") == 0) {
 				UUID clientID = UUID.fromString(messageTokens[1]);
-				String[] pos = { messageTokens[2], messageTokens[3], messageTokens[4] };
-				sendCreateMessages(clientID, pos);
+				String[] posRot = { messageTokens[2], messageTokens[3], messageTokens[4],
+						messageTokens[5], messageTokens[6], messageTokens[7], messageTokens[8],
+						messageTokens[9], messageTokens[10], messageTokens[11], messageTokens[12],
+						messageTokens[13], messageTokens[14], messageTokens[15], messageTokens[16],
+						messageTokens[17], messageTokens[18], messageTokens[19], messageTokens[20] };
+				sendCreateMessages(clientID, posRot);
 				sendWantsDetailsMessages(clientID);
 
 				sendNPCstart(clientID);// need this in the create call
@@ -108,16 +112,24 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			if (messageTokens[0].compareTo("dsfr") == 0) {
 				UUID clientID = UUID.fromString(messageTokens[1]);
 				UUID remoteID = UUID.fromString(messageTokens[2]);
-				String[] pos = { messageTokens[3], messageTokens[4], messageTokens[5] };
-				sendDetailsForMessage(clientID, remoteID, pos);
+				String[] posRot = { messageTokens[3], messageTokens[4], messageTokens[5], 
+					messageTokens[6], messageTokens[7], messageTokens[8],messageTokens[9], 
+					messageTokens[10], messageTokens[11], messageTokens[12],messageTokens[13], 
+					messageTokens[14], messageTokens[15], messageTokens[16],messageTokens[17], 
+					messageTokens[18], messageTokens[19], messageTokens[20], messageTokens[21] };
+				sendDetailsForMessage(clientID, remoteID, posRot);
 			}
 
 			// MOVE --- Case where server receives a move message
 			// Received Message Format: (move,localId,x,y,z)
 			if (messageTokens[0].compareTo("move") == 0) {
 				UUID clientID = UUID.fromString(messageTokens[1]);
-				String[] pos = { messageTokens[2], messageTokens[3], messageTokens[4] };
-				sendMoveMessages(clientID, pos);
+				String[] posRot = { messageTokens[2], messageTokens[3], messageTokens[4],
+					messageTokens[5], messageTokens[6], messageTokens[7], messageTokens[8],
+					messageTokens[9], messageTokens[10], messageTokens[11], messageTokens[12],
+					messageTokens[13], messageTokens[14], messageTokens[15], messageTokens[16],
+					messageTokens[17], messageTokens[18], messageTokens[19], messageTokens[20] };
+				sendMoveMessages(clientID, posRot);
 			}
 
 			// --------------- NPC SECTION --------------- //
@@ -146,11 +158,11 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				sendMoveNPCMessages(clientID, pos);
 			}
 
-			if(messageTokens[0].compareTo("bsUpdate") == 0){
+			if (messageTokens[0].compareTo("bsUpdate") == 0) {
 				String blueScore = messageTokens[1];
 				sendBlueScore(blueScore);
 			}
-			if(messageTokens[0].compareTo("rsUpdate") == 0) {
+			if (messageTokens[0].compareTo("rsUpdate") == 0) {
 				String redScore = messageTokens[1];
 				sendRedScore(redScore);
 			}
@@ -246,6 +258,22 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			message += "," + position[0];
 			message += "," + position[1];
 			message += "," + position[2];
+			message += "," + position[3];
+			message += "," + position[4];
+			message += "," + position[5];
+			message += "," + position[6];
+			message += "," + position[7];
+			message += "," + position[8];
+			message += "," + position[9];
+			message += "," + position[10];
+			message += "," + position[11];
+			message += "," + position[12];
+			message += "," + position[13];
+			message += "," + position[14];
+			message += "," + position[15];
+			message += "," + position[16];
+			message += "," + position[17];
+			message += "," + position[18];
 			forwardPacketToAll(message, clientID);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -268,6 +296,22 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			message += "," + position[0];
 			message += "," + position[1];
 			message += "," + position[2];
+			message += "," + position[3];
+			message += "," + position[4];
+			message += "," + position[5];
+			message += "," + position[6];
+			message += "," + position[7];
+			message += "," + position[8];
+			message += "," + position[9];
+			message += "," + position[10];
+			message += "," + position[11];
+			message += "," + position[12];
+			message += "," + position[13];
+			message += "," + position[14];
+			message += "," + position[15];
+			message += "," + position[16];
+			message += "," + position[17];
+			message += "," + position[18];
 			sendPacket(message, clientID);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -305,22 +349,40 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 			message += "," + position[0];
 			message += "," + position[1];
 			message += "," + position[2];
+			message += "," + position[3];
+			message += "," + position[4];
+			message += "," + position[5];
+			message += "," + position[6];
+			message += "," + position[7];
+			message += "," + position[8];
+			message += "," + position[9];
+			message += "," + position[10];
+			message += "," + position[11];
+			message += "," + position[12];
+			message += "," + position[13];
+			message += "," + position[14];
+			message += "," + position[15];
+			message += "," + position[16];
+			message += "," + position[17];
+			message += "," + position[18];
 			forwardPacketToAll(message, clientID);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+
 	public void sendBlueScore(String bs) {
 		try {
-			String message = new String("bsUpdate,"+ bs);
+			String message = new String("bsUpdate," + bs);
 			sendPacketToAll(message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+
 	private void sendRedScore(String rs) {
 		try {
-			String message = new String("rsUpdate,"+ rs);
+			String message = new String("rsUpdate," + rs);
 			sendPacketToAll(message);
 		} catch (IOException e) {
 			e.printStackTrace();

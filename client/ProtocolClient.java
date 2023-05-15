@@ -64,7 +64,7 @@ public class ProtocolClient extends GameConnectionClient {
 				if (messageTokens[1].compareTo("success") == 0) {
 					System.out.println("join success confirmed");
 					game.setIsConnected(true);
-					sendCreateMessage(game.getPlayerPosition());
+					sendCreateMessage(game.getPlayerPosition(), game.getPlayerRotation());
 					// sendNeedNPCmsg(id, game.getPlayerPosition());
 				}
 				if (messageTokens[1].compareTo("failure") == 0) {
@@ -96,8 +96,25 @@ public class ProtocolClient extends GameConnectionClient {
 						Float.parseFloat(messageTokens[2]),
 						Float.parseFloat(messageTokens[3]),
 						Float.parseFloat(messageTokens[4]));
+				Matrix4f ghostRotation = new Matrix4f(
+						Float.parseFloat(messageTokens[5]),
+						Float.parseFloat(messageTokens[6]),
+						Float.parseFloat(messageTokens[7]),
+						Float.parseFloat(messageTokens[8]),
+						Float.parseFloat(messageTokens[9]),
+						Float.parseFloat(messageTokens[10]),
+						Float.parseFloat(messageTokens[11]),
+						Float.parseFloat(messageTokens[12]),
+						Float.parseFloat(messageTokens[13]),
+						Float.parseFloat(messageTokens[14]),
+						Float.parseFloat(messageTokens[15]),
+						Float.parseFloat(messageTokens[16]),
+						Float.parseFloat(messageTokens[17]),
+						Float.parseFloat(messageTokens[18]),
+						Float.parseFloat(messageTokens[19]),
+						Float.parseFloat(messageTokens[20]));
 				try {
-					ghostManager.createGhostAvatar(ghostID, ghostPosition);
+					ghostManager.createGhostAvatar(ghostID, ghostPosition, ghostRotation);
 				} catch (IOException e) {
 					System.out.println("error creating ghost avatar");
 				}
@@ -109,7 +126,7 @@ public class ProtocolClient extends GameConnectionClient {
 				// Send the local client's avatar's information
 				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
-				sendDetailsForMessage(ghostID, game.getPlayerPosition());
+				sendDetailsForMessage(ghostID, game.getPlayerPosition(), game.getPlayerRotation());
 			}
 
 			// Handle MOVE message
@@ -124,7 +141,24 @@ public class ProtocolClient extends GameConnectionClient {
 						Float.parseFloat(messageTokens[2]),
 						Float.parseFloat(messageTokens[3]),
 						Float.parseFloat(messageTokens[4]));
-				ghostManager.updateGhostAvatar(ghostID, ghostPosition);
+				Matrix4f ghostRotation = new Matrix4f(
+						Float.parseFloat(messageTokens[5]),
+						Float.parseFloat(messageTokens[6]),
+						Float.parseFloat(messageTokens[7]),
+						Float.parseFloat(messageTokens[8]),
+						Float.parseFloat(messageTokens[9]),
+						Float.parseFloat(messageTokens[10]),
+						Float.parseFloat(messageTokens[11]),
+						Float.parseFloat(messageTokens[12]),
+						Float.parseFloat(messageTokens[13]),
+						Float.parseFloat(messageTokens[14]),
+						Float.parseFloat(messageTokens[15]),
+						Float.parseFloat(messageTokens[16]),
+						Float.parseFloat(messageTokens[17]),
+						Float.parseFloat(messageTokens[18]),
+						Float.parseFloat(messageTokens[19]),
+						Float.parseFloat(messageTokens[20]));
+				ghostManager.updateGhostAvatar(ghostID, ghostPosition, ghostRotation);
 			}
 
 			// more additions to the network protocol to handle ghosts:
@@ -252,12 +286,28 @@ public class ProtocolClient extends GameConnectionClient {
 	// Message Format: (create,localId,x,y,z) where x, y, and z represent the
 	// position
 
-	public void sendCreateMessage(Vector3f position) {
+	public void sendCreateMessage(Vector3f position, Matrix4f rotation) {
 		try {
 			String message = new String("create," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
+			message += "," + rotation.m00();
+			message += "," + rotation.m01();
+			message += "," + rotation.m02();
+			message += "," + rotation.m03();
+			message += "," + rotation.m10();
+			message += "," + rotation.m11();
+			message += "," + rotation.m12();
+			message += "," + rotation.m13();
+			message += "," + rotation.m20();
+			message += "," + rotation.m21();
+			message += "," + rotation.m22();
+			message += "," + rotation.m23();
+			message += "," + rotation.m30();
+			message += "," + rotation.m31();
+			message += "," + rotation.m32();
+			message += "," + rotation.m33();
 
 			sendPacket(message);
 		} catch (IOException e) {
@@ -272,12 +322,28 @@ public class ProtocolClient extends GameConnectionClient {
 	// Message Format: (dsfr,remoteId,localId,x,y,z) where x, y, and z represent the
 	// position.
 
-	public void sendDetailsForMessage(UUID remoteId, Vector3f position) {
+	public void sendDetailsForMessage(UUID remoteId, Vector3f position, Matrix4f rotation) {
 		try {
 			String message = new String("dsfr," + remoteId.toString() + "," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
+			message += "," + rotation.m00();
+			message += "," + rotation.m01();
+			message += "," + rotation.m02();
+			message += "," + rotation.m03();
+			message += "," + rotation.m10();
+			message += "," + rotation.m11();
+			message += "," + rotation.m12();
+			message += "," + rotation.m13();
+			message += "," + rotation.m20();
+			message += "," + rotation.m21();
+			message += "," + rotation.m22();
+			message += "," + rotation.m23();
+			message += "," + rotation.m30();
+			message += "," + rotation.m31();
+			message += "," + rotation.m32();
+			message += "," + rotation.m33();
 
 			sendPacket(message);
 		} catch (IOException e) {
@@ -289,12 +355,28 @@ public class ProtocolClient extends GameConnectionClient {
 	// Message Format: (move,localId,x,y,z) where x, y, and z represent the
 	// position.
 
-	public void sendMoveMessage(Vector3f position) {
+	public void sendMoveMessage(Vector3f position, Matrix4f rotation) {
 		try {
 			String message = new String("move," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
+			message += "," + rotation.m00();
+			message += "," + rotation.m01();
+			message += "," + rotation.m02();
+			message += "," + rotation.m03();
+			message += "," + rotation.m10();
+			message += "," + rotation.m11();
+			message += "," + rotation.m12();
+			message += "," + rotation.m13();
+			message += "," + rotation.m20();
+			message += "," + rotation.m21();
+			message += "," + rotation.m22();
+			message += "," + rotation.m23();
+			message += "," + rotation.m30();
+			message += "," + rotation.m31();
+			message += "," + rotation.m32();
+			message += "," + rotation.m33();
 
 			sendPacket(message);
 		} catch (IOException e) {

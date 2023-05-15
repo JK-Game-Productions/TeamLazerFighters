@@ -17,11 +17,11 @@ public class GhostManager {
 		game = (MyGame) vfrg;
 	}
 
-	public void createGhostAvatar(UUID id, Vector3f position) throws IOException {
+	public void createGhostAvatar(UUID id, Vector3f position, Matrix4f rotation) throws IOException {
 		System.out.println("adding ghost with ID --> " + id);
 		ObjShape s = game.getGhostShape();
 		TextureImage t = game.getGhostTexture();
-		GhostAvatar newAvatar = new GhostAvatar(id, s, t, position);
+		GhostAvatar newAvatar = new GhostAvatar(id, s, t, position, rotation);
 		Matrix4f initialScale = (new Matrix4f()).scaling(0.43f);// 0.25
 		newAvatar.setLocalScale(initialScale);
 		ghostAvatars.add(newAvatar);
@@ -80,10 +80,11 @@ public class GhostManager {
 		return null;
 	}
 
-	public void updateGhostAvatar(UUID id, Vector3f position) {
+	public void updateGhostAvatar(UUID id, Vector3f position, Matrix4f rotation) {
 		GhostAvatar ghostAvatar = findAvatar(id);
 		if (ghostAvatar != null) {
 			ghostAvatar.setPosition(position);
+			ghostAvatar.setRotation(rotation);
 		} else {
 			System.out.println("tried to update ghost avatar position, but unable to find ghost in list");
 		}
@@ -94,7 +95,7 @@ public class GhostManager {
 		if(ghostNPC != null) {
 			ghostNPC.setPosition(pos);
 		} else {
-			System.out.println("tried to update ghost avatar position, but unable to find ghost in list");
+			System.out.println("tried to update ghost NPC position, but unable to find ghost in list");
 		}
 	}
 

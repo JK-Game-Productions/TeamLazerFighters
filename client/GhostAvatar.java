@@ -14,10 +14,11 @@ import org.joml.*;
 public class GhostAvatar extends GameObject {
 	UUID uuid;
 
-	public GhostAvatar(UUID id, ObjShape s, TextureImage t, Vector3f p) {
+	public GhostAvatar(UUID id, ObjShape s, TextureImage t, Vector3f p, Matrix4f r) {
 		super(GameObject.root(), s, t);
 		uuid = id;
 		setPosition(p);
+		setRotation(r);
 	}
 
 	public UUID getID() {

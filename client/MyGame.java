@@ -178,7 +178,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// NPC setup
 		npc = new GameObject(GameObject.root(), avatarS, avatartx);
-		npc.setLocalTranslation(new Matrix4f().translation(80.0f, 0.0f, 20.0f));
+		npc.setLocalTranslation(new Matrix4f().translation(-500.0f, 0.0f, -500.0f));
 		npc.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(270.0f)));
 		npc.setLocalScale(new Matrix4f().scale(.45f));
@@ -447,15 +447,17 @@ public class MyGame extends VariableFrameRateGame {
 			// update animation
 			avatarS.updateAnimation();
 			npcS.updateAnimation();
-
+			
 			// --------------------- PHYSICS LOGIC --------------------------//
-
+			
 			// update npc physics objects
 			ps.removeObject(npcP.getUID());
-
+			npc.lookAt(avatar.getLocalLocation());
+			npc.move((float) frameDiff * 3.0f);
 			mapHeight(npc);
 			buildNpc();
-
+			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
+			
 			// if(running){
 			Matrix4f matrix = new Matrix4f();
 			Matrix4f rotMatrix = new Matrix4f();
@@ -481,9 +483,6 @@ public class MyGame extends VariableFrameRateGame {
 			mapHeight(water);
 
 			// trying to get npc to move
-			npc.lookAt(avatar.getLocalLocation());
-			npc.move((float) frameDiff);
-			getProtocolClient().sendMoveNPCMessage(npc.getLocalLocation());
 		}
 		// END if statement for game not paused
 
@@ -721,9 +720,10 @@ public class MyGame extends VariableFrameRateGame {
 			float mouseDeltaX = prevMouseX - curMouseX;
 			float mouseDeltaY = prevMouseY - curMouseY;
 
-			avatar.gyaw(getFrameDiff(), mouseDeltaX);
+			avatar.gyaw(getFrameDiff()/2, mouseDeltaX);
 			// camMain.yaw(mouseDeltaX);
 			avatar.pitch(getFrameDiff() / 2, mouseDeltaY);
+			protClient.sendMoveMessage(avatar.getWorldLocation(), avatar.getWorldRotation());
 			prevMouseX = curMouseX;
 			prevMouseY = curMouseY;
 			recenterMouse();
@@ -866,6 +866,11 @@ public class MyGame extends VariableFrameRateGame {
 		return avatar.getWorldLocation();
 	}
 
+	public Matrix4f getPlayerRotation() {
+		return avatar.getWorldRotation();
+	}
+
+
 	public ProtocolClient getProtocolClient() {
 		return protClient;
 	}
@@ -993,6 +998,12 @@ public class MyGame extends VariableFrameRateGame {
 			jsEngine.put("object", avatar);
 			this.runScript(scriptFile2);
 			avatar.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(270f)));
+			scriptFile3 = new File("assets/scripts/RedSpawn.js");
+			jsEngine.put("rand", rand);
+			npc.setTextureImage(avatartxRed);
+			jsEngine.put("object", npc);
+			this.runScript(scriptFile3);
+			npc.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(90f)));
 		} else {
 			scriptFile3 = new File("assets/scripts/RedSpawn.js");
 			jsEngine.put("rand", rand);
@@ -1000,6 +1011,12 @@ public class MyGame extends VariableFrameRateGame {
 			jsEngine.put("object", avatar);
 			this.runScript(scriptFile3);
 			avatar.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(90f)));
+			scriptFile2 = new File("assets/scripts/BlueSpawn.js");
+			jsEngine.put("rand", rand);
+			npc.setTextureImage(avatartxBlue);
+			jsEngine.put("object", npc);
+			this.runScript(scriptFile2);
+			npc.setLocalRotation(new Matrix4f().rotateY((float) Math.toRadians(270f)));
 		}
 	}
 
