@@ -703,11 +703,6 @@ public class GameObject {
 		mov.mul(movFactor * frameDiff);
 		Vector3f newPos = oldPos.add(mov.x(), mov.y(), mov.z());
 		this.setLocalLocation(newPos);
-		this.moving = true;
-	}
-
-	public boolean isMoving() {
-		return this.moving;
 	}
 
 	/** This function sets the class variable movFactor to a new float value */
