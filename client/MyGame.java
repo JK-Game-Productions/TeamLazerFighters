@@ -83,6 +83,7 @@ public class MyGame extends VariableFrameRateGame {
 	private int width, height, forest;
 	private boolean isClientConnected;
 	private float vals[] = new float[16];
+	private boolean gameWon = false;
 	private boolean NPCisWalking = false;
 	private int score, blueScore, redScore;
 	private double lastFrameTime, currFrameTime, elapsTime, frameDiff;
@@ -187,8 +188,6 @@ public class MyGame extends VariableFrameRateGame {
 		avatar = new GameObject(GameObject.root(), avatarS, avatartx);
 		avatar.setLocalTranslation((new Matrix4f()).translation(500f, 500f, 500f));
 		avatar.setLocalScale((new Matrix4f()).scaling(.43f));
-		// avatar.setLocalRotation(new Matrix4f().rotateY((float)
-		// Math.toRadians(270f))); // red 90f
 		avatar.getRenderStates().setModelOrientationCorrection(
 				(new Matrix4f()).rotationY((float) java.lang.Math.toRadians(270.0f)));
 
@@ -393,6 +392,7 @@ public class MyGame extends VariableFrameRateGame {
 			mapHeight(avatar);
 			// buildAvatar();
 			positionCameraBehindAvatar();
+
 			// update all sounds
 			laserSound.setLocation(lazergun.getWorldLocation());
 			walkingSound.setLocation(avatar.getWorldLocation());
@@ -497,7 +497,7 @@ public class MyGame extends VariableFrameRateGame {
 
 		// ----------------------------- HUD ----------------------------- //
 
-		if (paused) {
+		if (paused && !gameWon) {
 			startupStr = "CHOOSE YOUR TEAM: Blue (1) OR Red (2)";
 			Vector3f startupColor = new Vector3f(1, 0, 1);
 			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.375f), (int) (height * 0.5f));
@@ -509,6 +509,24 @@ public class MyGame extends VariableFrameRateGame {
 			String scoreStr = "Score: " + Integer.toString(score);
 			Vector3f scoreColor = new Vector3f(0, 1, 0);
 			(engine.getHUDmanager()).setHUD2(scoreStr, scoreColor, 15, 15);
+		}
+		if (blueScore >= 30) {
+			walkingSound.pause();
+			runningSound.pause();
+			gameWon = true;
+			paused = true;
+			startupStr = "BLUE TEAM WINS! - press esc to quit";
+			Vector3f startupColor = new Vector3f(0, 0, 1);
+			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.275f), (int) (height * 0.5f));
+		}
+		if (redScore >= 30) {
+			walkingSound.pause();
+			runningSound.pause();
+			gameWon = true;
+			paused = true;
+			startupStr = "RED TEAM WINS! - press esc to quit";
+			Vector3f startupColor = new Vector3f(1, 0, 0);
+			(engine.getHUDmanager()).setHUD1(startupStr, startupColor, (int) (width * 0.275f), (int) (height * 0.5f));
 		}
 		// END Update
 	}// END VariableFrameRate Game Overrides
@@ -1139,6 +1157,18 @@ public class MyGame extends VariableFrameRateGame {
 		return moveSpeed;
 	}
 
+	public TextureImage getBlueTeam() {
+		return avatartxBlue;
+	}
+
+	public TextureImage getRedTeam() {
+		return avatartxRed;
+	}
+
+	public String getTeam() {
+		return team;
+	}
+
 	// -----------------------------------------
 
 	public void togglePause() {
@@ -1224,15 +1254,4 @@ public class MyGame extends VariableFrameRateGame {
 		protClient.sendByeMessage();
 	}
 
-	public TextureImage getBlueTeam() {
-		return avatartxBlue;
-	}
-
-	public TextureImage getRedTeam() {
-		return avatartxRed;
-	}
-
-	public String getTeam() {
-		return team;
-	}
 }// END

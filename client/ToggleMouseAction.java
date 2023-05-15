@@ -12,6 +12,6 @@ public class ToggleMouseAction extends AbstractInputAction {
 
     @Override
     public void performAction(float time, Event evt) {
-        game.setMouseVisible(true);
+        // game.setMouseVisible(true);
     }
 }
