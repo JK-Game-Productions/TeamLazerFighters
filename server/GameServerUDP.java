@@ -166,6 +166,10 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 				String redScore = messageTokens[1];
 				sendRedScore(redScore);
 			}
+			if (messageTokens[0].compareTo("lifeUpdate") == 0) {
+				UUID clientID = UUID.fromString(messageTokens[1]);
+				sendLifeUpdate(clientID);
+			}
 		}
 	}
 
@@ -385,6 +389,14 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
 		try {
 			String message = new String("rsUpdate," + rs);
 			sendPacketToAll(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	private void sendLifeUpdate(UUID clientID) {
+		try {
+			String message = new String("lifeUpdate," + clientID.toString());
+			sendPacket(message, clientID);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
